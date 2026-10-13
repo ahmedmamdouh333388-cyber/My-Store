@@ -172,38 +172,6 @@
             color: #ea4335;
         }
 
-        .guest-btn {
-            width: 100%;
-            padding: 14px;
-            background: transparent;
-            color: #94a3b8;
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            border-radius: 14px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.2s ease;
-        }
-
-        .guest-btn:hover {
-            background: rgba(30, 41, 59, 0.4);
-            color: #ffffff;
-            border-color: rgba(56, 189, 248, 0.4);
-        }
-
-        .guest-btn:active {
-            transform: scale(0.96);
-        }
-
-        .guest-btn i {
-            font-size: 16px;
-            color: #38bdf8;
-        }
-
         .whatsapp-float {
             position: fixed;
             bottom: 30px;
@@ -258,11 +226,6 @@
             <i class="fa-brands fa-google"></i>
             <span>Continue with Google</span>
         </button>
-
-        <button id="guest-login-btn" class="guest-btn">
-            <i class="fa-solid fa-user-secret"></i>
-            <span>تصفح كزائر (مجهول)</span>
-        </button>
         
         <p id="error-msg"></p>
     </div>
@@ -273,7 +236,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         // تسجيل الـ Service Worker لتفعيل التثبيت (PWA)
         if ('serviceWorker' in navigator) {
@@ -299,7 +262,6 @@
         const provider = new GoogleAuthProvider();
 
         const googleBtn = document.getElementById('google-login-btn');
-        const guestBtn = document.getElementById('guest-login-btn');
         const errorMsg = document.getElementById('error-msg');
         const whatsappFab = document.getElementById('whatsapp-fab');
 
@@ -315,21 +277,6 @@
             } catch (error) {
                 errorMsg.style.color = "#f87171";
                 errorMsg.textContent = "خطأ: " + error.code;
-            }
-        });
-
-        guestBtn.addEventListener('click', async () => {
-            errorMsg.style.color = "#94a3b8";
-            errorMsg.textContent = "جاري الدخول كزائر...";
-
-            try {
-                const result = await signInAnonymously(auth);
-                const user = result.user;
-                errorMsg.style.color = "#38bdf8";
-                errorMsg.textContent = `تم الدخول كزائر بنجاح! (معرف الزائر: ${user.uid.substring(0, 6)}...)`;
-            } catch (error) {
-                errorMsg.style.color = "#f87171";
-                errorMsg.textContent = "خطأ في الدخول كزائر: " + error.code;
             }
         });
 
