@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>King Store - تسجيل الدخول</title>
+    <title>King Store - متجر الملوك</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -12,77 +12,116 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
         body {
-            background-color: #0b0f0e;
+            background: radial-gradient(circle at center, #111b16 0%, #050807 100%);
             color: #ffffff;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            overflow: hidden;
+            perspective: 1000px;
         }
+
+        /* حاوية 3D للبطاقة */
         .login-container {
             width: 100%;
-            max-width: 400px;
-            padding: 30px;
-            background: linear-gradient(145deg, #121816, #0d1210);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            max-width: 420px;
+            padding: 40px 30px;
+            background: linear-gradient(135deg, rgba(20, 30, 25, 0.9), rgba(10, 15, 12, 0.95));
+            border-radius: 28px;
+            border: 1px solid rgba(163, 230, 53, 0.2);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8),
+                        0 0 30px rgba(163, 230, 53, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform-style: preserve-3d;
+            transform: rotateX(5deg) rotateY(-5deg);
+            transition: transform 0.5s ease;
         }
+
+        .login-container:hover {
+            transform: rotateX(0deg) rotateY(0deg);
+        }
+
         .welcome-section {
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             text-align: center;
         }
+
         .logo-area {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             color: #a3e635;
-            font-weight: 600;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-        .welcome-section h1 {
-            font-size: 26px;
             font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 20px;
+            text-shadow: 0 0 10px rgba(163, 230, 53, 0.5);
+        }
+
+        .welcome-section h1 {
+            font-size: 28px;
+            font-weight: 800;
             margin-bottom: 8px;
             color: #ffffff;
+            letter-spacing: 0.5px;
         }
+
         .welcome-section p {
             font-size: 13px;
             color: #9ca3af;
-            line-height: 1.4;
+            line-height: 1.5;
         }
+
+        /* زرار 3D بارز وتفاعلي */
         .google-btn {
             width: 100%;
-            padding: 14px;
-            background-color: #161f1c;
+            padding: 16px;
+            background: linear-gradient(to bottom, #1a2621, #111815);
             color: #ffffff;
-            border: 1px solid #22302b;
-            border-radius: 12px;
-            font-size: 15px;
+            border: 1px solid #2d4239;
+            border-radius: 16px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
+            box-shadow: 0 8px 0 #080c0a, 
+                        0 15px 20px rgba(0, 0, 0, 0.4);
+            transition: all 0.15s ease;
+            position: relative;
+            top: 0;
         }
+
         .google-btn:hover {
-            background-color: #22302b;
+            background: linear-gradient(to bottom, #22332c, #16201b);
             border-color: #a3e635;
+            box-shadow: 0 8px 0 #080c0a, 
+                        0 15px 25px rgba(163, 230, 53, 0.2);
         }
+
+        /* تأثير الضغط 3D (النزول لتحت) */
+        .google-btn:active {
+            top: 6px;
+            box-shadow: 0 2px 0 #080c0a, 
+                        0 5px 10px rgba(0, 0, 0, 0.4);
+        }
+
         .google-btn i {
-            font-size: 18px;
+            font-size: 20px;
             color: #ea4335;
         }
+
         #error-msg {
             color: #ef4444;
             font-size: 13px;
             text-align: center;
-            margin-top: 15px;
+            margin-top: 20px;
             word-break: break-all;
+            text-shadow: 0 0 5px rgba(239, 68, 68, 0.3);
         }
     </style>
 </head>
@@ -94,8 +133,8 @@
                 <i class="fa-solid fa-crown"></i>
                 <span>King Store</span>
             </div>
-            <h1>Welcome back</h1>
-            <p>Sign in quickly and securely with your Google account.</p>
+            <h1>مرحباً بك مجدداً</h1>
+            <p>سجل دخولك الآن واستمتع بأقوى العروض والمنتجات الرقمية بكل الأمان.</p>
         </div>
 
         <button id="google-login-btn" class="google-btn">
@@ -129,7 +168,7 @@
 
         googleBtn.addEventListener('click', async () => {
             errorMsg.style.color = "#9ca3af";
-            errorMsg.textContent = "جاري فتح نافذة جوجل...";
+            errorMsg.textContent = "جاري فتح نافذة جوجل بأمان...";
 
             try {
                 const result = await signInWithPopup(auth, provider);
@@ -143,4 +182,5 @@
         });
     </script>
 </body>
-</html>
+    </html>
+    
