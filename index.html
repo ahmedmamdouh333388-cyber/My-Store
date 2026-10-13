@@ -107,6 +107,7 @@
             font-size: 13px;
             text-align: center;
             margin-top: 10px;
+            word-break: break-all;
         }
     </style>
 </head>
@@ -138,12 +139,10 @@
         </form>
     </div>
 
-    <!-- كود ربط وفعل فايربيس للإعدادات الحقيقية -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // إعدادات مشروعك الحقيقية من فايربيس
         const firebaseConfig = {
             apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
             authDomain: "my-store-75b70.firebaseapp.com",
@@ -164,15 +163,19 @@
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            errorMsg.style.color = "#9ca3af";
             errorMsg.textContent = "جاري تسجيل الدخول...";
             
             try {
                 await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-                alert("تم تسجيل الدخول بنجاح إلى King Store!");
+                errorMsg.style.color = "#a3e635";
+                errorMsg.textContent = "تم تسجيل الدخول بنجاح! مبروك يا ملك.";
             } catch (error) {
-                errorMsg.textContent = "خطأ: تأكد من البريد أو كلمة المرور أو تفعيل الخدمة";
+                errorMsg.style.color = "#ef4444";
+                errorMsg.textContent = "خطأ: " + error.code;
             }
         });
     </script>
 </body>
 </html>
+
