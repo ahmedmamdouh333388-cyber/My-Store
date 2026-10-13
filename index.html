@@ -11,7 +11,20 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            -webkit-tap-highlight-color: transparent;
+            /* منع ظهور أي تأثيرات تحديد أو مربعات زرقاء عند اللمس أو النقر */
+            -webkit-tap-highlight-color: transparent !important;
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+
+        /* منع التحديد والخطوط الوهمية على كل العناصر والازرار */
+        button, a, input, div {
+            outline: none !important;
+        }
+
+        button:focus, button:active, button:focus-visible {
+            outline: none !important;
+            box-shadow: none;
         }
 
         body {
@@ -136,7 +149,6 @@
             justify-content: center;
             gap: 12px;
             transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.08s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
-            outline: none !important;
             will-change: transform;
             transform: translate3d(0, 0, 0);
             margin-bottom: 12px;
@@ -158,7 +170,7 @@
             color: #ea4335;
         }
 
-        /* زرار الدخول كزائر بنفس تصميم الستايل الفخم */
+        /* زرار الدخول كزائر */
         .guest-btn {
             width: 100%;
             padding: 14px;
@@ -174,7 +186,6 @@
             justify-content: center;
             gap: 10px;
             transition: all 0.2s ease;
-            outline: none !important;
         }
 
         .guest-btn:hover {
@@ -190,6 +201,36 @@
         .guest-btn i {
             font-size: 16px;
             color: #38bdf8;
+        }
+
+        /* زرار الواتساب الدائري العائم القابل للسحب */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background-color: #25d366;
+            color: #ffffff;
+            border-radius: 50%;
+            text-align: center;
+            font-size: 30px;
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.5);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: grab;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .whatsapp-float:active {
+            cursor: grabbing;
+        }
+
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 30px rgba(37, 211, 102, 0.7);
         }
 
         #error-msg {
@@ -219,13 +260,17 @@
             <span>Continue with Google</span>
         </button>
 
-        <!-- زرار الدخول كزائر المضاف حديثاً -->
         <button id="guest-login-btn" class="guest-btn">
             <i class="fa-solid fa-user-secret"></i>
             <span>تصفح كزائر (مجهول)</span>
         </button>
         
         <p id="error-msg"></p>
+    </div>
+
+    <!-- زر الواتساب العائم الدائري -->
+    <div id="whatsapp-fab" class="whatsapp-float" title="تواصل معنا عبر واتساب">
+        <i class="fa-brands fa-whatsapp"></i>
     </div>
 
     <script type="module">
@@ -249,6 +294,7 @@
         const googleBtn = document.getElementById('google-login-btn');
         const guestBtn = document.getElementById('guest-login-btn');
         const errorMsg = document.getElementById('error-msg');
+        const whatsappFab = document.getElementById('whatsapp-fab');
 
         // تسجيل الدخول بجوجل
         googleBtn.addEventListener('click', async () => {
@@ -281,6 +327,67 @@
                 errorMsg.textContent = "خطأ في الدخول كزائر: " + error.code;
             }
         });
+
+        // النقر على زر الواتساب لفتح المحادثة بالرقم المطلوب
+        whatsappFab.addEventListener('click', () => {
+            if (isDragging) return;
+            const phoneNumber = "201225428692";
+            const message = "مرحباً، أريد الاستفسار عن منتجات في متجر King Store.";
+            const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        });
+
+        // سكربت لجعل زر الواتساب قابل للسحب والإفلات
+        let isDragging = false;
+        let startX, startY, initialX, initialY;
+
+        whatsappFab.addEventListener('pointerdown', dragStart);
+        window.addEventListener('pointermove', drag);
+        window.addEventListener('pointerup', dragEnd);
+
+        function dragStart(e) {
+            isDragging = false;
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            const rect = whatsappFab.getBoundingClientRect();
+            initialX = rect.left;
+            initialY = rect.top;
+            
+            whatsappFab.setPointerCapture(e.pointerId);
+        }
+
+        function drag(e) {
+            if (!startX || !startY) return;
+            
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            
+            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+                isDragging = true;
+            }
+
+            if (isDragging) {
+                let newX = initialX + dx;
+                let newY = initialY + dy;
+
+                const maxX = window.innerWidth - whatsappFab.offsetWidth;
+                const maxY = window.innerHeight - whatsappFab.offsetHeight;
+
+                newX = Math.max(0, Math.min(newX, maxX));
+                newY = Math.max(0, Math.min(newY, maxY));
+
+                whatsappFab.style.left = `${newX}px`;
+                whatsappFab.style.top = `${newY}px`;
+                whatsappFab.style.right = 'auto';
+                whatsappFab.style.bottom = 'auto';
+            }
+        }
+
+        function dragEnd(e) {
+            startX = null;
+            startY = null;
+        }
     </script>
 </body>
 </html>
