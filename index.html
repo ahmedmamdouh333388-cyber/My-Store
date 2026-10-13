@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>King Store - متجر الملوك</title>
+    
+    <!-- ربط ملف الـ Manifest لتمكين التثبيت -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#020617">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -199,7 +204,6 @@
             color: #38bdf8;
         }
 
-        /* زرار الواتساب الدائري العائم القابل للسحب بسلاسة */
         .whatsapp-float {
             position: fixed;
             bottom: 30px;
@@ -217,7 +221,7 @@
             justify-content: center;
             align-items: center;
             cursor: grab;
-            touch-action: none; /* مهم جداً لمنع تحريك الشاشة أثناء سحب الزر على الهواتف */
+            touch-action: none;
             transition: box-shadow 0.2s ease;
         }
 
@@ -271,6 +275,15 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+        // تسجيل الـ Service Worker لتفعيل التثبيت (PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(() => console.log('Service Worker registered successfully'))
+                    .catch((err) => console.log('Service Worker registration failed', err));
+            });
+        }
+
         const firebaseConfig = {
             apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
             authDomain: "my-store-75b70.firebaseapp.com",
@@ -320,7 +333,7 @@
             }
         });
 
-        whatsappFab.addEventListener('click', (e) => {
+        whatsappFab.addEventListener('click', () => {
             if (isDragging) return;
             const phoneNumber = "201225428692";
             const message = "مرحباً، أريد الاستفسار عن منتجات في متجر King Store.";
@@ -328,7 +341,6 @@
             window.open(url, '_blank');
         });
 
-        // تحسين سحب زر الواتساب ليصبح سلس وسريع للغاية
         let isDragging = false;
         let startX, startY, initialLeft, initialTop;
 
@@ -341,7 +353,6 @@
             initialLeft = rect.left;
             initialTop = rect.top;
             
-            // تحويل الزر ليعتمد على left و top بدلاً من right و bottom لتسهيل الحسابات
             whatsappFab.style.right = 'auto';
             whatsappFab.style.bottom = 'auto';
             whatsappFab.style.left = `${initialLeft}px`;
@@ -367,7 +378,6 @@
                 const maxX = window.innerWidth - whatsappFab.offsetWidth;
                 const maxY = window.innerHeight - whatsappFab.offsetHeight;
 
-                // منع خروج الزر عن حدود الشاشة
                 newX = Math.max(0, Math.min(newX, maxX));
                 newY = Math.max(0, Math.min(newY, maxY));
 
