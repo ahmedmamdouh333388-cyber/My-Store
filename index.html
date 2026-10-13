@@ -11,13 +11,11 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* منع ظهور أي تأثيرات تحديد أو مربعات زرقاء عند اللمس أو النقر */
             -webkit-tap-highlight-color: transparent !important;
             -webkit-touch-callout: none;
             user-select: none;
         }
 
-        /* منع التحديد والخطوط الوهمية على كل العناصر والازرار */
         button, a, input, div {
             outline: none !important;
         }
@@ -85,7 +83,6 @@
             text-align: center;
         }
 
-        /* تنسيق الإطار الدائري الفخم للصورة */
         .logo-circle-wrapper {
             width: 120px;
             height: 120px;
@@ -170,7 +167,6 @@
             color: #ea4335;
         }
 
-        /* زرار الدخول كزائر */
         .guest-btn {
             width: 100%;
             padding: 14px;
@@ -203,7 +199,7 @@
             color: #38bdf8;
         }
 
-        /* زرار الواتساب الدائري العائم القابل للسحب */
+        /* زرار الواتساب الدائري العائم القابل للسحب بسلاسة */
         .whatsapp-float {
             position: fixed;
             bottom: 30px;
@@ -221,7 +217,8 @@
             justify-content: center;
             align-items: center;
             cursor: grab;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            touch-action: none; /* مهم جداً لمنع تحريك الشاشة أثناء سحب الزر على الهواتف */
+            transition: box-shadow 0.2s ease;
         }
 
         .whatsapp-float:active {
@@ -229,7 +226,6 @@
         }
 
         .whatsapp-float:hover {
-            transform: scale(1.1);
             box-shadow: 0 15px 30px rgba(37, 211, 102, 0.7);
         }
 
@@ -245,7 +241,6 @@
 <body>
 
     <div class="login-container">
-        <!-- الصورة داخل الإطار الدائري المتناسق -->
         <div class="logo-circle-wrapper">
             <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="King Store Logo" class="logo-image-area">
         </div>
@@ -268,7 +263,6 @@
         <p id="error-msg"></p>
     </div>
 
-    <!-- زر الواتساب العائم الدائري -->
     <div id="whatsapp-fab" class="whatsapp-float" title="تواصل معنا عبر واتساب">
         <i class="fa-brands fa-whatsapp"></i>
     </div>
@@ -296,7 +290,6 @@
         const errorMsg = document.getElementById('error-msg');
         const whatsappFab = document.getElementById('whatsapp-fab');
 
-        // تسجيل الدخول بجوجل
         googleBtn.addEventListener('click', async () => {
             errorMsg.style.color = "#94a3b8";
             errorMsg.textContent = "جاري فتح نافذة جوجل...";
@@ -312,7 +305,6 @@
             }
         });
 
-        // تسجيل الدخول كزائر (Anonymous)
         guestBtn.addEventListener('click', async () => {
             errorMsg.style.color = "#94a3b8";
             errorMsg.textContent = "جاري الدخول كزائر...";
@@ -328,8 +320,7 @@
             }
         });
 
-        // النقر على زر الواتساب لفتح المحادثة بالرقم المطلوب
-        whatsappFab.addEventListener('click', () => {
+        whatsappFab.addEventListener('click', (e) => {
             if (isDragging) return;
             const phoneNumber = "201225428692";
             const message = "مرحباً، أريد الاستفسار عن منتجات في متجر King Store.";
@@ -337,57 +328,58 @@
             window.open(url, '_blank');
         });
 
-        // سكربت لجعل زر الواتساب قابل للسحب والإفلات
+        // تحسين سحب زر الواتساب ليصبح سلس وسريع للغاية
         let isDragging = false;
-        let startX, startY, initialX, initialY;
+        let startX, startY, initialLeft, initialTop;
 
-        whatsappFab.addEventListener('pointerdown', dragStart);
-        window.addEventListener('pointermove', drag);
-        window.addEventListener('pointerup', dragEnd);
-
-        function dragStart(e) {
+        whatsappFab.addEventListener('pointerdown', (e) => {
             isDragging = false;
             startX = e.clientX;
             startY = e.clientY;
             
             const rect = whatsappFab.getBoundingClientRect();
-            initialX = rect.left;
-            initialY = rect.top;
+            initialLeft = rect.left;
+            initialTop = rect.top;
             
-            whatsappFab.setPointerCapture(e.pointerId);
-        }
+            // تحويل الزر ليعتمد على left و top بدلاً من right و bottom لتسهيل الحسابات
+            whatsappFab.style.right = 'auto';
+            whatsappFab.style.bottom = 'auto';
+            whatsappFab.style.left = `${initialLeft}px`;
+            whatsappFab.style.top = `${initialTop}px`;
 
-        function drag(e) {
+            whatsappFab.setPointerCapture(e.pointerId);
+        });
+
+        whatsappFab.addEventListener('pointermove', (e) => {
             if (!startX || !startY) return;
-            
+
             const dx = e.clientX - startX;
             const dy = e.clientY - startY;
-            
-            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+
+            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
                 isDragging = true;
             }
 
             if (isDragging) {
-                let newX = initialX + dx;
-                let newY = initialY + dy;
+                let newX = initialLeft + dx;
+                let newY = initialTop + dy;
 
                 const maxX = window.innerWidth - whatsappFab.offsetWidth;
                 const maxY = window.innerHeight - whatsappFab.offsetHeight;
 
+                // منع خروج الزر عن حدود الشاشة
                 newX = Math.max(0, Math.min(newX, maxX));
                 newY = Math.max(0, Math.min(newY, maxY));
 
                 whatsappFab.style.left = `${newX}px`;
                 whatsappFab.style.top = `${newY}px`;
-                whatsappFab.style.right = 'auto';
-                whatsappFab.style.bottom = 'auto';
             }
-        }
+        });
 
-        function dragEnd(e) {
+        whatsappFab.addEventListener('pointerup', () => {
             startX = null;
             startY = null;
-        }
+        });
     </script>
 </body>
 </html>
