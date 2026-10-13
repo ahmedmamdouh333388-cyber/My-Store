@@ -188,32 +188,6 @@
         const googleBtn = document.getElementById('google-login-btn');
         const errorMsg = document.getElementById('error-msg');
 
-        // دالة تشغيل الصوت الترحيبي باللغة الإنجليزية
-        function playWelcomeAudio() {
-            if ('speechSynthesis' in window) {
-                // إيقاف أي صوت سابق لمنع التداخل
-                window.speechSynthesis.cancel();
-                
-                const utterance = new SpeechSynthesisUtterance("Welcome to King Store");
-                utterance.lang = 'en-US'; // لغة إنجليزية
-                utterance.rate = 0.95;    // سرعة هادئة وفخمة
-                utterance.pitch = 0.9;    // طبقة صوت عميقة وتكنولوجية
-                utterance.volume = 1.0;   // أعلى وضوح
-
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        // محاولة تشغيل الصوت فور تحميل الصفحة
-        window.addEventListener('load', () => {
-            playWelcomeAudio();
-        });
-
-        // تشغيل الصوت تلقائياً مع أول لمسة أو ضغطة في أي مكان بالموقع لتجاوز قيود المتصفحات
-        document.body.addEventListener('click', () => {
-            playWelcomeAudio();
-        }, { once: true });
-
         googleBtn.addEventListener('click', async () => {
             errorMsg.style.color = "#94a3b8";
             errorMsg.textContent = "جاري فتح نافذة جوجل...";
