@@ -30,83 +30,58 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
         }
         .welcome-section {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            text-align: center;
         }
         .logo-area {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
             color: #a3e635;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-size: 18px;
         }
         .welcome-section h1 {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
             margin-bottom: 8px;
             color: #ffffff;
         }
         .welcome-section p {
-            font-size: 14px;
+            font-size: 13px;
             color: #9ca3af;
             line-height: 1.4;
         }
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .input-group {
-            position: relative;
-            background-color: #161f1c;
-            border: 1px solid #22302b;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            transition: 0.3s;
-        }
-        .input-group:focus-within {
-            border-color: #a3e635;
-        }
-        .input-group i {
-            color: #9ca3af;
-            font-size: 16px;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 14px 12px;
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 14px;
-            outline: none;
-        }
-        .input-group input::placeholder {
-            color: #6b7280;
-        }
-        .login-btn {
+        .google-btn {
             width: 100%;
             padding: 14px;
-            background-color: #a3e635;
-            color: #0b0f0e;
-            border: none;
+            background-color: #161f1c;
+            color: #ffffff;
+            border: 1px solid #22302b;
             border-radius: 12px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: 0.3s;
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        .login-btn:hover {
-            background-color: #bbf7d0;
+        .google-btn:hover {
+            background-color: #22302b;
+            border-color: #a3e635;
+        }
+        .google-btn i {
+            font-size: 18px;
+            color: #ea4335;
         }
         #error-msg {
             color: #ef4444;
             font-size: 13px;
             text-align: center;
-            margin-top: 10px;
+            margin-top: 15px;
             word-break: break-all;
         }
     </style>
@@ -120,28 +95,20 @@
                 <span>King Store</span>
             </div>
             <h1>Welcome back</h1>
-            <p>Sign in to continue discovering trendy picks just for you.</p>
+            <p>Sign in quickly and securely with your Google account.</p>
         </div>
 
-        <form id="login-form" class="login-form">
-            <div class="input-group">
-                <i class="fa-regular fa-envelope"></i>
-                <input type="email" id="email" placeholder="Email address" required>
-            </div>
-
-            <div class="input-group">
-                <i class="fa-lock fa-solid"></i>
-                <input type="password" id="password" placeholder="Password" required>
-            </div>
-
-            <button type="submit" class="login-btn">Log in</button>
-            <p id="error-msg"></p>
-        </form>
+        <button id="google-login-btn" class="google-btn">
+            <i class="fa-brands fa-google"></i>
+            <span>Continue with Google</span>
+        </button>
+        
+        <p id="error-msg"></p>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
@@ -155,21 +122,20 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        const loginForm = document.getElementById('login-form');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
+        const googleBtn = document.getElementById('google-login-btn');
         const errorMsg = document.getElementById('error-msg');
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        googleBtn.addEventListener('click', async () => {
             errorMsg.style.color = "#9ca3af";
-            errorMsg.textContent = "جاري تسجيل الدخول...";
-            
+            errorMsg.textContent = "جاري فتح نافذة جوجل...";
+
             try {
-                await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
                 errorMsg.style.color = "#a3e635";
-                errorMsg.textContent = "تم تسجيل الدخول بنجاح! مبروك يا ملك.";
+                errorMsg.textContent = `أهلاً بك يا ${user.displayName}، تم تسجيل الدخول بنجاح!`;
             } catch (error) {
                 errorMsg.style.color = "#ef4444";
                 errorMsg.textContent = "خطأ: " + error.code;
@@ -178,4 +144,3 @@
     </script>
 </body>
 </html>
-
