@@ -31,26 +31,26 @@
         body::before {
             content: '';
             position: absolute;
-            width: 300px;
-            height: 300px;
-            background: rgba(6, 182, 212, 0.15);
-            filter: blur(80px);
+            width: 350px;
+            height: 350px;
+            background: rgba(6, 182, 212, 0.18);
+            filter: blur(90px);
             border-radius: 50%;
-            top: 15%;
-            left: 25%;
+            top: 10%;
+            left: 20%;
             z-index: 0;
         }
 
         body::after {
             content: '';
             position: absolute;
-            width: 250px;
-            height: 250px;
-            background: rgba(59, 130, 246, 0.1);
-            filter: blur(80px);
+            width: 300px;
+            height: 300px;
+            background: rgba(59, 130, 246, 0.12);
+            filter: blur(90px);
             border-radius: 50%;
-            bottom: 15%;
-            right: 25%;
+            bottom: 10%;
+            right: 20%;
             z-index: 0;
         }
 
@@ -58,37 +58,40 @@
             position: relative;
             z-index: 1;
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             padding: 40px 30px;
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 24px;
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 28px;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.15);
             will-change: transform, opacity;
             transform: translate3d(0, 0, 0);
-        }
-
-        .welcome-section {
-            margin-bottom: 30px;
             text-align: center;
         }
 
-        .logo-area {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            color: #38bdf8;
-            font-weight: 700;
-            margin-bottom: 15px;
-            font-size: 19px;
-            text-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+        .logo-image-area {
+            width: 100%;
+            max-height: 140px;
+            object-fit: contain;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.4));
+            animation: floatLogo 4s ease-in-out infinite;
+        }
+
+        @keyframes floatLogo {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .welcome-section {
+            margin-bottom: 25px;
         }
 
         .welcome-section h1 {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 700;
             margin-bottom: 8px;
             color: #ffffff;
@@ -104,10 +107,10 @@
         .google-btn {
             width: 100%;
             padding: 15px;
-            background: rgba(30, 41, 59, 0.7);
+            background: rgba(30, 41, 59, 0.8);
             backdrop-filter: blur(4px);
             color: #ffffff;
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            border: 1px solid rgba(56, 189, 248, 0.4);
             border-radius: 14px;
             font-size: 15px;
             font-weight: 600;
@@ -123,14 +126,14 @@
         }
 
         .google-btn:hover {
-            background: rgba(51, 65, 85, 0.85);
+            background: rgba(51, 65, 85, 0.95);
             border-color: #38bdf8;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
         }
 
         .google-btn:active {
             transform: scale(0.96) translate3d(0, 0, 0);
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 23, 42, 0.95);
         }
 
         .google-btn i {
@@ -150,11 +153,10 @@
 <body>
 
     <div class="login-container">
+        <!-- تم دمج صورتك الفخمة هنا -->
+        <img src="file_0000000070088210be1dd4000e0c823f.png" alt="King Store Logo" class="logo-image-area">
+        
         <div class="welcome-section">
-            <div class="logo-area">
-                <i class="fa-solid fa-crown"></i>
-                <span>King Store</span>
-            </div>
             <h1>مرحباً بك مجدداً</h1>
             <p>سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.</p>
         </div>
