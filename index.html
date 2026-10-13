@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>King Store - تسجيل الدخول</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0b0f0e;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            background: linear-gradient(145deg, #121816, #0d1210);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+        .welcome-section {
+            margin-bottom: 30px;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #a3e635;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .welcome-section h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+        .welcome-section p {
+            font-size: 14px;
+            color: #9ca3af;
+            line-height: 1.4;
+        }
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .input-group {
+            position: relative;
+            background-color: #161f1c;
+            border: 1px solid #22302b;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            transition: 0.3s;
+        }
+        .input-group:focus-within {
+            border-color: #a3e635;
+        }
+        .input-group i {
+            color: #9ca3af;
+            font-size: 16px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 14px 12px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+        .input-group input::placeholder {
+            color: #6b7280;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: #a3e635;
+            color: #0b0f0e;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        .login-btn:hover {
+            background-color: #bbf7d0;
+        }
+        #error-msg {
+            color: #ef4444;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="welcome-section">
+            <div class="logo-area">
+                <i class="fa-solid fa-crown"></i>
+                <span>King Store</span>
+            </div>
+            <h1>Welcome back</h1>
+            <p>Sign in to continue discovering trendy picks just for you.</p>
+        </div>
+
+        <form id="login-form" class="login-form">
+            <div class="input-group">
+                <i class="fa-regular fa-envelope"></i>
+                <input type="email" id="email" placeholder="Email address" required>
+            </div>
+
+            <div class="input-group">
+                <i class="fa-lock fa-solid"></i>
+                <input type="password" id="password" placeholder="Password" required>
+            </div>
+
+            <button type="submit" class="login-btn">Log in</button>
+            <p id="error-msg"></p>
+        </form>
+    </div>
+
+    <!-- كود ربط وفعل فايربيس للإعدادات الحقيقية -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // إعدادات مشروعك الحقيقية من فايربيس
+        const firebaseConfig = {
+            apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
+            authDomain: "my-store-75b70.firebaseapp.com",
+            projectId: "my-store-75b70",
+            storageBucket: "my-store-75b70.firebasestorage.app",
+            messagingSenderId: "762773021655",
+            appId: "1:762773021655:web:ce1490aab54115d549e192",
+            measurementId: "G-CT3FQN4BBK"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const loginForm = document.getElementById('login-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const errorMsg = document.getElementById('error-msg');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMsg.textContent = "جاري تسجيل الدخول...";
+            
+            try {
+                await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+                alert("تم تسجيل الدخول بنجاح إلى King Store!");
+            } catch (error) {
+                errorMsg.textContent = "خطأ: تأكد من البريد أو كلمة المرور أو تفعيل الخدمة";
+            }
+        });
+    </script>
+</body>
+</html>
