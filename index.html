@@ -11,7 +11,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            -webkit-tap-highlight-color: transparent; /* إلغاء التظليل الافتراضي في الموبايل */
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -22,9 +22,11 @@
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            /* إجبار المتصفح على تفعيل التسريع بالهاردوير لأقصى فريمات */
+            transform: translateZ(0);
+            backface-visibility: hidden;
         }
 
-        /* كارت عادي ومستقر بدون 3D مائل */
         .login-container {
             width: 100%;
             max-width: 400px;
@@ -34,6 +36,9 @@
             border: 1px solid rgba(163, 230, 53, 0.15);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6),
                         0 0 20px rgba(163, 230, 53, 0.05);
+            /* ضمان سلاسة المعالجة الرسومية */
+            will-change: transform, opacity;
+            transform: translate3d(0, 0, 0);
         }
 
         .welcome-section {
@@ -64,7 +69,7 @@
             line-height: 1.5;
         }
 
-        /* تصميم زرار احترافي بدون مربعات شفافة مزعجة وعند الضغط يتأثر بنعومة */
+        /* زرار فائق النعومة بمعدل إحساس عالي الاستجابة */
         .google-btn {
             width: 100%;
             padding: 15px;
@@ -79,8 +84,11 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            transition: all 0.2s ease;
-            outline: none !important; /* إلغاء المربع الأزرق نهائياً */
+            /* انتقالات فائقة السرعة لدعم الشاشات السريعة */
+            transition: background-color 0.1s ease, border-color 0.1s ease, transform 0.08s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none !important;
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
         }
 
         .google-btn:hover {
@@ -89,9 +97,8 @@
             box-shadow: 0 0 15px rgba(163, 230, 53, 0.15);
         }
 
-        /* تأثير ضغط ناعم وبدون مربعات */
         .google-btn:active {
-            transform: scale(0.97);
+            transform: scale(0.96) translate3d(0, 0, 0);
             background-color: #121a16;
         }
 
