@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getDatabase, ref, push, onChildAdded, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, push, onChildAdded, onChildRemoved, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
@@ -18,7 +18,6 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
 
-// تم ضبط الإيميل بحرف a صغير وبدقة ليكون حسابك هو المشرف الرسمي
 const ADMIN_EMAIL = "ahmadmamdouh333388@gmail.com"; 
 
 const loginScreen = document.getElementById('login-screen');
@@ -33,13 +32,13 @@ const menuUserImg = document.getElementById('menu-user-img');
 const menuUserName = document.getElementById('menu-user-name');
 const menuLogoutTrigger = document.getElementById('menu-logout-trigger');
 const supportWaLink = document.getElementById('support-wa-link');
-const menuOpenChatBtn = document.getElementById('menu-open-chat-btn');
 
 const triggerDeleteModal = document.getElementById('trigger-delete-modal');
 const deleteAlertModal = document.getElementById('delete-alert-modal');
 const cancelDeleteAction = document.getElementById('cancel-delete-action');
 const confirmDeleteAction = document.getElementById('confirm-delete-action');
 
+const chatFloatBtn = document.getElementById('chat-float-btn');
 const chatModalContainer = document.getElementById('chat-modal-container');
 const chatCloseBtn = document.getElementById('chat-close-btn');
 const chatMessagesArea = document.getElementById('chat-messages-area');
@@ -138,9 +137,9 @@ confirmDeleteAction.addEventListener('click', async () => {
     window.location.reload();
 });
 
-menuOpenChatBtn.addEventListener('click', () => {
-    settingsPopupMenu.classList.remove('active');
-    chatModalContainer.classList.add('active');
+// فتح وإغلاق الدردشة من الزر العائم
+chatFloatBtn.addEventListener('click', () => {
+    chatModalContainer.classList.toggle('active');
     chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
 });
 
@@ -165,6 +164,7 @@ function censorBadWords(text) {
 }
 
 const chatRef = ref(db, 'messages');
+
 onChildAdded(chatRef, (snapshot) => {
     const msgId = snapshot.key;
     const data = snapshot.val();
@@ -173,12 +173,19 @@ onChildAdded(chatRef, (snapshot) => {
     }
 });
 
+onChildRemoved(chatRef, (snapshot) => {
+    const msgId = snapshot.key;
+    const msgElem = document.getElementById(`msg-${msgId}`);
+    if (msgElem) msgElem.remove();
+});
+
 function renderMessage(msgId, data) {
     const isMyMessage = currentUser && data.uid === currentUser.uid;
     const rowClass = isMyMessage ? 'chat-msg-row my-message' : 'chat-msg-row other-message';
     
-    const isAdmin = data.email === ADMIN_EMAIL || data.isAdmin === true;
-    const adminBadgeHtml = isAdmin ? `<span class="admin-badge"><i class="fa-solid fa-crown"></i> مشرف</span>` : '';
+    const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
+    const isMsgAdmin = data.email === ADMIN_EMAIL || data.isAdmin === true;
+    const adminBadgeHtml = isMsgAdmin ? `<span class="admin-badge"><i class="fa-solid fa-crown"></i> مشرف</span>` : '';
 
     let replyHtml = '';
     if (data.replyTo) {
@@ -200,6 +207,12 @@ function renderMessage(msgId, data) {
         return;
     }
 
+    // زر الحذف (يظهر إذا كنت أنت صاحب الرسالة أو كنت المشرف العام)
+    let deleteBtnHtml = '';
+    if (currentUser && (data.uid === currentUser.uid || isAdmin)) {
+        deleteBtnHtml = `<button class="delete-msg-btn" onclick="deleteMessage('${msgId}')">حذف</button>`;
+    }
+
     const msgRow = document.createElement('div');
     msgRow.id = `msg-${msgId}`;
     msgRow.className = rowClass;
@@ -213,13 +226,17 @@ function renderMessage(msgId, data) {
             ${replyHtml}
             <div class="chat-msg-text">${escapeHtml(data.text)}</div>
             <div class="message-reactions-row">${reactionsHtml}</div>
-            <button class="reply-action-btn" onclick="prepareReply('${msgId}', '${escapeHtml(data.username)}', '${escapeHtml(data.text)}')">رد</button>
+            
+            <div class="msg-actions-row">
+                <button class="reply-action-btn" onclick="prepareReply('${msgId}', '${escapeHtml(data.username)}', '${escapeHtml(data.text)}')">رد</button>
+                ${deleteBtnHtml}
+            </div>
             
             <div class="reaction-popup-menu">
                 <button class="reaction-btn-option" onclick="addReaction('${msgId}', '❤️')">❤️</button>
-                <button class="reaction-btn-option" onclick="addReaction('${msgId}', '👍')">👍</button>
                 <button class="reaction-btn-option" onclick="addReaction('${msgId}', '😂')">😂</button>
-                <button class="reaction-btn-option" onclick="addReaction('${msgId}', '🔥')">🔥</button>
+                <button class="reaction-btn-option" onclick="addReaction('${msgId}', '😭')">😭</button>
+                <button class="reaction-btn-option" onclick="addReaction('${msgId}', '👍🏻')">👍🏻</button>
             </div>
         </div>
     `;
@@ -230,7 +247,7 @@ function renderMessage(msgId, data) {
 window.prepareReply = function(msgId, username, text) {
     replyingToData = { username, text };
     replyingToText.textContent = `الرد على ${username}: ${text.substring(0, 25)}...`;
-    replyPreviewBox.style.display = 'flex';
+    replyPreviewBox.style.display = 'block';
     chatInputField.focus();
 };
 
@@ -242,6 +259,12 @@ window.addReaction = function(msgId, emoji) {
     const updates = {};
     updates[userKey] = true;
     update(reactionRef, updates);
+};
+
+window.deleteMessage = function(msgId) {
+    if (!currentUser) return;
+    const msgRef = ref(db, `messages/${msgId}`);
+    remove(msgRef);
 };
 
 function sendChatMessage() {
@@ -282,4 +305,4 @@ chatInputField.addEventListener('keypress', (e) => {
         sendChatMessage();
     }
 });
-                    
+    
