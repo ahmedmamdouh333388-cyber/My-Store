@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, push, onChildAdded, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
@@ -17,6 +17,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
+
+// تم ضبط الإيميل بحرف a صغير وبدقة ليكون حسابك هو المشرف الرسمي
+const ADMIN_EMAIL = "ahmadmamdouh333388@gmail.com"; 
 
 const loginScreen = document.getElementById('login-screen');
 const splashScreen = document.getElementById('splash-screen');
@@ -43,8 +46,13 @@ const chatMessagesArea = document.getElementById('chat-messages-area');
 const chatInputField = document.getElementById('chat-input-field');
 const chatSendBtn = document.getElementById('chat-send-btn');
 
+const replyPreviewBox = document.getElementById('reply-preview-box');
+const replyingToText = document.getElementById('replying-to-text');
+const cancelReplyBtn = document.getElementById('cancel-reply-btn');
+
 let currentUser = null;
 let isLoginHandled = false;
+let replyingToData = null;
 
 const activeTheme = localStorage.getItem('king_store_theme');
 if (activeTheme) document.body.className = activeTheme;
@@ -140,6 +148,11 @@ chatCloseBtn.addEventListener('click', () => {
     chatModalContainer.classList.remove('active');
 });
 
+cancelReplyBtn.addEventListener('click', () => {
+    replyingToData = null;
+    replyPreviewBox.style.display = 'none';
+});
+
 const badWords = ["شرموط", "قحبة", "منيوك", "متناك", "عرص", "خول", "احا", "وسخ", "كلب", "حمار", "زفت", "طيز", "قذر", "لعنة", "لعن", "اوسخ", "عاهر", "عاهرة", "fuck", "shit", "bitch", "asshole", "cunt", "dick"];
 
 function censorBadWords(text) {
@@ -153,36 +166,110 @@ function censorBadWords(text) {
 
 const chatRef = ref(db, 'messages');
 onChildAdded(chatRef, (snapshot) => {
+    const msgId = snapshot.key;
     const data = snapshot.val();
     if (data) {
-        const msgRow = document.createElement('div');
-        msgRow.className = 'chat-msg-row';
-        msgRow.innerHTML = `
-            <img src="${data.avatar || ''}" class="chat-msg-avatar">
-            <div class="chat-msg-content">
-                <div class="chat-msg-username">${escapeHtml(data.username)}</div>
-                <div class="chat-msg-text">${escapeHtml(data.text)}</div>
-            </div>
-        `;
-        chatMessagesArea.appendChild(msgRow);
-        chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+        renderMessage(msgId, data);
     }
 });
+
+function renderMessage(msgId, data) {
+    const isMyMessage = currentUser && data.uid === currentUser.uid;
+    const rowClass = isMyMessage ? 'chat-msg-row my-message' : 'chat-msg-row other-message';
+    
+    const isAdmin = data.email === ADMIN_EMAIL || data.isAdmin === true;
+    const adminBadgeHtml = isAdmin ? `<span class="admin-badge"><i class="fa-solid fa-crown"></i> مشرف</span>` : '';
+
+    let replyHtml = '';
+    if (data.replyTo) {
+        replyHtml = `<div class="reply-quote-box"><b>${escapeHtml(data.replyTo.username)}:</b> ${escapeHtml(data.replyTo.text)}</div>`;
+    }
+
+    let reactionsHtml = '';
+    if (data.reactions) {
+        Object.entries(data.reactions).forEach(([emoji, users]) => {
+            const count = Object.keys(users).length;
+            reactionsHtml += `<span class="reaction-pill">${emoji} ${count}</span>`;
+        });
+    }
+
+    let existingMsgElem = document.getElementById(`msg-${msgId}`);
+    if (existingMsgElem) {
+        const reactionsRow = existingMsgElem.querySelector('.message-reactions-row');
+        reactionsRow.innerHTML = reactionsHtml;
+        return;
+    }
+
+    const msgRow = document.createElement('div');
+    msgRow.id = `msg-${msgId}`;
+    msgRow.className = rowClass;
+    msgRow.innerHTML = `
+        <img src="${data.avatar || ''}" class="chat-msg-avatar">
+        <div class="chat-msg-content">
+            <div class="chat-msg-header-info">
+                <span class="chat-msg-username">${escapeHtml(data.username)}</span>
+                ${adminBadgeHtml}
+            </div>
+            ${replyHtml}
+            <div class="chat-msg-text">${escapeHtml(data.text)}</div>
+            <div class="message-reactions-row">${reactionsHtml}</div>
+            <button class="reply-action-btn" onclick="prepareReply('${msgId}', '${escapeHtml(data.username)}', '${escapeHtml(data.text)}')">رد</button>
+            
+            <div class="reaction-popup-menu">
+                <button class="reaction-btn-option" onclick="addReaction('${msgId}', '❤️')">❤️</button>
+                <button class="reaction-btn-option" onclick="addReaction('${msgId}', '👍')">👍</button>
+                <button class="reaction-btn-option" onclick="addReaction('${msgId}', '😂')">😂</button>
+                <button class="reaction-btn-option" onclick="addReaction('${msgId}', '🔥')">🔥</button>
+            </div>
+        </div>
+    `;
+    chatMessagesArea.appendChild(msgRow);
+    chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+}
+
+window.prepareReply = function(msgId, username, text) {
+    replyingToData = { username, text };
+    replyingToText.textContent = `الرد على ${username}: ${text.substring(0, 25)}...`;
+    replyPreviewBox.style.display = 'flex';
+    chatInputField.focus();
+};
+
+window.addReaction = function(msgId, emoji) {
+    if (!currentUser) return;
+    const reactionRef = ref(db, `messages/${msgId}/reactions/${emoji}`);
+    const userKey = currentUser.uid.replace(/[.#$[\]]/g, "_");
+    
+    const updates = {};
+    updates[userKey] = true;
+    update(reactionRef, updates);
+};
 
 function sendChatMessage() {
     const rawText = chatInputField.value.trim();
     if (!rawText || !currentUser) return;
 
     const filteredText = censorBadWords(rawText);
+    const isAdminUser = currentUser.email === ADMIN_EMAIL;
 
-    push(chatRef, {
+    const newMessage = {
+        uid: currentUser.uid,
+        email: currentUser.email,
         username: currentUser.displayName || 'مستخدم',
         avatar: currentUser.photoURL || '',
         text: filteredText,
+        isAdmin: isAdminUser,
         timestamp: Date.now()
-    });
+    };
+
+    if (replyingToData) {
+        newMessage.replyTo = replyingToData;
+    }
+
+    push(chatRef, newMessage);
 
     chatInputField.value = '';
+    replyingToData = null;
+    replyPreviewBox.style.display = 'none';
 }
 
 function escapeHtml(string) {
@@ -195,4 +282,4 @@ chatInputField.addEventListener('keypress', (e) => {
         sendChatMessage();
     }
 });
-                       
+                    
