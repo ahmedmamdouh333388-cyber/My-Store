@@ -222,7 +222,23 @@ function renderMessage(msgId, data) {
 
     let messageBodyHtml = '';
     if (data.type === 'audio' && data.audioUrl) {
-        messageBodyHtml = `<audio controls src="${data.audioUrl}" class="chat-audio-msg"></audio>`;
+        messageBodyHtml = `
+            <div class="wa-audio-player" id="player-${msgId}">
+                <button class="wa-play-btn" onclick="togglePlayAudio('${msgId}')">
+                    <i class="fa-solid fa-play" id="play-icon-${msgId}"></i>
+                </button>
+                <div class="wa-audio-info">
+                    <div class="wa-audio-progress-bar" onclick="seekAudio(event, '${msgId}')">
+                        <div class="wa-audio-progress-fill" id="progress-${msgId}"></div>
+                    </div>
+                    <div class="wa-audio-time">
+                        <span id="current-time-${msgId}">0:00</span>
+                        <span>🎤 صوتية</span>
+                    </div>
+                </div>
+                <audio id="audio-el-${msgId}" src="${data.audioUrl}" preload="metadata"></audio>
+            </div>
+        `;
     } else {
         messageBodyHtml = `<div class="chat-msg-text">${escapeHtml(data.text)}</div>`;
     }
@@ -262,7 +278,57 @@ function renderMessage(msgId, data) {
     `;
     chatMessagesArea.appendChild(msgRow);
     chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+
+    // ربط أحداث الصوت ليعمل مثل الواتساب تماماً
+    if (data.type === 'audio') {
+        const audioEl = document.getElementById(`audio-el-${msgId}`);
+        const playIcon = document.getElementById(`play-icon-${msgId}`);
+        const progressFill = document.getElementById(`progress-${msgId}`);
+        const currentTimeText = document.getElementById(`current-time-${msgId}`);
+
+        audioEl.addEventListener('timeupdate', () => {
+            if (audioEl.duration) {
+                const percent = (audioEl.currentTime / audioEl.duration) * 100;
+                progressFill.style.width = percent + '%';
+                
+                const mins = Math.floor(audioEl.currentTime / 60);
+                const secs = Math.floor(audioEl.currentTime % 60);
+                currentTimeText.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            }
+        });
+
+        audioEl.addEventListener('ended', () => {
+            playIcon.className = "fa-solid fa-play";
+            progressFill.style.width = '0%';
+            audioEl.currentTime = 0;
+        });
+    }
 }
+
+// دالة تشغيل وإيقاف الصوت بلمسة واحدة مثل الواتساب
+window.togglePlayAudio = function(msgId) {
+    const audioEl = document.getElementById(`audio-el-${msgId}`);
+    const playIcon = document.getElementById(`play-icon-${msgId}`);
+
+    // إيقاف أي صوت آخر يعمل حالياً في الدردشة
+    document.querySelectorAll('audio').forEach(el => {
+        if (el.id !== `audio-el-${msgId}`) {
+            el.pause();
+            el.currentTime = 0;
+            const otherId = el.id.replace('audio-el-', '');
+            const otherIcon = document.getElementById(`play-icon-${otherId}`);
+            if (otherIcon) otherIcon.className = "fa-solid fa-play";
+        }
+    });
+
+    if (audioEl.paused) {
+        audioEl.play();
+        playIcon.className = "fa-solid fa-pause";
+    } else {
+        audioEl.pause();
+        playIcon.className = "fa-solid fa-play";
+    }
+};
 
 window.prepareReply = function(msgId, username, text) {
     replyingToData = { username, text };
@@ -302,7 +368,6 @@ window.deleteMessage = function(msgId) {
     remove(msgRef);
 };
 
-// تشغيل نظام تسجيل المايك الصوتي بلمسة واحدة
 chatMicBtn.addEventListener('click', async () => {
     if (!currentUser) return;
 
@@ -401,3 +466,4 @@ chatInputField.addEventListener('keypress', (e) => {
         sendChatMessage();
     }
 });
+    
