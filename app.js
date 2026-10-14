@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getDatabase, ref, push, onChildAdded, onChildRemoved, onChildChanged, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, push, onChildAdded, onChildRemoved, onChildChanged, update, remove, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
@@ -18,7 +18,6 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
 
-// الإيميل الرسمي المعتمد للمشرف الملكي
 const ADMIN_EMAIL = "ahmadmamdouh333388@gmail.com"; 
 
 const loginScreen = document.getElementById('login-screen');
@@ -188,11 +187,9 @@ onChildRemoved(chatRef, (snapshot) => {
 });
 
 function renderMessage(msgId, data) {
-    // تثبيت رسائلك دائماً على اليسار بناءً على الإيميل أو الـ uid أو الاسم
     const isMyMessage = currentUser && (data.email === ADMIN_EMAIL || data.uid === currentUser.uid || data.username === currentUser.displayName);
     const rowClass = isMyMessage ? 'chat-msg-row my-message' : 'chat-msg-row other-message';
     
-    // شارة المشرف لبريدك الملكي
     const isMsgAdmin = data.email === ADMIN_EMAIL || data.username === "احمد ممدوح" || data.isAdmin === true;
     const adminBadgeHtml = isMsgAdmin ? `<span class="admin-badge"><i class="fa-solid fa-crown"></i> مشرف</span>` : '';
 
@@ -219,9 +216,10 @@ function renderMessage(msgId, data) {
         return;
     }
 
-    const isAdminUser = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح");
+    // صلاحيات الحذف بدقة: المشرف وحده يمسح الكل، والمستخدم العادي يمسح رسالته فقط
+    const isUserAdmin = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح");
     let deleteBtnHtml = '';
-    if (currentUser && (data.email === ADMIN_EMAIL || data.uid === currentUser.uid || isAdminUser)) {
+    if (currentUser && (data.uid === currentUser.uid || isUserAdmin)) {
         deleteBtnHtml = `<button class="delete-msg-btn" onclick="deleteMessage('${msgId}')">حذف</button>`;
     }
 
@@ -245,10 +243,10 @@ function renderMessage(msgId, data) {
             </div>
             
             <div class="reaction-popup-menu">
-                <button class="reaction-btn-option" onclick="addReaction('${msgId}', '❤️')">❤️</button>
-                <button class="reaction-btn-option" onclick="addReaction('${msgId}', '😂')">😂</button>
-                <button class="reaction-btn-option" onclick="addReaction('${msgId}', '😭')">😭</button>
-                <button class="reaction-btn-option" onclick="addReaction('${msgId}', '👍🏻')">👍🏻</button>
+                <button class="reaction-btn-option" onclick="toggleReaction('${msgId}', '❤️')">❤️</button>
+                <button class="reaction-btn-option" onclick="toggleReaction('${msgId}', '😂')">😂</button>
+                <button class="reaction-btn-option" onclick="toggleReaction('${msgId}', '😭')">😭</button>
+                <button class="reaction-btn-option" onclick="toggleReaction('${msgId}', '👍🏻')">👍🏻</button>
             </div>
         </div>
     `;
@@ -263,14 +261,32 @@ window.prepareReply = function(msgId, username, text) {
     chatInputField.focus();
 };
 
-window.addReaction = function(msgId, emoji) {
+// نظام تفاعلات ذكي (Toggle): الضغط مرة للإضافة، ومرة أخرى للإزالة أو التبديل
+window.toggleReaction = async function(msgId, emoji) {
     if (!currentUser) return;
-    const reactionRef = ref(db, `messages/${msgId}/reactions/${emoji}`);
     const userKey = currentUser.uid.replace(/[.#$[\]]/g, "_");
+    const msgRef = ref(db, `messages/${msgId}/reactions`);
     
-    const updates = {};
-    updates[userKey] = true;
-    update(reactionRef, updates);
+    const snapshot = await get(msgRef);
+    let reactions = snapshot.exists() ? snapshot.val() : {};
+
+    // إزالة تفاعل المستخدم القديم لأي أيموجي آخر لضمان تفاعل واحد لكل مستخدم
+    Object.keys(reactions).forEach(e => {
+        if (reactions[e] && reactions[e][userKey]) {
+            delete reactions[e][userKey];
+            if (Object.keys(reactions[e]).length === 0) {
+                delete reactions[e];
+            }
+        }
+    });
+
+    // إذا لم يكن نفس الأيموجي هو الذي تم النقر عليه، نضيفه جديداً
+    if (!reactions[emoji] || !reactions[emoji][userKey]) {
+        if (!reactions[emoji]) reactions[emoji] = {};
+        reactions[emoji][userKey] = true;
+    }
+
+    await update(ref(db, `messages/${msgId}`), { reactions: reactions });
 };
 
 window.deleteMessage = function(msgId) {
@@ -317,4 +333,4 @@ chatInputField.addEventListener('keypress', (e) => {
         sendChatMessage();
     }
 });
-    
+                    
