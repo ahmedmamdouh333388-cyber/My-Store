@@ -300,7 +300,7 @@
         }
         .dropdown-link-item.danger-item i { color: #f87171; }
 
-        /* زر الدردشة العائم وقابل للسحب (Draggable) */
+        /* زر الدردشة العائم الآمن والقابل للسحب السلس */
         .chat-float-btn {
             position: fixed;
             bottom: 25px;
@@ -315,11 +315,10 @@
             justify-content: center;
             align-items: center;
             box-shadow: 0 10px 30px var(--primary-glow);
-            cursor: grab;
+            cursor: pointer;
             z-index: 400;
             touch-action: none;
         }
-        .chat-float-btn:active { cursor: grabbing; }
 
         /* نافذة الدردشة الحية (Discord Style) */
         .chat-modal-container {
@@ -546,7 +545,7 @@
             <h1>المشتريات</h1>
         </div>
 
-        <!-- زر الدردشة العائم القابل للسحب (Draggable) -->
+        <!-- زر الدردشة العائم القابل للسحب (آمن وسلس جداً) -->
         <button id="chat-float-btn" class="chat-float-btn" title="دردشة مجتمع الملوك">
             <i class="fa-solid fa-comments"></i>
         </button>
@@ -570,4 +569,5 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.c
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    
