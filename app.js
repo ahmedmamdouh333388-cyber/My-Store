@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getDatabase, ref, push, onChildAdded, onChildRemoved, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getDatabase, ref, push, onChildAdded, onChildRemoved, onChildChanged, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
@@ -18,6 +18,7 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
 
+// الإيميل الرسمي المعتمد للمشرف الملكي
 const ADMIN_EMAIL = "ahmadmamdouh333388@gmail.com"; 
 
 const loginScreen = document.getElementById('login-screen');
@@ -137,7 +138,6 @@ confirmDeleteAction.addEventListener('click', async () => {
     window.location.reload();
 });
 
-// فتح وإغلاق الدردشة من الزر العائم
 chatFloatBtn.addEventListener('click', () => {
     chatModalContainer.classList.toggle('active');
     chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
@@ -173,6 +173,14 @@ onChildAdded(chatRef, (snapshot) => {
     }
 });
 
+onChildChanged(chatRef, (snapshot) => {
+    const msgId = snapshot.key;
+    const data = snapshot.val();
+    if (data) {
+        renderMessage(msgId, data);
+    }
+});
+
 onChildRemoved(chatRef, (snapshot) => {
     const msgId = snapshot.key;
     const msgElem = document.getElementById(`msg-${msgId}`);
@@ -180,11 +188,12 @@ onChildRemoved(chatRef, (snapshot) => {
 });
 
 function renderMessage(msgId, data) {
-    const isMyMessage = currentUser && data.uid === currentUser.uid;
+    // تثبيت رسائلك دائماً على اليسار بناءً على الإيميل أو الـ uid أو الاسم
+    const isMyMessage = currentUser && (data.email === ADMIN_EMAIL || data.uid === currentUser.uid || data.username === currentUser.displayName);
     const rowClass = isMyMessage ? 'chat-msg-row my-message' : 'chat-msg-row other-message';
     
-    const isAdmin = currentUser && currentUser.email === ADMIN_EMAIL;
-    const isMsgAdmin = data.email === ADMIN_EMAIL || data.isAdmin === true;
+    // شارة المشرف لبريدك الملكي
+    const isMsgAdmin = data.email === ADMIN_EMAIL || data.username === "احمد ممدوح" || data.isAdmin === true;
     const adminBadgeHtml = isMsgAdmin ? `<span class="admin-badge"><i class="fa-solid fa-crown"></i> مشرف</span>` : '';
 
     let replyHtml = '';
@@ -196,20 +205,23 @@ function renderMessage(msgId, data) {
     if (data.reactions) {
         Object.entries(data.reactions).forEach(([emoji, users]) => {
             const count = Object.keys(users).length;
-            reactionsHtml += `<span class="reaction-pill">${emoji} ${count}</span>`;
+            if (count > 0) {
+                reactionsHtml += `<span class="reaction-pill">${emoji} ${count}</span>`;
+            }
         });
     }
 
     let existingMsgElem = document.getElementById(`msg-${msgId}`);
     if (existingMsgElem) {
+        existingMsgElem.className = rowClass;
         const reactionsRow = existingMsgElem.querySelector('.message-reactions-row');
-        reactionsRow.innerHTML = reactionsHtml;
+        if (reactionsRow) reactionsRow.innerHTML = reactionsHtml;
         return;
     }
 
-    // زر الحذف (يظهر إذا كنت أنت صاحب الرسالة أو كنت المشرف العام)
+    const isAdminUser = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح");
     let deleteBtnHtml = '';
-    if (currentUser && (data.uid === currentUser.uid || isAdmin)) {
+    if (currentUser && (data.email === ADMIN_EMAIL || data.uid === currentUser.uid || isAdminUser)) {
         deleteBtnHtml = `<button class="delete-msg-btn" onclick="deleteMessage('${msgId}')">حذف</button>`;
     }
 
@@ -272,7 +284,7 @@ function sendChatMessage() {
     if (!rawText || !currentUser) return;
 
     const filteredText = censorBadWords(rawText);
-    const isAdminUser = currentUser.email === ADMIN_EMAIL;
+    const isAdminUser = currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح";
 
     const newMessage = {
         uid: currentUser.uid,
