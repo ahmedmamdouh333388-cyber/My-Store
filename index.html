@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>King Store - متجر الملوك</title>
     
-    <!-- ربط ملف الـ Manifest لتمكين التثبيت -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020617">
 
@@ -33,20 +32,14 @@
         body {
             background: linear-gradient(135deg, #020617 0%, #090d16 50%, #020408 100%);
             color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            padding: 20px;
-            transform: translateZ(0);
-            backface-visibility: hidden;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         body::before {
             content: '';
-            position: absolute;
+            position: fixed;
             width: 350px;
             height: 350px;
             background: rgba(6, 182, 212, 0.18);
@@ -55,11 +48,12 @@
             top: 10%;
             left: 20%;
             z-index: 0;
+            pointer-events: none;
         }
 
         body::after {
             content: '';
-            position: absolute;
+            position: fixed;
             width: 300px;
             height: 300px;
             background: rgba(59, 130, 246, 0.12);
@@ -68,11 +62,21 @@
             bottom: 10%;
             right: 20%;
             z-index: 0;
+            pointer-events: none;
+        }
+
+        /* شاشة تسجيل الدخول */
+        #login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
         }
 
         .login-container {
-            position: relative;
-            z-index: 1;
             width: 100%;
             max-width: 420px;
             padding: 40px 30px;
@@ -83,8 +87,6 @@
             border: 1px solid rgba(56, 189, 248, 0.25);
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8),
                         inset 0 1px 0 rgba(255, 255, 255, 0.15);
-            will-change: transform, opacity;
-            transform: translate3d(0, 0, 0);
             text-align: center;
         }
 
@@ -126,7 +128,6 @@
             font-weight: 700;
             margin-bottom: 8px;
             color: #ffffff;
-            letter-spacing: 0.3px;
         }
 
         .welcome-section p {
@@ -150,9 +151,7 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.08s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
-            will-change: transform;
-            transform: translate3d(0, 0, 0);
+            transition: all 0.2s ease;
             margin-bottom: 12px;
         }
 
@@ -162,16 +161,222 @@
             box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
         }
 
-        .google-btn:active {
-            transform: scale(0.96) translate3d(0, 0, 0);
-            background: rgba(15, 23, 42, 0.95);
-        }
-
         .google-btn i {
             font-size: 18px;
             color: #ea4335;
         }
 
+        /* واجهة المتجر الرئيسية (تكون مخفية حتى يتم تسجيل الدخول) */
+        #store-screen {
+            display: none;
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+
+        /* الهيدر العلوي للمتجر */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #38bdf8;
+            object-fit: cover;
+        }
+
+        .user-info h3 {
+            font-size: 14px;
+            color: #ffffff;
+        }
+
+        .user-info span {
+            font-size: 11px;
+            color: #38bdf8;
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #f87171;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.4);
+        }
+
+        /* محتوى المتجر */
+        .store-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* شريط البحث */
+        .search-bar {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 14px 20px 14px 45px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 14px;
+            color: #ffffff;
+            font-size: 14px;
+            backdrop-filter: blur(6px);
+        }
+
+        .search-bar input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        /* الأقسام (Categories) */
+        .categories {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            scrollbar-width: none;
+        }
+
+        .categories::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cat-btn {
+            padding: 10px 20px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 12px;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .cat-btn.active, .cat-btn:hover {
+            background: linear-gradient(135deg, #38bdf8, #1e40af);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+        }
+
+        /* شبكة المنتجات */
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+        }
+
+        .product-card {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 18px;
+            padding: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            border-color: #38bdf8;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .product-img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            background: #0f172a;
+        }
+
+        .product-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .product-price {
+            font-size: 13px;
+            color: #38bdf8;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .buy-btn {
+            width: 100%;
+            padding: 8px;
+            background: linear-gradient(135deg, #38bdf8, #1e40af);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .buy-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* زر الواتساب العائم */
         .whatsapp-float {
             position: fixed;
             bottom: 30px;
@@ -212,33 +417,116 @@
 </head>
 <body>
 
-    <div class="login-container">
-        <div class="logo-circle-wrapper">
-            <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="King Store Logo" class="logo-image-area">
-        </div>
-        
-        <div class="welcome-section">
-            <h1>مرحباً بك مجدداً</h1>
-            <p>سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.</p>
-        </div>
+    <!-- 1. شاشة تسجيل الدخول -->
+    <div id="login-screen">
+        <div class="login-container">
+            <div class="logo-circle-wrapper">
+                <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="King Store Logo" class="logo-image-area">
+            </div>
+            
+            <div class="welcome-section">
+                <h1>مرحباً بك مجدداً</h1>
+                <p>سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.</p>
+            </div>
 
-        <button id="google-login-btn" class="google-btn">
-            <i class="fa-brands fa-google"></i>
-            <span>Continue with Google</span>
-        </button>
-        
-        <p id="error-msg"></p>
+            <button id="google-login-btn" class="google-btn">
+                <i class="fa-brands fa-google"></i>
+                <span>Continue with Google</span>
+            </button>
+            
+            <p id="error-msg"></p>
+        </div>
     </div>
 
+    <!-- 2. واجهة المتجر الرئيسية (تظهر بعد الدخول) -->
+    <div id="store-screen">
+        <header>
+            <div class="user-profile">
+                <img id="user-avatar" src="" alt="User Avatar">
+                <div class="user-info">
+                    <h3 id="user-name">اسم المستخدم</h3>
+                    <span>عميل مميز 👑</span>
+                </div>
+            </div>
+            <button id="logout-btn" class="logout-btn">
+                <i class="fa-solid fa-right-from-bracket"></i> خروج
+            </button>
+        </header>
+
+        <div class="store-content">
+            <!-- شريط البحث -->
+            <div class="search-bar">
+                <input type="text" placeholder="ابحث عما تريده في متجر الملوك...">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+
+            <!-- أقسام المتجر -->
+            <div class="categories">
+                <button class="cat-btn active">الكل 🔥</button>
+                <button class="cat-btn">حسابات ألعاب 🎮</button>
+                <button class="cat-btn">شدات وعملات 💎</button>
+                <button class="cat-btn">اشتراكات رقمية 🎬</button>
+                <button class="cat-btn">خدمات خاصة ⚡</button>
+            </div>
+
+            <!-- قائمة المنتجات -->
+            <div class="section-title">
+                <i class="fa-solid fa-fire text-sky-400"></i> العروض المميزة
+            </div>
+
+            <div class="products-grid">
+                <!-- منتج تجريبي 1 -->
+                <div class="product-card">
+                    <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Product" class="product-img">
+                    <div>
+                        <div class="product-name">حساب ألعاب ملكي</div>
+                        <div class="product-price">150.00 ج.م</div>
+                    </div>
+                    <button class="buy-btn" onclick="alert('تمت الإضافة للسلة بنجاح!')">شراء الآن</button>
+                </div>
+
+                <!-- منتج تجريبي 2 -->
+                <div class="product-card">
+                    <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Product" class="product-img">
+                    <div>
+                        <div class="product-name">شحن شدات سريع</div>
+                        <div class="product-price">250.00 ج.م</div>
+                    </div>
+                    <button class="buy-btn" onclick="alert('تمت الإضافة للسلة بنجاح!')">شراء الآن</button>
+                </div>
+
+                <!-- منتج تجريبي 3 -->
+                <div class="product-card">
+                    <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Product" class="product-img">
+                    <div>
+                        <div class="product-name">اشتراك بريميوم</div>
+                        <div class="product-price">99.00 ج.م</div>
+                    </div>
+                    <button class="buy-btn" onclick="alert('تمت الإضافة للسلة بنجاح!')">شراء الآن</button>
+                </div>
+
+                <!-- منتج تجريبي 4 -->
+                <div class="product-card">
+                    <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Product" class="product-img">
+                    <div>
+                        <div class="product-name">خدمة رقمية خاصة</div>
+                        <div class="product-price">300.00 ج.م</div>
+                    </div>
+                    <button class="buy-btn" onclick="alert('تمت الإضافة للسلة بنجاح!')">شراء الآن</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- زر الواتساب العائم -->
     <div id="whatsapp-fab" class="whatsapp-float" title="تواصل معنا عبر واتساب">
         <i class="fa-brands fa-whatsapp"></i>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // تسجيل الـ Service Worker لتفعيل التثبيت (PWA)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
@@ -261,25 +549,53 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
+        const loginScreen = document.getElementById('login-screen');
+        const storeScreen = document.getElementById('store-screen');
         const googleBtn = document.getElementById('google-login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
         const errorMsg = document.getElementById('error-msg');
+        const userAvatar = document.getElementById('user-avatar');
+        const userName = document.getElementById('user-name');
         const whatsappFab = document.getElementById('whatsapp-fab');
 
+        // مراقبة حالة المستخدم (إذا كان مسجل دخول أم لا)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // إذا كان مسجل دخول، أظهر واجهة المتجر وأخفِ شاشة الدخول
+                loginScreen.style.display = 'none';
+                storeScreen.style.display = 'block';
+                userName.textContent = user.displayName || "مستخدم متميز";
+                userAvatar.src = user.photoURL || "file_000000006a0881f4ab25ca2d85fb53a0.png";
+            } else {
+                // إذا لم يكن مسجل دخول، أظهر شاشة الدخول وأخفِ المتجر
+                loginScreen.style.display = 'flex';
+                storeScreen.style.display = 'none';
+            }
+        });
+
+        // تسجيل الدخول بـ Google
         googleBtn.addEventListener('click', async () => {
             errorMsg.style.color = "#94a3b8";
             errorMsg.textContent = "جاري فتح نافذة جوجل...";
 
             try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                errorMsg.style.color = "#38bdf8";
-                errorMsg.textContent = `أهلاً بك يا ${user.displayName}، تم تسجيل الدخول بنجاح!`;
+                await signInWithPopup(auth, provider);
             } catch (error) {
                 errorMsg.style.color = "#f87171";
                 errorMsg.textContent = "خطأ: " + error.code;
             }
         });
 
+        // تسجيل الخروج
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("خطأ أثناء تسجيل الخروج", error);
+            }
+        });
+
+        // زر الواتساب العائم
         whatsappFab.addEventListener('click', () => {
             if (isDragging) return;
             const phoneNumber = "201225428692";
@@ -308,35 +624,4 @@
             whatsappFab.setPointerCapture(e.pointerId);
         });
 
-        whatsappFab.addEventListener('pointermove', (e) => {
-            if (!startX || !startY) return;
-
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-
-            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-                isDragging = true;
-            }
-
-            if (isDragging) {
-                let newX = initialLeft + dx;
-                let newY = initialTop + dy;
-
-                const maxX = window.innerWidth - whatsappFab.offsetWidth;
-                const maxY = window.innerHeight - whatsappFab.offsetHeight;
-
-                newX = Math.max(0, Math.min(newX, maxX));
-                newY = Math.max(0, Math.min(newY, maxY));
-
-                whatsappFab.style.left = `${newX}px`;
-                whatsappFab.style.top = `${newY}px`;
-            }
-        });
-
-        whatsappFab.addEventListener('pointerup', () => {
-            startX = null;
-            startY = null;
-        });
-    </script>
-</body>
-</html>
+        whatsappFab.addEventListener('pointer
