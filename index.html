@@ -207,7 +207,7 @@
             position: absolute;
             top: 68px;
             left: 20px;
-            width: 270px;
+            width: 280px;
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
             border: 1px solid var(--border-glass);
@@ -300,42 +300,22 @@
         }
         .dropdown-link-item.danger-item i { color: #f87171; }
 
-        /* زر الدردشة العائم الثابت والآمن 100% */
-        .chat-float-btn {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), #1e3a8a);
-            color: #ffffff;
-            font-size: 24px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 10px 30px var(--primary-glow);
-            cursor: pointer;
-            z-index: 400;
-            border: none;
-            transition: transform 0.2s ease;
-        }
-        .chat-float-btn:hover { transform: scale(1.08); }
-
-        /* نافذة الدردشة الحية (Discord Style) */
+        /* نافذة الدردشة الحية (Discord Style) الثابتة والاحترافية */
         .chat-modal-container {
             display: none;
             position: fixed;
-            bottom: 95px;
-            right: 25px;
-            width: 350px;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            max-width: 400px;
             height: 480px;
-            background: rgba(15, 23, 42, 0.96);
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.98);
             backdrop-filter: blur(25px);
             border: 1px solid var(--border-glass);
             border-radius: 24px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            z-index: 1000;
+            z-index: 2000;
             flex-direction: column;
             overflow: hidden;
             animation: scaleUpChat 0.25s ease;
@@ -381,7 +361,7 @@
             background: rgba(30, 41, 59, 0.7);
             padding: 10px 14px;
             border-radius: 14px;
-            max-width: 240px;
+            max-width: 260px;
             word-break: break-word;
             border: 1px solid rgba(255,255,255,0.05);
         }
@@ -531,11 +511,13 @@
                         <div class="color-circle amber" onclick="changeTheme('theme-amber')"></div>
                         <div class="color-circle rose" onclick="changeTheme('theme-rose')"></div>
                     </div>
-                    <!-- خيار فتح الدردشة من قائمة الإعدادات أيضاً لضمان السهولة -->
+                    
+                    <!-- زر فتح الدردشة داخل قائمة الإعدادات (ثابت ومضمون 100%) -->
                     <button id="menu-open-chat-btn" class="dropdown-link-item" style="color: var(--primary);">
                         <i class="fa-solid fa-comments" style="font-size: 15px;"></i>
-                        <span>فتح دردشة مجتمع الملوك</span>
+                        <span>دردشة مجتمع الملوك</span>
                     </button>
+
                     <a id="support-wa-link" href="#" target="_blank" class="dropdown-link-item">
                         <i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 16px;"></i>
                         <span>مركز الدعم الفني</span>
@@ -552,11 +534,6 @@
             <h1>المشتريات</h1>
         </div>
 
-        <!-- زر الدردشة العائم الثابت والسريع -->
-        <button id="chat-float-btn" class="chat-float-btn" title="دردشة مجتمع الملوك">
-            <i class="fa-solid fa-comments"></i>
-        </button>
-
         <!-- نافذة الدردشة الحية -->
         <div id="chat-modal-container" class="chat-modal-container">
             <div class="chat-header">
@@ -569,4 +546,19 @@
             <div class="chat-input-area">
                 <input type="text" id="chat-input-field" class="chat-input-field" placeholder="اكتب رسالتك هنا...">
                 <button id="chat-send-btn" class="chat-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
-           
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
+            authDomain: "my-store-75b70.firebaseapp.com",
+            databaseURL: "https://my-store-75b70-default-rtdb.firebaseio.com",
+            projectId: "my-store-75b70",
+            storageBucket: "my-store-75b70.firebasestorage.app",
+            messagingSenderId: "762773021655
