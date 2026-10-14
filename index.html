@@ -13,7 +13,6 @@
 </head>
 <body class="theme-blue">
 
-    <!-- شاشة تسجيل الدخول -->
     <div id="login-screen">
         <div class="login-card">
             <div class="logo-box">
@@ -29,7 +28,6 @@
         </div>
     </div>
 
-    <!-- الشاشة الترحيبية (٣ ثواني) -->
     <div id="splash-screen">
         <div class="splash-inner">
             <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Logo">
@@ -38,7 +36,6 @@
         </div>
     </div>
 
-    <!-- نافذة تأكيد حذف البيانات -->
     <div id="delete-alert-modal">
         <div class="alert-box-content">
             <h3>⚠️ تحذير هام</h3>
@@ -50,7 +47,6 @@
         </div>
     </div>
 
-    <!-- واجهة المتجر الرئيسية -->
     <div id="store-screen">
         <header>
             <div class="brand-title">King Store 👑</div>
@@ -75,11 +71,6 @@
                         <div class="color-circle rose" onclick="changeTheme('theme-rose')"></div>
                     </div>
                     
-                    <button id="menu-open-chat-btn" class="dropdown-link-item" style="color: var(--primary);">
-                        <i class="fa-solid fa-comments" style="font-size: 15px;"></i>
-                        <span>دردشة مجتمع الملوك</span>
-                    </button>
-
                     <a id="support-wa-link" href="#" target="_blank" class="dropdown-link-item">
                         <i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 16px;"></i>
                         <span>مركز الدعم الفني</span>
@@ -96,15 +87,27 @@
             <h1>المشتريات</h1>
         </div>
 
+        <!-- زر الدردشة العائم الجديد والاحترافي -->
+        <button id="chat-float-btn" class="chat-float-btn" title="دردشة مجتمع الملوك">
+            <i class="fa-solid fa-comments"></i>
+        </button>
+
         <!-- نافذة الدردشة الحية -->
         <div id="chat-modal-container" class="chat-modal-container">
             <div class="chat-header">
                 <h4><i class="fa-solid fa-hashtag"></i> دردشة مجتمع الملوك</h4>
                 <button id="chat-close-btn" class="chat-close-btn"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div id="chat-messages-area" class="chat-messages-area">
-                <!-- الرسائل الحية للجميع -->
+            
+            <div id="chat-messages-area" class="chat-messages-area"></div>
+
+            <div id="reply-preview-box" class="reply-preview-box" style="display: none;">
+                <div class="reply-preview-content" style="display: flex; justify-content: space-between; width: 100%;">
+                    <span id="replying-to-text">الرد على: ...</span>
+                    <i class="fa-solid fa-xmark" id="cancel-reply-btn" style="cursor: pointer;"></i>
+                </div>
             </div>
+
             <div class="chat-input-area">
                 <input type="text" id="chat-input-field" class="chat-input-field" placeholder="اكتب رسالتك هنا...">
                 <button id="chat-send-btn" class="chat-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
