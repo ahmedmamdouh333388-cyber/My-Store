@@ -121,7 +121,7 @@
 
         .google-signin-btn i { color: #ea4335; font-size: 18px; }
 
-        /* الشاشة الترحيبية الفخمة (٣ ثواني) */
+        /* الشاشة الترحيبية (٣ ثواني) */
         #splash-screen {
             display: none;
             position: fixed;
@@ -167,7 +167,7 @@
         }
 
         /* واجهة المتجر الرئيسية */
-        #store-screen { display: none; min-height: 100vh; }
+        #store-screen { display: none; min-height: 100vh; position: relative; }
 
         header {
             display: flex;
@@ -213,7 +213,7 @@
             border: 1px solid var(--border-glass);
             border-radius: 22px;
             padding: 18px;
-            z-index: 101;
+            z-index: 500;
             box-shadow: 0 20px 40px rgba(0,0,0,0.7);
         }
 
@@ -299,6 +299,124 @@
             border-color: rgba(239, 68, 68, 0.15);
         }
         .dropdown-link-item.danger-item i { color: #f87171; }
+
+        /* زر الدردشة العائم وقابل للسحب (Draggable) */
+        .chat-float-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #1e3a8a);
+            color: #ffffff;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px var(--primary-glow);
+            cursor: grab;
+            z-index: 400;
+            touch-action: none;
+        }
+        .chat-float-btn:active { cursor: grabbing; }
+
+        /* نافذة الدردشة الحية (Discord Style) */
+        .chat-modal-container {
+            display: none;
+            position: fixed;
+            bottom: 95px;
+            right: 25px;
+            width: 350px;
+            height: 480px;
+            background: rgba(15, 23, 42, 0.96);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            z-index: 1000;
+            flex-direction: column;
+            overflow: hidden;
+            animation: scaleUpChat 0.25s ease;
+        }
+        .chat-modal-container.active { display: flex; }
+
+        @keyframes scaleUpChat {
+            from { opacity: 0; transform: translateY(15px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background: rgba(30, 41, 59, 0.8);
+            border-bottom: 1px solid var(--border-glass);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-header h4 { font-size: 14px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .chat-close-btn { background: none; border: none; color: #94a3b8; font-size: 16px; cursor: pointer; }
+        .chat-close-btn:hover { color: #fff; }
+
+        .chat-messages-area {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(2, 6, 23, 0.4);
+        }
+
+        .chat-msg-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .chat-msg-avatar {
+            width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid var(--primary); flex-shrink: 0;
+        }
+        .chat-msg-content {
+            background: rgba(30, 41, 59, 0.7);
+            padding: 10px 14px;
+            border-radius: 14px;
+            max-width: 240px;
+            word-break: break-word;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .chat-msg-username { font-size: 11px; color: var(--primary); font-weight: 600; margin-bottom: 3px; }
+        .chat-msg-text { font-size: 12px; color: #f1f5f9; line-height: 1.4; }
+
+        .chat-input-area {
+            padding: 12px 15px;
+            background: rgba(15, 23, 42, 0.9);
+            border-top: 1px solid var(--border-glass);
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input-field {
+            flex-grow: 1;
+            padding: 10px 14px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 12px;
+        }
+        .chat-input-field:focus { border-color: var(--primary); }
+        .chat-send-btn {
+            background: var(--primary);
+            color: #030712;
+            border: none;
+            width: 40px;
+            border-radius: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
         /* نافذة تأكيد الحذف */
         #delete-alert-modal {
@@ -388,7 +506,7 @@
         </div>
     </div>
 
-    <!-- واجهة المتجر -->
+    <!-- واجهة المتجر الرئيسية -->
     <div id="store-screen">
         <header>
             <div class="brand-title">King Store 👑</div>
@@ -423,130 +541,33 @@
                 </div>
             </div>
         </header>
+
         <div class="purchases-main-area">
             <h1>المشتريات</h1>
+        </div>
+
+        <!-- زر الدردشة العائم القابل للسحب (Draggable) -->
+        <button id="chat-float-btn" class="chat-float-btn" title="دردشة مجتمع الملوك">
+            <i class="fa-solid fa-comments"></i>
+        </button>
+
+        <!-- نافذة الدردشة الحية -->
+        <div id="chat-modal-container" class="chat-modal-container">
+            <div class="chat-header">
+                <h4><i class="fa-solid fa-hashtag"></i> دردشة مجتمع الملوك</h4>
+                <button id="chat-close-btn" class="chat-close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="chat-messages-area" class="chat-messages-area">
+                <!-- الرسائل الحية للجميع -->
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input-field" class="chat-input-field" placeholder="اكتب رسالتك هنا...">
+                <button id="chat-send-btn" class="chat-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
-            authDomain: "my-store-75b70.firebaseapp.com",
-            projectId: "my-store-75b70",
-            storageBucket: "my-store-75b70.firebasestorage.app",
-            messagingSenderId: "762773021655",
-            appId: "1:762773021655:web:ce1490aab54115d549e192",
-            measurementId: "G-CT3FQN4BBK"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        const loginScreen = document.getElementById('login-screen');
-        const splashScreen = document.getElementById('splash-screen');
-        const storeScreen = document.getElementById('store-screen');
-        const googleLoginBtn = document.getElementById('google-login-btn');
-        const authErrorMsg = document.getElementById('auth-error-msg');
-        
-        const settingsTriggerBtn = document.getElementById('settings-trigger-btn');
-        const settingsPopupMenu = document.getElementById('settings-popup-menu');
-        const menuUserImg = document.getElementById('menu-user-img');
-        const menuUserName = document.getElementById('menu-user-name');
-        const menuLogoutTrigger = document.getElementById('menu-logout-trigger');
-        const supportWaLink = document.getElementById('support-wa-link');
-        
-        const triggerDeleteModal = document.getElementById('trigger-delete-modal');
-        const deleteAlertModal = document.getElementById('delete-alert-modal');
-        const cancelDeleteAction = document.getElementById('cancel-delete-action');
-        const confirmDeleteAction = document.getElementById('confirm-delete-action');
-
-        let isLoginHandled = false;
-
-        const activeTheme = localStorage.getItem('king_store_theme');
-        if (activeTheme) document.body.className = activeTheme;
-
-        window.changeTheme = function(themeName) {
-            document.body.className = themeName;
-            localStorage.setItem('king_store_theme', themeName);
-            settingsPopupMenu.classList.remove('active');
-        };
-
-        supportWaLink.href = `https://wa.me/201225428692?text=${encodeURIComponent("مرحباً، أريد الدعم الفني والاستفسار عن خدمات متجر King Store.")}`;
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                loginScreen.style.display = 'none';
-                if (!isLoginHandled && !sessionStorage.getItem('splash_shown')) {
-                    splashScreen.style.display = 'flex';
-                    setTimeout(() => {
-                        splashScreen.style.display = 'none';
-                        storeScreen.style.display = 'block';
-                        sessionStorage.setItem('splash_shown', 'true');
-                    }, 3000);
-                    isLoginHandled = true;
-                } else {
-                    splashScreen.style.display = 'none';
-                    storeScreen.style.display = 'block';
-                }
-                menuUserImg.src = user.photoURL || "";
-                menuUserName.textContent = user.displayName || "مستخدم متميز";
-            } else {
-                isLoginHandled = false;
-                sessionStorage.removeItem('splash_shown');
-                splashScreen.style.display = 'none';
-                storeScreen.style.display = 'none';
-                loginScreen.style.display = 'flex';
-                settingsPopupMenu.classList.remove('active');
-            }
-        });
-
-        googleLoginBtn.addEventListener('click', async () => {
-            authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (err) {
-                authErrorMsg.textContent = "خطأ في التسجيل: " + err.code;
-            }
-        });
-
-        settingsTriggerBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            settingsPopupMenu.classList.toggle('active');
-        });
-
-        window.addEventListener('click', () => {
-            settingsPopupMenu.classList.remove('active');
-        });
-
-        settingsPopupMenu.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-
-        menuLogoutTrigger.addEventListener('click', async () => {
-            try { await signOut(auth); } catch (e) { console.log(e); }
-        });
-
-        triggerDeleteModal.addEventListener('click', () => {
-            settingsPopupMenu.classList.remove('active');
-            deleteAlertModal.style.display = 'flex';
-        });
-
-        cancelDeleteAction.addEventListener('click', () => {
-            deleteAlertModal.style.display = 'none';
-        });
-
-        confirmDeleteAction.addEventListener('click', async () => {
-            deleteAlertModal.style.display = 'none';
-            localStorage.clear();
-            sessionStorage.clear();
-            try { await signOut(auth); } catch (e) { console.log(e); }
-            window.location.reload();
-        });
-    </script>
-</body>
-    </html>
-    
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.c
