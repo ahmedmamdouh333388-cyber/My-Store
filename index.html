@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>King Store - متجر الملوك</title>
     
-    <!-- ربط ملف الـ Manifest لتمكين التثبيت -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#020617">
 
@@ -33,20 +32,14 @@
         body {
             background: linear-gradient(135deg, #020617 0%, #090d16 50%, #020408 100%);
             color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
-            padding: 20px;
-            transform: translateZ(0);
-            backface-visibility: hidden;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         body::before {
             content: '';
-            position: absolute;
+            position: fixed;
             width: 350px;
             height: 350px;
             background: rgba(6, 182, 212, 0.18);
@@ -55,11 +48,12 @@
             top: 10%;
             left: 20%;
             z-index: 0;
+            pointer-events: none;
         }
 
         body::after {
             content: '';
-            position: absolute;
+            position: fixed;
             width: 300px;
             height: 300px;
             background: rgba(59, 130, 246, 0.12);
@@ -68,11 +62,21 @@
             bottom: 10%;
             right: 20%;
             z-index: 0;
+            pointer-events: none;
+        }
+
+        /* شاشة تسجيل الدخول */
+        #login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
         }
 
         .login-container {
-            position: relative;
-            z-index: 1;
             width: 100%;
             max-width: 420px;
             padding: 40px 30px;
@@ -83,8 +87,6 @@
             border: 1px solid rgba(56, 189, 248, 0.25);
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8),
                         inset 0 1px 0 rgba(255, 255, 255, 0.15);
-            will-change: transform, opacity;
-            transform: translate3d(0, 0, 0);
             text-align: center;
         }
 
@@ -126,7 +128,6 @@
             font-weight: 700;
             margin-bottom: 8px;
             color: #ffffff;
-            letter-spacing: 0.3px;
         }
 
         .welcome-section p {
@@ -150,9 +151,7 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.08s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
-            will-change: transform;
-            transform: translate3d(0, 0, 0);
+            transition: all 0.2s ease;
             margin-bottom: 12px;
         }
 
@@ -162,16 +161,158 @@
             box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
         }
 
-        .google-btn:active {
-            transform: scale(0.96) translate3d(0, 0, 0);
-            background: rgba(15, 23, 42, 0.95);
-        }
-
         .google-btn i {
             font-size: 18px;
             color: #ea4335;
         }
 
+        /* الشاشة الترحيبية المؤقتة (تظهر 3 ثوانٍ) */
+        #splash-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 6, 23, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .splash-content h2 {
+            font-size: 28px;
+            color: #38bdf8;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+        }
+
+        .splash-content p {
+            color: #94a3b8;
+            font-size: 15px;
+        }
+
+        /* واجهة المتجر / صفحة المشتريات */
+        #store-screen {
+            display: none;
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+        }
+
+        /* هيدر المتجر والصورة الشخصية في الزاوية المحددة */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .store-logo-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        /* حاوية الصورة الشخصية والقائمة المنسدلة */
+        .user-menu-container {
+            position: relative;
+        }
+
+        .profile-img-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid #38bdf8;
+            cursor: pointer;
+            object-fit: cover;
+            transition: transform 0.2s;
+            background: #0f172a;
+        }
+
+        .profile-img-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* القائمة المنسدلة عند الضغط على الصورة */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 55px;
+            left: 0;
+            width: 220px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 16px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+            padding: 15px;
+            text-align: center;
+            z-index: 101;
+        }
+
+        .dropdown-menu.active {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .dropdown-user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 12px;
+            word-break: break-all;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .dropdown-logout-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #f87171;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .dropdown-logout-btn:hover {
+            background: rgba(239, 68, 68, 0.4);
+        }
+
+        /* محتوى صفحة المشتريات */
+        .purchases-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 75px);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .purchases-content h1 {
+            font-size: 32px;
+            color: #ffffff;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+        }
+
+        /* زر الواتساب العائم */
         .whatsapp-float {
             position: fixed;
             bottom: 30px;
@@ -208,37 +349,77 @@
             margin-top: 18px;
             word-break: break-all;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
-    <div class="login-container">
-        <div class="logo-circle-wrapper">
-            <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="King Store Logo" class="logo-image-area">
-        </div>
-        
-        <div class="welcome-section">
-            <h1>مرحباً بك مجدداً</h1>
-            <p>سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.</p>
-        </div>
+    <!-- 1. شاشة تسجيل الدخول -->
+    <div id="login-screen">
+        <div class="login-container">
+            <div class="logo-circle-wrapper">
+                <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="King Store Logo" class="logo-image-area">
+            </div>
+            
+            <div class="welcome-section">
+                <h1>مرحباً بك مجدداً</h1>
+                <p>سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.</p>
+            </div>
 
-        <button id="google-login-btn" class="google-btn">
-            <i class="fa-brands fa-google"></i>
-            <span>Continue with Google</span>
-        </button>
-        
-        <p id="error-msg"></p>
+            <button id="google-login-btn" class="google-btn">
+                <i class="fa-brands fa-google"></i>
+                <span>Continue with Google</span>
+            </button>
+            
+            <p id="error-msg"></p>
+        </div>
     </div>
 
+    <!-- 2. الشاشة الترحيبية المؤقتة (تظهر 3 ثوانٍ) -->
+    <div id="splash-screen">
+        <div class="splash-content">
+            <h2>مرحباً بكم في متجر King Store</h2>
+            <p>جاري تحضير بيئة التسوق الخاصة بك...</p>
+        </div>
+    </div>
+
+    <!-- 3. واجهة المتجر الرئيسية (صفحة المشتريات) -->
+    <div id="store-screen">
+        <header>
+            <div class="store-logo-text">King Store 👑</div>
+            
+            <!-- مكان الصورة الشخصية في الزاوية -->
+            <div class="user-menu-container">
+                <img id="user-profile-img" src="" alt="Profile" class="profile-img-btn" title="حسابي">
+                
+                <!-- قائمة منسدلة عند الضغط على الصورة -->
+                <div id="user-dropdown" class="dropdown-menu">
+                    <div id="dropdown-username" class="dropdown-user-name">اسم المستخدم</div>
+                    <button id="logout-btn" class="dropdown-logout-btn">
+                        <i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="purchases-content">
+            <h1>المشتريات</h1>
+        </div>
+    </div>
+
+    <!-- زر الواتساب العائم -->
     <div id="whatsapp-fab" class="whatsapp-float" title="تواصل معنا عبر واتساب">
         <i class="fa-brands fa-whatsapp"></i>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // تسجيل الـ Service Worker لتفعيل التثبيت (PWA)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
@@ -261,25 +442,84 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
+        const loginScreen = document.getElementById('login-screen');
+        const splashScreen = document.getElementById('splash-screen');
+        const storeScreen = document.getElementById('store-screen');
         const googleBtn = document.getElementById('google-login-btn');
         const errorMsg = document.getElementById('error-msg');
+        
+        const userProfileImg = document.getElementById('user-profile-img');
+        const userDropdown = document.getElementById('user-dropdown');
+        const dropdownUsername = document.getElementById('dropdown-username');
+        const logoutBtn = document.getElementById('logout-btn');
         const whatsappFab = document.getElementById('whatsapp-fab');
 
+        let isLoginProcessed = false;
+
+        // مراقبة حالة تسجيل الدخول
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginScreen.style.display = 'none';
+                
+                // إظهار شاشة الترحيب لمدة 3 ثوانٍ فقط عند أول تسجيل دخول للجلسة
+                if (!isLoginProcessed) {
+                    splashScreen.style.display = 'flex';
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                        storeScreen.style.display = 'block';
+                    }, 3000);
+                    isLoginProcessed = true;
+                } else {
+                    splashScreen.style.display = 'none';
+                    storeScreen.style.display = 'block';
+                }
+
+                // عرض بيانات المستخدم الحقيقية في الزاوية
+                userProfileImg.src = user.photoURL || "file_000000006a0881f4ab25ca2d85fb53a0.png";
+                dropdownUsername.textContent = user.displayName || "مستخدم متميز";
+            } else {
+                isLoginProcessed = false;
+                splashScreen.style.display = 'none';
+                storeScreen.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                userDropdown.classList.remove('active');
+            }
+        });
+
+        // النقر على زر جوجل
         googleBtn.addEventListener('click', async () => {
             errorMsg.style.color = "#94a3b8";
             errorMsg.textContent = "جاري فتح نافذة جوجل...";
 
             try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                errorMsg.style.color = "#38bdf8";
-                errorMsg.textContent = `أهلاً بك يا ${user.displayName}، تم تسجيل الدخول بنجاح!`;
+                await signInWithPopup(auth, provider);
             } catch (error) {
                 errorMsg.style.color = "#f87171";
                 errorMsg.textContent = "خطأ: " + error.code;
             }
         });
 
+        // فتح وإغلاق القائمة المنسدلة عند الضغط على الصورة الشخصية
+        userProfileImg.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userDropdown.classList.toggle('active');
+        });
+
+        // إغلاق القائمة عند النقر في أي مكان خارجها
+        window.addEventListener('click', () => {
+            userDropdown.classList.remove('active');
+        });
+
+        // تسجيل الخروج
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("خطأ أثناء تسجيل الخروج", error);
+            }
+        });
+
+        // زر الواتساب السلس
         whatsappFab.addEventListener('click', () => {
             if (isDragging) return;
             const phoneNumber = "201225428692";
