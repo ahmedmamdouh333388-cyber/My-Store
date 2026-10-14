@@ -10,11 +10,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* المتغيرات الافتراضية لألوان الموقع (الثيم الأزرق الملكي الافتراضي) */
         :root {
-            --bg-gradient-1: #020617;
-            --bg-gradient-2: #090d16;
-            --bg-gradient-3: #020408;
             --primary-color: #38bdf8;
             --secondary-color: #1e40af;
             --glow-color: rgba(56, 189, 248, 0.18);
@@ -22,32 +18,11 @@
             --border-color: rgba(56, 189, 248, 0.25);
         }
 
-        /* الثيمات الخمسة المتاحة للمستخدم */
-        body.theme-blue {
-            --primary-color: #38bdf8;
-            --secondary-color: #1e40af;
-            --glow-color: rgba(56, 189, 248, 0.18);
-        }
-        body.theme-purple {
-            --primary-color: #c084fc;
-            --secondary-color: #6b21a8;
-            --glow-color: rgba(192, 132, 252, 0.18);
-        }
-        body.theme-emerald {
-            --primary-color: #34d399;
-            --secondary-color: #065f46;
-            --glow-color: rgba(52, 211, 153, 0.18);
-        }
-        body.theme-amber {
-            --primary-color: #fbbf24;
-            --secondary-color: #b45309;
-            --glow-color: rgba(255, 191, 36, 0.18);
-        }
-        body.theme-rose {
-            --primary-color: #fb7185;
-            --secondary-color: #9f1239;
-            --glow-color: rgba(251, 113, 133, 0.18);
-        }
+        body.theme-blue { --primary-color: #38bdf8; --secondary-color: #1e40af; --glow-color: rgba(56, 189, 248, 0.18); }
+        body.theme-purple { --primary-color: #c084fc; --secondary-color: #6b21a8; --glow-color: rgba(192, 132, 252, 0.18); }
+        body.theme-emerald { --primary-color: #34d399; --secondary-color: #065f46; --glow-color: rgba(52, 211, 153, 0.18); }
+        body.theme-amber { --primary-color: #fbbf24; --secondary-color: #b45309; --glow-color: rgba(255, 191, 36, 0.18); }
+        body.theme-rose { --primary-color: #fb7185; --secondary-color: #9f1239; --glow-color: rgba(251, 113, 133, 0.18); }
 
         * {
             margin: 0;
@@ -55,52 +30,23 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             -webkit-tap-highlight-color: transparent !important;
-            -webkit-touch-callout: none;
             user-select: none;
         }
 
-        button, a, input, div {
-            outline: none !important;
-        }
-
-        button:focus, button:active, button:focus-visible {
-            outline: none !important;
-            box-shadow: none;
-        }
-
         body {
-            background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 50%, var(--bg-gradient-3) 100%);
+            background: linear-gradient(135deg, #020617 0%, #090d16 50%, #020408 100%);
             color: #ffffff;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
-            transition: background 0.4s ease;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            width: 350px;
-            height: 350px;
-            background: var(--glow-color);
-            filter: blur(90px);
-            border-radius: 50%;
-            top: 10%;
-            left: 20%;
-            z-index: 0;
-            pointer-events: none;
-            transition: background 0.4s ease;
-        }
-
-        /* شاشة تسجيل الدخول */
         #login-screen {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
-            position: relative;
-            z-index: 1;
         }
 
         .login-container {
@@ -109,11 +55,9 @@
             padding: 40px 30px;
             background: var(--card-bg);
             backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
             border-radius: 28px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
             text-align: center;
         }
 
@@ -124,12 +68,10 @@
             border-radius: 50%;
             padding: 4px;
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            box-shadow: 0 0 25px var(--glow-color),
-                        inset 0 0 10px var(--glow-color);
+            box-shadow: 0 0 25px var(--glow-color);
             display: flex;
             justify-content: center;
             align-items: center;
-            animation: floatLogo 4s ease-in-out infinite;
         }
 
         .logo-image-area {
@@ -137,22 +79,11 @@
             height: 100%;
             object-fit: cover;
             border-radius: 50%;
-            display: block;
             background: #0f172a;
-        }
-
-        @keyframes floatLogo {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
-        }
-
-        .welcome-section {
-            margin-bottom: 25px;
         }
 
         .welcome-section h1 {
             font-size: 24px;
-            font-weight: 700;
             margin-bottom: 8px;
             color: #ffffff;
         }
@@ -160,14 +91,13 @@
         .welcome-section p {
             font-size: 13px;
             color: #94a3b8;
-            line-height: 1.5;
+            margin-bottom: 25px;
         }
 
         .google-btn {
             width: 100%;
             padding: 15px;
             background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(4px);
             color: #ffffff;
             border: 1px solid var(--border-color);
             border-radius: 14px;
@@ -178,21 +108,12 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            transition: all 0.2s ease;
-            margin-bottom: 12px;
+            transition: 0.2s;
         }
 
-        .google-btn:hover {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 25px var(--glow-color);
-        }
+        .google-btn i { color: #ea4335; font-size: 18px; }
 
-        .google-btn i {
-            font-size: 18px;
-            color: #ea4335;
-        }
-
-        /* الشاشة الترحيبية الفخمة الاحترافية */
+        /* الشاشة الترحيبية */
         #splash-screen {
             display: none;
             position: fixed;
@@ -206,56 +127,32 @@
             align-items: center;
             flex-direction: column;
             text-align: center;
-            overflow: hidden;
         }
 
         .splash-card {
             padding: 40px;
             border-radius: 30px;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.9);
             border: 1px solid var(--border-color);
-            box-shadow: 0 0 50px var(--glow-color);
-            animation: scaleUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            max-width: 90%;
-            width: 380px;
+            box-shadow: 0 0 40px var(--glow-color);
+            width: 340px;
         }
 
         .splash-logo {
-            width: 90px;
-            height: 90px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             object-fit: cover;
-            margin-bottom: 20px;
-            border: 3px solid var(--primary-color);
-            box-shadow: 0 0 20px var(--primary-color);
+            margin-bottom: 15px;
+            border: 2px solid var(--primary-color);
         }
 
-        .splash-card h2 {
-            font-size: 24px;
-            color: var(--primary-color);
-            margin-bottom: 8px;
-            font-weight: 700;
-        }
+        .splash-card h2 { font-size: 20px; color: var(--primary-color); margin-bottom: 6px; }
+        .splash-card p { color: #94a3b8; font-size: 12px; }
 
-        .splash-card p {
-            color: #94a3b8;
-            font-size: 13px;
-        }
+        /* واجهة المتجر */
+        #store-screen { display: none; min-height: 100vh; }
 
-        @keyframes scaleUp {
-            0% { transform: scale(0.7); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        /* واجهة المتجر الرئيسية */
-        #store-screen {
-            display: none;
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
-        }
-
-        /* الهيدر العلوي وزر الإعدادات */
         header {
             display: flex;
             justify-content: space-between;
@@ -269,13 +166,8 @@
             z-index: 100;
         }
 
-        .store-logo-text {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
+        .store-logo-text { font-size: 18px; font-weight: bold; color: var(--primary-color); }
 
-        /* زر الإعدادات في الزاوية */
         .settings-btn {
             width: 45px;
             height: 45px;
@@ -288,158 +180,85 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: 0.2s;
         }
 
-        .settings-btn:hover {
-            background: rgba(51, 65, 85, 0.9);
-            box-shadow: 0 0 15px var(--glow-color);
-        }
-
-        /* القائمة المنسدلة للإعدادات */
         .settings-dropdown {
             display: none;
             position: absolute;
             top: 65px;
             left: 20px;
-            width: 270px;
-            background: rgba(15, 23, 42, 0.96);
-            backdrop-filter: blur(18px);
+            width: 260px;
+            background: rgba(15, 23, 42, 0.98);
             border: 1px solid var(--border-color);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.7);
-            padding: 20px;
+            border-radius: 18px;
+            padding: 15px;
             z-index: 101;
-            animation: fadeInDown 0.2s ease;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
         }
 
-        .settings-dropdown.active {
-            display: block;
-        }
+        .settings-dropdown.active { display: block; }
 
-        /* أول القائمة: حساب المستخدم وخروج */
         .dropdown-user-section {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding-bottom: 15px;
+            gap: 10px;
+            padding-bottom: 12px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .dropdown-user-img {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             border: 2px solid var(--primary-color);
             object-fit: cover;
         }
 
-        .dropdown-user-info {
-            overflow: hidden;
-            text-align: right;
-            flex-grow: 1;
-        }
+        .dropdown-user-name { font-size: 12px; font-weight: 600; color: #fff; }
+        .dropdown-logout-text { font-size: 11px; color: #f87171; cursor: pointer; margin-top: 2px; display: inline-block; }
 
-        .dropdown-user-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: #ffffff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .dropdown-logout-text {
-            font-size: 11px;
-            color: #f87171;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 2px;
-            display: inline-block;
-        }
-        .dropdown-logout-text:hover {
-            text-decoration: underline;
-        }
-
-        /* أزرار القائمة (الدعم، الألوان، حذف البيانات) */
-        .menu-item {
-            width: 100%;
-            padding: 11px 14px;
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            color: #e2e8f0;
-            font-size: 13px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            margin-bottom: 10px;
-            transition: 0.2s;
-            text-decoration: none;
-            text-align: right;
-        }
-
-        .menu-item:hover {
-            background: rgba(51, 65, 85, 0.8);
-            border-color: var(--primary-color);
-        }
-
-        .menu-item i {
-            font-size: 15px;
-            color: var(--primary-color);
-        }
-
-        .menu-item.danger {
-            color: #f87171;
-            background: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.2);
-        }
-        .menu-item.danger i {
-            color: #f87171;
-        }
-        .menu-item.danger:hover {
-            background: rgba(239, 68, 68, 0.25);
-        }
-
-        /* ألوان الثيمات داخل القائمة */
         .color-palette-container {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0 12px 0;
+            padding-bottom: 10px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
-        .color-dot {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid rgba(255,255,255,0.3);
-            transition: transform 0.2s;
-        }
-        .color-dot:hover {
-            transform: scale(1.15);
-        }
+        .color-dot { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.3); }
         .color-dot.blue { background: #38bdf8; }
         .color-dot.purple { background: #c084fc; }
         .color-dot.emerald { background: #34d399; }
         .color-dot.amber { background: #fbbf24; }
         .color-dot.rose { background: #fb7185; }
 
-        /* نافذة تأكيد حذف البيانات المنبثقة */
+        .menu-item {
+            width: 100%;
+            padding: 10px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            color: #e2e8f0;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            text-decoration: none;
+            text-align: right;
+        }
+
+        .menu-item.danger { color: #f87171; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); }
+        .menu-item.danger i { color: #f87171; }
+
         #delete-modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(2, 6, 23, 0.8);
-            backdrop-filter: blur(10px);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.85);
             z-index: 4000;
             justify-content: center;
             align-items: center;
@@ -447,128 +266,62 @@
         }
 
         .modal-box {
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(15, 23, 42, 0.98);
             border: 1px solid rgba(239, 68, 68, 0.4);
-            padding: 30px;
-            border-radius: 24px;
+            padding: 25px;
+            border-radius: 20px;
             text-align: center;
-            max-width: 360px;
+            max-width: 340px;
             width: 100%;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            animation: scaleUp 0.3s ease;
         }
 
-        .modal-box h3 {
-            color: #f87171;
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
+        .modal-box h3 { color: #f87171; font-size: 16px; margin-bottom: 8px; }
+        .modal-box p { color: #94a3b8; font-size: 12px; margin-bottom: 20px; line-height: 1.4; }
 
-        .modal-box p {
-            color: #94a3b8;
-            font-size: 13px;
-            margin-bottom: 25px;
-            line-height: 1.5;
-        }
+        .modal-buttons { display: flex; gap: 10px; }
+        .modal-btn { flex: 1; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+        .btn-cancel { background: rgba(30, 41, 59, 0.8); color: #fff; }
+        .btn-confirm { background: #ef4444; color: #fff; }
 
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: 0.2s;
-        }
-
-        .btn-cancel {
-            background: rgba(30, 41, 59, 0.8);
-            color: #ffffff;
-            border: 1px solid rgba(255,255,255,0.15);
-        }
-        .btn-cancel:hover {
-            background: rgba(51, 65, 85, 0.9);
-        }
-
-        .btn-confirm {
-            background: #ef4444;
-            color: #ffffff;
-        }
-        .btn-confirm:hover {
-            background: #dc2626;
-        }
-
-        /* محتوى صفحة المشتريات */
         .purchases-content {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: calc(100vh - 75px);
             text-align: center;
-            padding: 20px;
         }
 
-        .purchases-content h1 {
-            font-size: 32px;
-            color: #ffffff;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-shadow: 0 0 25px var(--glow-color);
-        }
-
-        #error-msg {
-            color: #f87171;
-            font-size: 13px;
-            text-align: center;
-            margin-top: 18px;
-            word-break: break-all;
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .purchases-content h1 { font-size: 28px; color: #fff; }
+        #error-msg { color: #f87171; font-size: 12px; text-align: center; margin-top: 15px; }
     </style>
 </head>
 <body class="theme-blue">
 
-    <!-- 1. شاشة تسجيل الدخول -->
     <div id="login-screen">
         <div class="login-container">
             <div class="logo-circle-wrapper">
-                <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="King Store Logo" class="logo-image-area">
+                <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Logo" class="logo-image-area">
             </div>
-            
             <div class="welcome-section">
                 <h1>مرحباً بك مجدداً</h1>
                 <p>سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.</p>
             </div>
-
             <button id="google-login-btn" class="google-btn">
                 <i class="fa-brands fa-google"></i>
                 <span>Continue with Google</span>
             </button>
-            
             <p id="error-msg"></p>
         </div>
     </div>
 
-    <!-- 2. الشاشة الترحيبية الاحترافية (تظهر 3 ثوانٍ) -->
     <div id="splash-screen">
         <div class="splash-card">
             <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Logo" class="splash-logo">
             <h2>مرحباً بكم في متجر King Store</h2>
-            <p>جاري تهيئة وتجهيز متجرك الملكي...</p>
+            <p>جاري تهيئة المتجر الخاص بك...</p>
         </div>
     </div>
 
-    <!-- 3. نافذة تأكيد حذف البيانات المنبثقة -->
     <div id="delete-modal">
         <div class="modal-box">
             <h3>⚠️ تحذير هام</h3>
@@ -580,45 +333,33 @@
         </div>
     </div>
 
-    <!-- 4. واجهة المتجر الرئيسية (صفحة المشتريات) -->
     <div id="store-screen">
         <header>
             <div class="store-logo-text">King Store 👑</div>
-            
-            <!-- زر الإعدادات في الزاوية العلوية -->
             <div style="position: relative;">
-                <button id="settings-toggle-btn" class="settings-btn" title="الإعدادات">
+                <button id="settings-toggle-btn" class="settings-btn">
                     <i class="fa-solid fa-gear"></i>
                 </button>
-                
-                <!-- القائمة المنسدلة -->
                 <div id="settings-dropdown" class="settings-dropdown">
-                    <!-- الحساب وتسجيل الخروج -->
                     <div class="dropdown-user-section">
                         <img id="dropdown-user-img" src="" alt="User" class="dropdown-user-img">
-                        <div class="dropdown-user-info">
+                        <div style="overflow: hidden; text-align: right; flex-grow: 1;">
                             <div id="dropdown-username" class="dropdown-user-name">اسم المستخدم</div>
                             <span id="logout-text" class="dropdown-logout-text">تسجيل الخروج</span>
                         </div>
                     </div>
-
-                    <!-- ألوان الموقع (5 ألوان) -->
-                    <div style="font-size: 11px; color: #94a3b8; margin-bottom: 6px; text-align: right;">تخصيص ألوان الموقع:</div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-bottom: 5px; text-align: right;">اختر ثيم الألوان:</div>
                     <div class="color-palette-container">
-                        <div class="color-dot blue" onclick="changeTheme('theme-blue')" title="أزرق ملكي"></div>
-                        <div class="color-dot purple" onclick="changeTheme('theme-purple')" title="بنفَسجي فخم"></div>
-                        <div class="color-dot emerald" onclick="changeTheme('theme-emerald')" title="أخضر زمردي"></div>
-                        <div class="color-dot amber" onclick="changeTheme('theme-amber')" title="ذهبي دافئ"></div>
-                        <div class="color-dot rose" onclick="changeTheme('theme-rose')" title="وردي عصري"></div>
+                        <div class="color-dot blue" onclick="changeTheme('theme-blue')"></div>
+                        <div class="color-dot purple" onclick="changeTheme('theme-purple')"></div>
+                        <div class="color-dot emerald" onclick="changeTheme('theme-emerald')"></div>
+                        <div class="color-dot amber" onclick="changeTheme('theme-amber')"></div>
+                        <div class="color-dot rose" onclick="changeTheme('theme-rose')"></div>
                     </div>
-
-                    <!-- مركز الدعم الفني (واتساب) -->
                     <a id="support-whatsapp-btn" href="#" target="_blank" class="menu-item">
-                        <i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 18px;"></i>
+                        <i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 16px;"></i>
                         <span>مركز الدعم الفني</span>
                     </a>
-
-                    <!-- زر حذف البيانات -->
                     <button id="open-delete-modal-btn" class="menu-item danger">
                         <i class="fa-solid fa-trash-can"></i>
                         <span>حذف بيانات الحساب</span>
@@ -626,7 +367,6 @@
                 </div>
             </div>
         </header>
-
         <div class="purchases-content">
             <h1>المشتريات</h1>
         </div>
@@ -636,6 +376,121 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                
+        const firebaseConfig = {
+            apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
+            authDomain: "my-store-75b70.firebaseapp.com",
+            projectId: "my-store-75b70",
+            storageBucket: "my-store-75b70.firebasestorage.app",
+            messagingSenderId: "762773021655",
+            appId: "1:762773021655:web:ce1490aab54115d549e192",
+            measurementId: "G-CT3FQN4BBK"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        const loginScreen = document.getElementById('login-screen');
+        const splashScreen = document.getElementById('splash-screen');
+        const storeScreen = document.getElementById('store-screen');
+        const googleBtn = document.getElementById('google-login-btn');
+        const errorMsg = document.getElementById('error-msg');
+        
+        const settingsToggleBtn = document.getElementById('settings-toggle-btn');
+        const settingsDropdown = document.getElementById('settings-dropdown');
+        const dropdownUserImg = document.getElementById('dropdown-user-img');
+        const dropdownUsername = document.getElementById('dropdown-username');
+        const logoutText = document.getElementById('logout-text');
+        const supportWhatsappBtn = document.getElementById('support-whatsapp-btn');
+        
+        const openDeleteModalBtn = document.getElementById('open-delete-modal-btn');
+        const deleteModal = document.getElementById('delete-modal');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+
+        let isLoginProcessed = false;
+
+        const savedTheme = localStorage.getItem('king_store_theme');
+        if (savedTheme) document.body.className = savedTheme;
+
+        window.changeTheme = function(themeName) {
+            document.body.className = themeName;
+            localStorage.setItem('king_store_theme', themeName);
+            settingsDropdown.classList.remove('active');
+        };
+
+        supportWhatsappBtn.href = `https://wa.me/201225428692?text=${encodeURIComponent("مرحباً، أريد الدعم الفني والاستفسار عن متجر King Store.")}`;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginScreen.style.display = 'none';
+                if (!isLoginProcessed && !sessionStorage.getItem('splash_shown')) {
+                    splashScreen.style.display = 'flex';
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                        storeScreen.style.display = 'block';
+                        sessionStorage.setItem('splash_shown', 'true');
+                    }, 3000);
+                    isLoginProcessed = true;
+                } else {
+                    splashScreen.style.display = 'none';
+                    storeScreen.style.display = 'block';
+                }
+                dropdownUserImg.src = user.photoURL || "file_000000006a0881f4ab25ca2d85fb53a0.png";
+                dropdownUsername.textContent = user.displayName || "مستخدم متميز";
+            } else {
+                isLoginProcessed = false;
+                sessionStorage.removeItem('splash_shown');
+                splashScreen.style.display = 'none';
+                storeScreen.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                settingsDropdown.classList.remove('active');
+            }
+        });
+
+        googleBtn.addEventListener('click', async () => {
+            errorMsg.textContent = "جاري فتح نافذة جوجل...";
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                errorMsg.textContent = "خطأ: " + error.code;
+            }
+        });
+
+        settingsToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingsDropdown.classList.toggle('active');
+        });
+
+        window.addEventListener('click', () => {
+            settingsDropdown.classList.remove('active');
+        });
+
+        settingsDropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        logoutText.addEventListener('click', async () => {
+            try { await signOut(auth); } catch (e) { console.log(e); }
+        });
+
+        openDeleteModalBtn.addEventListener('click', () => {
+            settingsDropdown.classList.remove('active');
+            deleteModal.style.display = 'flex';
+        });
+
+        cancelDeleteBtn.addEventListener('click', () => {
+            deleteModal.style.display = 'none';
+        });
+
+        confirmDeleteBtn.addEventListener('click', async () => {
+            deleteModal.style.display = 'none';
+            localStorage.clear();
+            sessionStorage.clear();
+            try { await signOut(auth); } catch (e) { console.log(e); }
+            window.location.reload();
+        });
+    </script>
+</body>
+    </html>
+    
