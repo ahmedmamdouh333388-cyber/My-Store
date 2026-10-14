@@ -300,7 +300,7 @@
         }
         .dropdown-link-item.danger-item i { color: #f87171; }
 
-        /* زر الدردشة العائم الآمن والقابل للسحب السلس */
+        /* زر الدردشة العائم الثابت والآمن 100% */
         .chat-float-btn {
             position: fixed;
             bottom: 25px;
@@ -317,8 +317,10 @@
             box-shadow: 0 10px 30px var(--primary-glow);
             cursor: pointer;
             z-index: 400;
-            touch-action: none;
+            border: none;
+            transition: transform 0.2s ease;
         }
+        .chat-float-btn:hover { transform: scale(1.08); }
 
         /* نافذة الدردشة الحية (Discord Style) */
         .chat-modal-container {
@@ -529,6 +531,11 @@
                         <div class="color-circle amber" onclick="changeTheme('theme-amber')"></div>
                         <div class="color-circle rose" onclick="changeTheme('theme-rose')"></div>
                     </div>
+                    <!-- خيار فتح الدردشة من قائمة الإعدادات أيضاً لضمان السهولة -->
+                    <button id="menu-open-chat-btn" class="dropdown-link-item" style="color: var(--primary);">
+                        <i class="fa-solid fa-comments" style="font-size: 15px;"></i>
+                        <span>فتح دردشة مجتمع الملوك</span>
+                    </button>
                     <a id="support-wa-link" href="#" target="_blank" class="dropdown-link-item">
                         <i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 16px;"></i>
                         <span>مركز الدعم الفني</span>
@@ -545,7 +552,7 @@
             <h1>المشتريات</h1>
         </div>
 
-        <!-- زر الدردشة العائم القابل للسحب (آمن وسلس جداً) -->
+        <!-- زر الدردشة العائم الثابت والسريع -->
         <button id="chat-float-btn" class="chat-float-btn" title="دردشة مجتمع الملوك">
             <i class="fa-solid fa-comments"></i>
         </button>
@@ -562,12 +569,4 @@
             <div class="chat-input-area">
                 <input type="text" id="chat-input-field" class="chat-input-field" placeholder="اكتب رسالتك هنا...">
                 <button id="chat-send-btn" class="chat-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    
+           
