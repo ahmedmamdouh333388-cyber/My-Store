@@ -44,6 +44,7 @@ const chatCloseBtn = document.getElementById('chat-close-btn');
 const chatMessagesArea = document.getElementById('chat-messages-area');
 const chatInputField = document.getElementById('chat-input-field');
 const chatSendBtn = document.getElementById('chat-send-btn');
+const chatMicBtn = document.getElementById('chat-mic-btn');
 
 const replyPreviewBox = document.getElementById('reply-preview-box');
 const replyingToText = document.getElementById('replying-to-text');
@@ -52,6 +53,9 @@ const cancelReplyBtn = document.getElementById('cancel-reply-btn');
 let currentUser = null;
 let isLoginHandled = false;
 let replyingToData = null;
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
 
 const activeTheme = localStorage.getItem('king_store_theme');
 if (activeTheme) document.body.className = activeTheme;
@@ -216,7 +220,13 @@ function renderMessage(msgId, data) {
         return;
     }
 
-    // صلاحيات الحذف بدقة: المشرف وحده يمسح الكل، والمستخدم العادي يمسح رسالته فقط
+    let messageBodyHtml = '';
+    if (data.type === 'audio' && data.audioUrl) {
+        messageBodyHtml = `<audio controls src="${data.audioUrl}" class="chat-audio-msg"></audio>`;
+    } else {
+        messageBodyHtml = `<div class="chat-msg-text">${escapeHtml(data.text)}</div>`;
+    }
+
     const isUserAdmin = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح");
     let deleteBtnHtml = '';
     if (currentUser && (data.uid === currentUser.uid || isUserAdmin)) {
@@ -234,11 +244,11 @@ function renderMessage(msgId, data) {
                 ${adminBadgeHtml}
             </div>
             ${replyHtml}
-            <div class="chat-msg-text">${escapeHtml(data.text)}</div>
+            ${messageBodyHtml}
             <div class="message-reactions-row">${reactionsHtml}</div>
             
             <div class="msg-actions-row">
-                <button class="reply-action-btn" onclick="prepareReply('${msgId}', '${escapeHtml(data.username)}', '${escapeHtml(data.text)}')">رد</button>
+                <button class="reply-action-btn" onclick="prepareReply('${msgId}', '${escapeHtml(data.username)}', '${data.type === 'audio' ? 'رسالة صوتية 🎤' : escapeHtml(data.text)}')">رد</button>
                 ${deleteBtnHtml}
             </div>
             
@@ -261,7 +271,6 @@ window.prepareReply = function(msgId, username, text) {
     chatInputField.focus();
 };
 
-// نظام تفاعلات ذكي (Toggle): الضغط مرة للإضافة، ومرة أخرى للإزالة أو التبديل
 window.toggleReaction = async function(msgId, emoji) {
     if (!currentUser) return;
     const userKey = currentUser.uid.replace(/[.#$[\]]/g, "_");
@@ -270,7 +279,6 @@ window.toggleReaction = async function(msgId, emoji) {
     const snapshot = await get(msgRef);
     let reactions = snapshot.exists() ? snapshot.val() : {};
 
-    // إزالة تفاعل المستخدم القديم لأي أيموجي آخر لضمان تفاعل واحد لكل مستخدم
     Object.keys(reactions).forEach(e => {
         if (reactions[e] && reactions[e][userKey]) {
             delete reactions[e][userKey];
@@ -280,7 +288,6 @@ window.toggleReaction = async function(msgId, emoji) {
         }
     });
 
-    // إذا لم يكن نفس الأيموجي هو الذي تم النقر عليه، نضيفه جديداً
     if (!reactions[emoji] || !reactions[emoji][userKey]) {
         if (!reactions[emoji]) reactions[emoji] = {};
         reactions[emoji][userKey] = true;
@@ -295,6 +302,66 @@ window.deleteMessage = function(msgId) {
     remove(msgRef);
 };
 
+// تشغيل نظام تسجيل المايك الصوتي بلمسة واحدة
+chatMicBtn.addEventListener('click', async () => {
+    if (!currentUser) return;
+
+    if (!isRecording) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => {
+                    const base64AudioMessage = reader.result;
+                    sendAudioMessage(base64AudioMessage);
+                };
+            };
+
+            mediaRecorder.start();
+            isRecording = true;
+            chatMicBtn.classList.add('recording');
+        } catch (err) {
+            alert("عذراً، يرجى السماح للمتصفح بالوصول إلى الميكروفون.");
+        }
+    } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        chatMicBtn.classList.remove('recording');
+    }
+});
+
+function sendAudioMessage(audioUrl) {
+    const isAdminUser = currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح";
+
+    const newMessage = {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        username: currentUser.displayName || 'مستخدم',
+        avatar: currentUser.photoURL || '',
+        type: 'audio',
+        audioUrl: audioUrl,
+        isAdmin: isAdminUser,
+        timestamp: Date.now()
+    };
+
+    if (replyingToData) {
+        newMessage.replyTo = replyingToData;
+    }
+
+    push(chatRef, newMessage);
+    replyingToData = null;
+    replyPreviewBox.style.display = 'none';
+}
+
 function sendChatMessage() {
     const rawText = chatInputField.value.trim();
     if (!rawText || !currentUser) return;
@@ -307,6 +374,7 @@ function sendChatMessage() {
         email: currentUser.email,
         username: currentUser.displayName || 'مستخدم',
         avatar: currentUser.photoURL || '',
+        type: 'text',
         text: filteredText,
         isAdmin: isAdminUser,
         timestamp: Date.now()
@@ -333,4 +401,3 @@ chatInputField.addEventListener('keypress', (e) => {
         sendChatMessage();
     }
 });
-                    
