@@ -57,53 +57,49 @@ let mediaRecorder = null;
 let audioChunks = [];
 let isRecording = false;
 
-// نظام الترجمة واللغات (عربي / إنجليزي)
-const translations = {
+// نصوص الترجمة المباشرة للعناصر بالـ ID لضمان عدم وجود أخطاء
+const langTexts = {
     ar: {
-        pageTitle: "King Store",
         loginTitle: "أهلاً بك",
         loginDesc: "سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.",
         googleBtn: "المتابعة باستخدام Google",
-        splashText: "جاري تهيئة متجر King Store...",
+        splash: "جاري تهيئة متجر King Store...",
         alertTitle: "تحذير هام",
         alertDesc: "لا يمكن استرجاع البيانات نهائياً. هل أنت متأكد من رغبتك في حذف بيانات هذا الحساب؟",
         cancelBtn: "إلغاء",
         confirmBtn: "تأكيد الحذف",
-        logoutTxt: "تسجيل الخروج",
-        langLabel: "لغة الموقع / Language:",
+        logout: "تسجيل الخروج",
+        langLabel: "لغة الموقع:",
         themeLabel: "تخصيص ألوان الموقع:",
-        supportTxt: "مركز الدعم الفني",
-        deleteAccountTxt: "حذف بيانات الحساب",
+        support: "مركز الدعم الفني",
+        deleteAccount: "حذف بيانات الحساب",
         heroBadge: "منصة King Store النشطة",
         heroTitle: "مرحباً بك في King Store",
         heroDesc: "استمتع بتجربة متجر متكاملة ومجتمع تفاعلي آمن. اضغط على زر الدردشة في الأسفل للبدء بالحديث مع الأعضاء.",
-        chatHeaderTitle: "دردشة المجتمع",
-        chatHeaderSub: "متصل الآن بسلاسة",
-        chatPlaceholder: "اكتب رسالتك هنا...",
-        replyingTo: "الرد على"
+        chatTitle: "دردشة المجتمع",
+        chatSub: "متصل الآن بسلاسة",
+        chatPlaceholder: "اكتب رسالتك هنا..."
     },
     en: {
-        pageTitle: "King Store",
         loginTitle: "Welcome Back",
         loginDesc: "Sign in now and enjoy a smart, secure shopping experience.",
         googleBtn: "Continue with Google",
-        splashText: "Initializing King Store...",
+        splash: "Initializing King Store...",
         alertTitle: "Important Warning",
         alertDesc: "Data cannot be recovered once deleted. Are you sure you want to clear your account data?",
         cancelBtn: "Cancel",
         confirmBtn: "Confirm Delete",
-        logoutTxt: "Logout",
-        langLabel: "Select Language / اللغة:",
+        logout: "Logout",
+        langLabel: "Language:",
         themeLabel: "Theme Colors:",
-        supportTxt: "Technical Support",
-        deleteAccountTxt: "Delete Account Data",
+        support: "Technical Support",
+        deleteAccount: "Delete Account Data",
         heroBadge: "King Store Platform",
         heroTitle: "Welcome to King Store",
         heroDesc: "Enjoy an integrated store experience and a secure community. Click the chat button below to start communicating with members.",
-        chatHeaderTitle: "Community Chat",
-        chatHeaderSub: "Online & Active",
-        chatPlaceholder: "Type your message here...",
-        replyingTo: "Replying to"
+        chatTitle: "Community Chat",
+        chatSub: "Online & Active",
+        chatPlaceholder: "Type your message here..."
     }
 };
 
@@ -112,44 +108,50 @@ let currentLang = localStorage.getItem('king_store_lang') || 'ar';
 window.switchLanguage = function(lang) {
     currentLang = lang;
     localStorage.setItem('king_store_lang', lang);
-    applyLanguage(lang);
+    applyLang(lang);
     settingsPopupMenu.classList.remove('active');
 };
 
-function applyLanguage(lang) {
+function applyLang(lang) {
     const htmlRoot = document.getElementById('html-root');
     htmlRoot.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
     htmlRoot.setAttribute('lang', lang);
 
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (translations[lang][key]) {
-            el.textContent = translations[lang][key];
-        }
-    });
+    const t = langTexts[lang];
+    if (!t) return;
 
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-        const key = el.getAttribute('data-i18n-placeholder');
-        if (translations[lang][key]) {
-            el.placeholder = translations[lang][key];
-        }
-    });
+    document.getElementById('txt-login-title').textContent = t.loginTitle;
+    document.getElementById('txt-login-desc').textContent = t.loginDesc;
+    document.getElementById('txt-google-btn').textContent = t.googleBtn;
+    document.getElementById('txt-splash').textContent = t.splash;
+    document.getElementById('txt-alert-title').textContent = t.alertTitle;
+    document.getElementById('txt-alert-desc').textContent = t.alertDesc;
+    document.getElementById('cancel-delete-action').textContent = t.cancelBtn;
+    document.getElementById('confirm-delete-action').textContent = t.confirmBtn;
+    document.getElementById('txt-logout').textContent = t.logout;
+    document.getElementById('txt-lang-label').textContent = t.langLabel;
+    document.getElementById('txt-theme-label').textContent = t.themeLabel;
+    document.getElementById('txt-support').textContent = t.support;
+    document.getElementById('txt-delete-account').textContent = t.deleteAccount;
+    document.getElementById('txt-hero-badge').textContent = t.heroBadge;
+    document.getElementById('txt-hero-title').textContent = t.heroTitle;
+    document.getElementById('txt-hero-desc').textContent = t.heroDesc;
+    document.getElementById('txt-chat-title').textContent = t.chatTitle;
+    document.getElementById('txt-chat-sub').textContent = t.chatSub;
+    chatInputField.placeholder = t.chatPlaceholder;
 
     const arBtn = document.getElementById('lang-ar-btn');
     const enBtn = document.getElementById('lang-en-btn');
-    if (arBtn && enBtn) {
-        if (lang === 'ar') {
-            arBtn.classList.add('active');
-            enBtn.classList.remove('active');
-        } else {
-            enBtn.classList.add('active');
-            arBtn.classList.remove('active');
-        }
+    if (lang === 'ar') {
+        arBtn.classList.add('active');
+        enBtn.classList.remove('active');
+    } else {
+        enBtn.classList.add('active');
+        arBtn.classList.remove('active');
     }
 }
 
-// تطبيق اللغة المخزنة عند التحميل
-applyLanguage(currentLang);
+applyLang(currentLang);
 
 const activeTheme = localStorage.getItem('king_store_theme');
 if (activeTheme) document.body.className = activeTheme;
@@ -265,17 +267,13 @@ const chatRef = ref(db, 'messages');
 onChildAdded(chatRef, (snapshot) => {
     const msgId = snapshot.key;
     const data = snapshot.val();
-    if (data) {
-        renderMessage(msgId, data);
-    }
+    if (data) renderMessage(msgId, data);
 });
 
 onChildChanged(chatRef, (snapshot) => {
     const msgId = snapshot.key;
     const data = snapshot.val();
-    if (data) {
-        renderMessage(msgId, data);
-    }
+    if (data) renderMessage(msgId, data);
 });
 
 onChildRemoved(chatRef, (snapshot) => {
@@ -300,9 +298,7 @@ function renderMessage(msgId, data) {
     if (data.reactions) {
         Object.entries(data.reactions).forEach(([emoji, users]) => {
             const count = Object.keys(users).length;
-            if (count > 0) {
-                reactionsHtml += `<span class="reaction-pill">${emoji} ${count}</span>`;
-            }
+            if (count > 0) reactionsHtml += `<span class="reaction-pill">${emoji} ${count}</span>`;
         });
     }
 
@@ -385,7 +381,6 @@ function renderMessage(msgId, data) {
             if (audioEl.duration) {
                 const percent = (audioEl.currentTime / audioEl.duration) * 100;
                 progressFill.style.width = percent + '%';
-                
                 const mins = Math.floor(audioEl.currentTime / 60);
                 const secs = Math.floor(audioEl.currentTime % 60);
                 currentTimeText.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
@@ -442,9 +437,7 @@ window.toggleReaction = async function(msgId, emoji) {
     Object.keys(reactions).forEach(e => {
         if (reactions[e] && reactions[e][userKey]) {
             delete reactions[e][userKey];
-            if (Object.keys(reactions[e]).length === 0) {
-                delete reactions[e];
-            }
+            if (Object.keys(reactions[e]).length === 0) delete reactions[e];
         }
     });
 
@@ -458,8 +451,7 @@ window.toggleReaction = async function(msgId, emoji) {
 
 window.deleteMessage = function(msgId) {
     if (!currentUser) return;
-    const msgRef = ref(db, `messages/${msgId}`);
-    remove(msgRef);
+    remove(ref(db, `messages/${msgId}`));
 };
 
 chatMicBtn.addEventListener('click', async () => {
@@ -471,25 +463,18 @@ chatMicBtn.addEventListener('click', async () => {
             mediaRecorder = new MediaRecorder(stream);
             audioChunks = [];
 
-            mediaRecorder.ondataavailable = (event) => {
-                audioChunks.push(event.data);
-            };
-
+            mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
             mediaRecorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                 const reader = new FileReader();
-                reader.readAsDataURL(audioBlob);
-                reader.onloadend = () => {
-                    const base64AudioMessage = reader.result;
-                    sendAudioMessage(base64AudioMessage);
-                };
+                reader.readAsDataURL(new Blob(audioChunks, { type: 'audio/webm' }));
+                reader.onloadend = () => sendAudioMessage(reader.result);
             };
 
             mediaRecorder.start();
             isRecording = true;
             chatMicBtn.classList.add('recording');
         } catch (err) {
-            alert(currentLang === 'ar' ? "عذراً، يرجى السماح للمتصفح بالوصول إلى الميكروفون." : "Sorry, please allow microphone access.");
+            alert(currentLang === 'ar' ? "يرجى السماح بالوصول إلى الميكروفون." : "Please allow mic access.");
         }
     } else {
         mediaRecorder.stop();
@@ -499,14 +484,4 @@ chatMicBtn.addEventListener('click', async () => {
 });
 
 function sendAudioMessage(audioUrl) {
-    const isAdminUser = currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح";
-
-    const newMessage = {
-        uid: currentUser.uid,
-        email: currentUser.email,
-        username: currentUser.displayName || 'User',
-        avatar: currentUser.photoURL || '',
-        type: 'audio',
-        audioUrl: audioUrl,
-        isAdmin: isAdminUser,
-        timesta    
+    const isAdminUser = currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد م
