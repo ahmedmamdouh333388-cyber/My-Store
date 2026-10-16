@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="page-title">King Store</title>
+    <title>King Store</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#030712">
@@ -13,6 +13,7 @@
 </head>
 <body class="theme-blue">
 
+    <!-- شاشة تسجيل الدخول -->
     <div id="login-screen">
         <div class="login-card">
             <div class="logo-box">
@@ -28,6 +29,7 @@
         </div>
     </div>
 
+    <!-- شاشة الترحيب المؤقتة -->
     <div id="splash-screen">
         <div class="splash-inner">
             <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Logo">
@@ -36,6 +38,7 @@
         </div>
     </div>
 
+    <!-- نافذة تأكيد الحذف -->
     <div id="delete-alert-modal">
         <div class="alert-box-content">
             <h3 data-i18n="warningTitle">⚠️ تحذير هام</h3>
@@ -47,6 +50,7 @@
         </div>
     </div>
 
+    <!-- واجهة المتجر الرئيسية -->
     <div id="store-screen">
         <header>
             <div class="brand-title">King Store 👑</div>
@@ -63,7 +67,7 @@
                         </div>
                     </div>
 
-                    <!-- خيار اللغة -->
+                    <!-- تبديل اللغة -->
                     <div class="colors-label" data-i18n="languageLabel">لغة الموقع:</div>
                     <div style="display: flex; gap: 8px; margin-bottom: 12px;">
                         <button onclick="changeLanguage('ar')" style="flex: 1; padding: 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; cursor: pointer;">العربية</button>
@@ -91,32 +95,34 @@
             </div>
         </header>
 
-        <div class="purchases-main-area">
+        <!-- قسم المنتجات والمشتريات -->
+        <div class="purchases-main-area" style="padding: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h1 data-i18n="purchasesTitle" style="margin: 0;">المشتريات والمنتجات</h1>
-                <!-- لوحة التحكم للمشرف فقط -->
+                <h1 data-i18n="purchasesTitle" style="margin: 0; color: #fff; font-size: 22px;">المشتريات والمنتجات</h1>
                 <button id="admin-add-product-btn" style="display: none; background: #25d366; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold;">
                     <i class="fa-solid fa-plus"></i> <span data-i18n="addProduct">إضافة منتج</span>
                 </button>
             </div>
 
-            <!-- نموذج إضافة منتج (يظهر للمشرف فقط عند النقر) -->
+            <!-- نموذج إضافة منتج (يظهر للمشرف فقط) -->
             <div id="admin-product-form-box" style="display: none; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1);">
                 <h3 style="margin-top: 0; font-size: 16px; color: #fff;" data-i18n="addNewProduct">إضافة منتج جديد للمتجر</h3>
-                <input type="text" id="new-product-title" placeholder="اسم المنتج..." style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ccc; background: rgba(0,0,0,0.2); color: #fff;">
-                <input type="text" id="new-product-price" placeholder="سعر المنتج (مثال: $50)..." style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ccc; background: rgba(0,0,0,0.2); color: #fff;">
+                <input type="text" id="new-product-title" placeholder="اسم المنتج..." style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: #fff; box-sizing: border-box;">
+                <input type="text" id="new-product-price" placeholder="سعر المنتج (مثال: $50)..." style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: #fff; box-sizing: border-box;">
                 <input type="file" id="new-product-img-file" accept="image/*" style="width: 100%; margin-bottom: 10px; color: #fff;">
-                <button id="save-product-btn" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" data-i18n="publishProduct">نشر المنتج</button>
+                <button id="save-product-btn" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;" data-i18n="publishProduct">نشر المنتج</button>
             </div>
 
             <!-- شبكة عرض المنتجات -->
             <div id="products-grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px;"></div>
         </div>
 
+        <!-- زر الشات العائم -->
         <button id="chat-float-btn" class="chat-float-btn" title="دردشة King Store">
             <i class="fa-solid fa-comments"></i>
         </button>
 
+        <!-- نافذة الشات -->
         <div id="chat-modal-container" class="chat-modal-container">
             <div class="chat-header">
                 <h4 data-i18n="chatHeader"><i class="fa-solid fa-hashtag"></i> دردشة King Store</h4>
@@ -142,5 +148,5 @@
 
     <script type="module" src="app.js"></script>
 </body>
-    </html>
-    
+                                                                                                                        </html>
+                                                                                                                        
