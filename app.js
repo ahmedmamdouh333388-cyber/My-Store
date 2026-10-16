@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getDatabase, ref, push, onChildAdded, onChildRemoved, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -147,6 +147,11 @@ if(supportWaLink) {
     supportWaLink.href = `https://wa.me/201225428692?text=${encodeURIComponent("مرحباً، أريد الدعم الفني والاستفسار عن خدمات King Store.")}`;
 }
 
+// معالجة العودة من تسجيل الدخول بالتوجيه
+getRedirectResult(auth).catch((err) => {
+    console.log("Redirect auth error:", err);
+});
+
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
@@ -184,11 +189,12 @@ onAuthStateChanged(auth, (user) => {
     applyTranslations();
 });
 
+// زر تسجيل الدخول باستخدام Redirect لضمان عدم تجمد الشاشة على الهواتف
 if(googleLoginBtn) {
     googleLoginBtn.addEventListener('click', async () => {
-        if(authErrorMsg) authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
+        if(authErrorMsg) authErrorMsg.textContent = "جاري تحويلك لتسجيل الدخول...";
         try {
-            await signInWithPopup(auth, provider);
+            await signInWithRedirect(auth, provider);
         } catch (err) {
             if(authErrorMsg) authErrorMsg.textContent = "خطأ في التسجيل: " + err.code;
         }
@@ -436,5 +442,4 @@ function renderMessage(msgId, data) {
     const adminBadgeHtml = isMsgAdmin ? `<span class="admin-badge"><i class="fa-solid fa-crown"></i> مشرف</span>` : '';
 
     let messageBodyHtml = `<div class="chat-msg-text">${escapeHtml(data.text)}</div>`;
-    const isUserAdmin = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح");
-    let deleteBtnHtml = (currentUser && (data.uid === currentUser.uid || isUserAdmin)) ? `<button class="delete-msg-btn" onclick="deleteMessage('${msgId}')">حذف</button>` : 
+    const isUserAdmin = currentUser && (currentUser.email === ADM
