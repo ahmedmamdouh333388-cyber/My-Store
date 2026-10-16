@@ -71,6 +71,7 @@ window.changeLanguage = function(lang) {
     currentLang = lang;
     localStorage.setItem('king_store_lang', lang);
     applyTranslations();
+    const settingsPopupMenu = document.getElementById('settings-popup-menu');
     if(settingsPopupMenu) settingsPopupMenu.classList.remove('active');
 };
 
@@ -122,10 +123,6 @@ const chatInputField = document.getElementById('chat-input-field');
 const chatSendBtn = document.getElementById('chat-send-btn');
 const chatMicBtn = document.getElementById('chat-mic-btn');
 
-const replyPreviewBox = document.getElementById('reply-preview-box');
-const replyingToText = document.getElementById('replying-to-text');
-const cancelReplyBtn = document.getElementById('cancel-reply-btn');
-
 const adminAddProductBtn = document.getElementById('admin-add-product-btn');
 const adminProductFormBox = document.getElementById('admin-product-form-box');
 const newProductTitle = document.getElementById('new-product-title');
@@ -136,7 +133,6 @@ const productsGridContainer = document.getElementById('products-grid-container')
 
 let currentUser = null;
 let isLoginHandled = false;
-let replyingToData = null;
 let mediaRecorder = null;
 let audioChunks = [];
 let isRecording = false;
@@ -214,9 +210,7 @@ window.addEventListener('click', () => {
 });
 
 if(settingsPopupMenu) {
-    settingsPopupMenu.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
+    settingsPopupMenu.addEventListener('click', (e) => { e.stopPropagation(); });
 }
 
 if(menuLogoutTrigger) {
@@ -353,19 +347,9 @@ if(chatCloseBtn) {
     });
 }
 
-if(cancelReplyBtn) {
-    cancelReplyBtn.addEventListener('click', () => {
-        replyingToData = null;
-        if(replyPreviewBox) replyPreviewBox.style.display = 'none';
-    });
-}
-
 const chatRef = ref(db, 'messages');
 
 onChildAdded(chatRef, (snapshot) => {
-    renderMessage(snapshot.key, snapshot.val());
-});
-onChildChanged(chatRef, (snapshot) => {
     renderMessage(snapshot.key, snapshot.val());
 });
 onChildRemoved(chatRef, (snapshot) => {
@@ -381,50 +365,7 @@ function renderMessage(msgId, data) {
     const isMsgAdmin = data.email === ADMIN_EMAIL || data.username === "احمد ممدوح" || data.isAdmin === true;
     const adminBadgeHtml = isMsgAdmin ? `<span class="admin-badge"><i class="fa-solid fa-crown"></i> مشرف</span>` : '';
 
-    let replyHtml = '';
-    if (data.replyTo) {
-        replyHtml = `<div class="reply-quote-box"><b>${escapeHtml(data.replyTo.username)}:</b> ${escapeHtml(data.replyTo.text)}</div>`;
-    }
-
-    let reactionsHtml = '';
-    if (data.reactions) {
-        Object.entries(data.reactions).forEach(([emoji, users]) => {
-            const count = Object.keys(users).length;
-            if (count > 0) reactionsHtml += `<span class="reaction-pill">${emoji} ${count}</span>`;
-        });
-    }
-
-    let existingMsgElem = document.getElementById(`msg-${msgId}`);
-    if (existingMsgElem) {
-        existingMsgElem.className = rowClass;
-        const reactionsRow = existingMsgElem.querySelector('.message-reactions-row');
-        if (reactionsRow) reactionsRow.innerHTML = reactionsHtml;
-        return;
-    }
-
-    let messageBodyHtml = '';
-    if (data.type === 'audio' && data.audioUrl) {
-        messageBodyHtml = `
-            <div class="wa-audio-player" id="player-${msgId}">
-                <button class="wa-play-btn" onclick="togglePlayAudio('${msgId}')">
-                    <i class="fa-solid fa-play" id="play-icon-${msgId}"></i>
-                </button>
-                <div class="wa-audio-info">
-                    <div class="wa-audio-progress-bar" onclick="seekAudio(event, '${msgId}')">
-                        <div class="wa-audio-progress-fill" id="progress-${msgId}"></div>
-                    </div>
-                    <div class="wa-audio-time">
-                        <span id="current-time-${msgId}">0:00</span>
-                        <span>🎤 صوتية</span>
-                    </div>
-                </div>
-                <audio id="audio-el-${msgId}" src="${data.audioUrl}" preload="metadata"></audio>
-            </div>
-        `;
-    } else {
-        messageBodyHtml = `<div class="chat-msg-text">${escapeHtml(data.text)}</div>`;
-    }
-
+    let messageBodyHtml = `<div class="chat-msg-text">${escapeHtml(data.text)}</div>`;
     const isUserAdmin = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح");
     let deleteBtnHtml = (currentUser && (data.uid === currentUser.uid || isUserAdmin)) ? `<button class="delete-msg-btn" onclick="deleteMessage('${msgId}')">حذف</button>` : '';
 
@@ -438,41 +379,51 @@ function renderMessage(msgId, data) {
                 <span class="chat-msg-username">${escapeHtml(data.username)}</span>
                 ${adminBadgeHtml}
             </div>
-            ${replyHtml}
             ${messageBodyHtml}
-            <div class="message-reactions-row">${reactionsHtml}</div>
-            
-            <div class="msg-actions-row">
-                <button class="reply-action-btn" onclick="prepareReply('${msgId}', '${escapeHtml(data.username)}', '${data.type === 'audio' ? 'رسالة صوتية 🎤' : escapeHtml(data.text)}')">رد</button>
+            <div style="text-align: left; margin-top: 4px;">
                 ${deleteBtnHtml}
-            </div>
-            
-            <div class="reaction-popup-menu">
-                <button class="reaction-btn-option" onclick="toggleReaction('${msgId}', '❤️')">❤️</button>
-                <button class="reaction-btn-option" onclick="toggleReaction('${msgId}', '😂')">😂</button>
-                <button class="reaction-btn-option" onclick="toggleReaction('${msgId}', '😭')">😭</button>
-                <button class="reaction-btn-option" onclick="toggleReaction('${msgId}', '👍🏻')">👍🏻</button>
             </div>
         </div>
     `;
     chatMessagesArea.appendChild(msgRow);
     chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+}
 
-    if (data.type === 'audio') {
-        const audioEl = document.getElementById(`audio-el-${msgId}`);
-        const playIcon = document.getElementById(`play-icon-${msgId}`);
-        const progressFill = document.getElementById(`progress-${msgId}`);
-        const currentTimeText = document.getElementById(`current-time-${msgId}`);
+window.deleteMessage = function(msgId) {
+    if (!currentUser) return;
+    remove(ref(db, `messages/${msgId}`));
+};
 
-        if(audioEl) {
-            audioEl.addEventListener('timeupdate', () => {
-                if (audioEl.duration) {
-                    const percent = (audioEl.currentTime / audioEl.duration) * 100;
-                    if(progressFill) progressFill.style.width = percent + '%';
-                    const mins = Math.floor(audioEl.currentTime / 60);
-                    const secs = Math.floor(audioEl.currentTime % 60);
-                    if(currentTimeText) currentTimeText.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                }
-            });
+function sendChatMessage() {
+    if(!chatInputField) return;
+    const rawText = chatInputField.value.trim();
+    if (!rawText || !currentUser) return;
 
-         
+    const filteredText = aiSmartCensor(rawText);
+    const isAdminUser = currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح";
+
+    const newMessage = {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        username: currentUser.displayName || 'مستخدم',
+        avatar: currentUser.photoURL || '',
+        type: 'text',
+        text: filteredText,
+        isAdmin: isAdminUser,
+        timestamp: Date.now()
+    };
+
+    push(chatRef, newMessage);
+    chatInputField.value = '';
+}
+
+function escapeHtml(string) {
+    return String(string).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+if(chatSendBtn) chatSendBtn.addEventListener('click', sendChatMessage);
+if(chatInputField) {
+    chatInputField.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChatMessage();
+    });
+        }
