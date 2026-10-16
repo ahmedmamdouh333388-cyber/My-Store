@@ -20,6 +20,81 @@ const provider = new GoogleAuthProvider();
 
 const ADMIN_EMAIL = "ahmadmamdouh333388@gmail.com"; 
 
+// نظام الترجمة
+const translations = {
+    ar: {
+        welcomeBack: "مرحباً بك مجدداً",
+        loginDesc: "سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.",
+        splashTitle: "مرحباً بكم في King Store",
+        splashDesc: "جاري تهيئة وتجهيز متجرك...",
+        warningTitle: "⚠️ تحذير هام",
+        warningDesc: "لا يمكن استرجاع البيانات نهائياً. هل أنت متأكد من رغبتك في حذف بيانات هذا الحساب؟",
+        cancel: "إلغاء",
+        confirmDelete: "تأكيد الحذف",
+        logout: "تسجيل الخروج",
+        languageLabel: "لغة الموقع:",
+        themeLabel: "تخصيص ألوان الموقع:",
+        support: "مركز الدعم الفني",
+        deleteAccount: "حذف بيانات الحساب",
+        purchasesTitle: "المشتريات والمنتجات",
+        addProduct: "إضافة منتج",
+        addNewProduct: "إضافة منتج جديد للمتجر",
+        publishProduct: "نشر المنتج",
+        chatHeader: "دردشة King Store",
+        typeMessage: "اكتب رسالتك هنا..."
+    },
+    en: {
+        welcomeBack: "Welcome Back",
+        loginDesc: "Sign in now and enjoy a smart and secure shopping experience.",
+        splashTitle: "Welcome to King Store",
+        splashDesc: "Preparing your store...",
+        warningTitle: "⚠️ Important Warning",
+        warningDesc: "Data cannot be recovered. Are you sure you want to delete your account data?",
+        cancel: "Cancel",
+        confirmDelete: "Confirm Delete",
+        logout: "Logout",
+        languageLabel: "Website Language:",
+        themeLabel: "Theme Customization:",
+        support: "Support Center",
+        deleteAccount: "Delete Account Data",
+        purchasesTitle: "Purchases & Products",
+        addProduct: "Add Product",
+        addNewProduct: "Add New Product",
+        publishProduct: "Publish Product",
+        chatHeader: "King Store Chat",
+        typeMessage: "Type your message here..."
+    }
+};
+
+let currentLang = localStorage.getItem('king_store_lang') || 'ar';
+
+window.changeLanguage = function(lang) {
+    currentLang = lang;
+    localStorage.setItem('king_store_lang', lang);
+    applyTranslations();
+    settingsPopupMenu.classList.remove('active');
+};
+
+function applyTranslations() {
+    const htmlRoot = document.getElementById('html-root');
+    htmlRoot.setAttribute('lang', currentLang);
+    htmlRoot.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[currentLang][key]) {
+            el.textContent = translations[currentLang][key];
+        }
+    });
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (translations[currentLang][key]) {
+            el.setAttribute('placeholder', translations[currentLang][key]);
+        }
+    });
+}
+
 const loginScreen = document.getElementById('login-screen');
 const splashScreen = document.getElementById('splash-screen');
 const storeScreen = document.getElementById('store-screen');
@@ -49,6 +124,14 @@ const chatMicBtn = document.getElementById('chat-mic-btn');
 const replyPreviewBox = document.getElementById('reply-preview-box');
 const replyingToText = document.getElementById('replying-to-text');
 const cancelReplyBtn = document.getElementById('cancel-reply-btn');
+
+const adminAddProductBtn = document.getElementById('admin-add-product-btn');
+const adminProductFormBox = document.getElementById('admin-product-form-box');
+const newProductTitle = document.getElementById('new-product-title');
+const newProductPrice = document.getElementById('new-product-price');
+const newProductImgFile = document.getElementById('new-product-img-file');
+const saveProductBtn = document.getElementById('save-product-btn');
+const productsGridContainer = document.getElementById('products-grid-container');
 
 let currentUser = null;
 let isLoginHandled = false;
@@ -86,6 +169,11 @@ onAuthStateChanged(auth, (user) => {
         }
         menuUserImg.src = user.photoURL || "";
         menuUserName.textContent = user.displayName || "مستخدم متميز";
+
+        // إظهار لوحة التحكم للمشرف فقط
+        if (user.email === ADMIN_EMAIL || user.displayName === "احمد ممدوح") {
+            adminAddProductBtn.style.display = 'block';
+        }
     } else {
         currentUser = null;
         isLoginHandled = false;
@@ -95,7 +183,10 @@ onAuthStateChanged(auth, (user) => {
         loginScreen.style.display = 'flex';
         settingsPopupMenu.classList.remove('active');
         chatModalContainer.classList.remove('active');
+        adminAddProductBtn.style.display = 'none';
+        adminProductFormBox.style.display = 'none';
     }
+    applyTranslations();
 });
 
 googleLoginBtn.addEventListener('click', async () => {
@@ -141,6 +232,92 @@ confirmDeleteAction.addEventListener('click', async () => {
     window.location.reload();
 });
 
+// إدارة المنتجات ورفعها بـ Base64
+adminAddProductBtn.addEventListener('click', () => {
+    adminProductFormBox.style.display = adminProductFormBox.style.display === 'none' ? 'block' : 'none';
+});
+
+saveProductBtn.addEventListener('click', () => {
+    const title = newProductTitle.value.trim();
+    const price = newProductPrice.value.trim();
+    const file = newProductImgFile.files[0];
+
+    if (!title || !price || !file) {
+        alert("يرجى إدخال اسم المنتج، السعر، واختيار صورة.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => {
+        const base64Image = reader.result;
+        const productsRef = ref(db, 'products');
+        
+        push(productsRef, {
+            title: title,
+            price: price,
+            image: base64Image,
+            timestamp: Date.now()
+        }).then(() => {
+            newProductTitle.value = '';
+            newProductPrice.value = '';
+            newProductImgFile.value = '';
+            adminProductFormBox.style.display = 'none';
+            alert("تم نشر المنتج بنجاح!");
+        }).catch(err => {
+            alert("حدث خطأ أثناء النشر: " + err.message);
+        });
+    };
+});
+
+// جلب وعرض المنتجات في قسم المشتريات
+const productsRef = ref(db, 'products');
+onChildAdded(productsRef, (snapshot) => {
+    renderProduct(snapshot.key, snapshot.val());
+});
+onChildRemoved(productsRef, (snapshot) => {
+    const el = document.getElementById(`product-${snapshot.key}`);
+    if (el) el.remove();
+});
+
+function renderProduct(id, data) {
+    const isUserAdmin = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح");
+    let deleteProductBtn = isUserAdmin ? `<button onclick="deleteProduct('${id}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 8px;">حذف المنتج</button>` : '';
+
+    const card = document.createElement('div');
+    card.id = `product-${id}`;
+    card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; text-align: center; display: flex; flex-direction: column; justify-content: space-between;";
+    card.innerHTML = `
+        <img src="${data.image}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
+        <div>
+            <h4 style="margin: 0 0 5px 0; color: #fff; font-size: 16px;">${escapeHtml(data.title)}</h4>
+            <p style="margin: 0; color: #3b82f6; font-weight: bold; font-size: 15px;">${escapeHtml(data.price)}</p>
+        </div>
+        ${deleteProductBtn}
+    `;
+    productsGridContainer.appendChild(card);
+}
+
+window.deleteProduct = function(id) {
+    if (confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
+        remove(ref(db, `products/${id}`));
+    }
+};
+
+// ذكاء اصطناعي لفلترة السب والقذف والشتائم بدقة عالية
+const badWordsPatterns = [
+    /شرموط/i, /قحب/i, /منيوك/i, /متناك/i, /عرص/i, /خول/i, /أحا/i, /احا/i, /وسخ/i, /كلب/i, /حمار/i, /زفت/i, /طيز/i, /قذر/i, /عاهر/i, /عاهرة/i,
+    /fuck/i, /shit/i, /bitch/i, /asshole/i, /cunt/i, /dick/i, /bastard/i, /idiot/i, /suck/i
+];
+
+function aiSmartCensor(text) {
+    let cleanText = text;
+    badWordsPatterns.forEach(pattern => {
+        cleanText = cleanText.replace(pattern, '***');
+    });
+    return cleanText;
+}
+
 chatFloatBtn.addEventListener('click', () => {
     chatModalContainer.classList.toggle('active');
     chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
@@ -155,43 +332,21 @@ cancelReplyBtn.addEventListener('click', () => {
     replyPreviewBox.style.display = 'none';
 });
 
-const badWords = ["شرموط", "قحبة", "منيوك", "متناك", "عرص", "خول", "احا", "وسخ", "كلب", "حمار", "زفت", "طيز", "قذر", "لعنة", "لعن", "اوسخ", "عاهر", "عاهرة", "fuck", "shit", "bitch", "asshole", "cunt", "dick"];
-
-function censorBadWords(text) {
-    let cleanText = text;
-    badWords.forEach(word => {
-        const regex = new RegExp(word, 'gi');
-        cleanText = cleanText.replace(regex, '***');
-    });
-    return cleanText;
-}
-
 const chatRef = ref(db, 'messages');
 
 onChildAdded(chatRef, (snapshot) => {
-    const msgId = snapshot.key;
-    const data = snapshot.val();
-    if (data) {
-        renderMessage(msgId, data);
-    }
+    renderMessage(snapshot.key, snapshot.val());
 });
-
 onChildChanged(chatRef, (snapshot) => {
-    const msgId = snapshot.key;
-    const data = snapshot.val();
-    if (data) {
-        renderMessage(msgId, data);
-    }
+    renderMessage(snapshot.key, snapshot.val());
 });
-
 onChildRemoved(chatRef, (snapshot) => {
-    const msgId = snapshot.key;
-    const msgElem = document.getElementById(`msg-${msgId}`);
+    const msgElem = document.getElementById(`msg-${snapshot.key}`);
     if (msgElem) msgElem.remove();
 });
 
 function renderMessage(msgId, data) {
-    const isMyMessage = currentUser && (data.email === ADMIN_EMAIL || data.uid === currentUser.uid || data.username === currentUser.displayName);
+    const isMyMessage = currentUser && (data.email === ADMIN_EMAIL || data.uid === currentUser.uid);
     const rowClass = isMyMessage ? 'chat-msg-row my-message' : 'chat-msg-row other-message';
     
     const isMsgAdmin = data.email === ADMIN_EMAIL || data.username === "احمد ممدوح" || data.isAdmin === true;
@@ -206,9 +361,7 @@ function renderMessage(msgId, data) {
     if (data.reactions) {
         Object.entries(data.reactions).forEach(([emoji, users]) => {
             const count = Object.keys(users).length;
-            if (count > 0) {
-                reactionsHtml += `<span class="reaction-pill">${emoji} ${count}</span>`;
-            }
+            if (count > 0) reactionsHtml += `<span class="reaction-pill">${emoji} ${count}</span>`;
         });
     }
 
@@ -244,10 +397,7 @@ function renderMessage(msgId, data) {
     }
 
     const isUserAdmin = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح");
-    let deleteBtnHtml = '';
-    if (currentUser && (data.uid === currentUser.uid || isUserAdmin)) {
-        deleteBtnHtml = `<button class="delete-msg-btn" onclick="deleteMessage('${msgId}')">حذف</button>`;
-    }
+    let deleteBtnHtml = (currentUser && (data.uid === currentUser.uid || isUserAdmin)) ? `<button class="delete-msg-btn" onclick="deleteMessage('${msgId}')">حذف</button>` : '';
 
     const msgRow = document.createElement('div');
     msgRow.id = `msg-${msgId}`;
@@ -289,7 +439,6 @@ function renderMessage(msgId, data) {
             if (audioEl.duration) {
                 const percent = (audioEl.currentTime / audioEl.duration) * 100;
                 progressFill.style.width = percent + '%';
-                
                 const mins = Math.floor(audioEl.currentTime / 60);
                 const secs = Math.floor(audioEl.currentTime % 60);
                 currentTimeText.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
@@ -342,125 +491,4 @@ window.toggleReaction = async function(msgId, emoji) {
     const snapshot = await get(msgRef);
     let reactions = snapshot.exists() ? snapshot.val() : {};
 
-    Object.keys(reactions).forEach(e => {
-        if (reactions[e] && reactions[e][userKey]) {
-            delete reactions[e][userKey];
-            if (Object.keys(reactions[e]).length === 0) {
-                delete reactions[e];
-            }
-        }
-    });
-
-    if (!reactions[emoji] || !reactions[emoji][userKey]) {
-        if (!reactions[emoji]) reactions[emoji] = {};
-        reactions[emoji][userKey] = true;
-    }
-
-    await update(ref(db, `messages/${msgId}`), { reactions: reactions });
-};
-
-window.deleteMessage = function(msgId) {
-    if (!currentUser) return;
-    const msgRef = ref(db, `messages/${msgId}`);
-    remove(msgRef);
-};
-
-chatMicBtn.addEventListener('click', async () => {
-    if (!currentUser) return;
-
-    if (!isRecording) {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-
-            mediaRecorder.ondataavailable = (event) => {
-                audioChunks.push(event.data);
-            };
-
-            mediaRecorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                const reader = new FileReader();
-                reader.readAsDataURL(audioBlob);
-                reader.onloadend = () => {
-                    const base64AudioMessage = reader.result;
-                    sendAudioMessage(base64AudioMessage);
-                };
-            };
-
-            mediaRecorder.start();
-            isRecording = true;
-            chatMicBtn.classList.add('recording');
-        } catch (err) {
-            alert("عذراً، يرجى السماح للمتصفح بالوصول إلى الميكروفون.");
-        }
-    } else {
-        mediaRecorder.stop();
-        isRecording = false;
-        chatMicBtn.classList.remove('recording');
-    }
-});
-
-function sendAudioMessage(audioUrl) {
-    const isAdminUser = currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح";
-
-    const newMessage = {
-        uid: currentUser.uid,
-        email: currentUser.email,
-        username: currentUser.displayName || 'مستخدم',
-        avatar: currentUser.photoURL || '',
-        type: 'audio',
-        audioUrl: audioUrl,
-        isAdmin: isAdminUser,
-        timestamp: Date.now()
-    };
-
-    if (replyingToData) {
-        newMessage.replyTo = replyingToData;
-    }
-
-    push(chatRef, newMessage);
-    replyingToData = null;
-    replyPreviewBox.style.display = 'none';
-}
-
-function sendChatMessage() {
-    const rawText = chatInputField.value.trim();
-    if (!rawText || !currentUser) return;
-
-    const filteredText = censorBadWords(rawText);
-    const isAdminUser = currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح";
-
-    const newMessage = {
-        uid: currentUser.uid,
-        email: currentUser.email,
-        username: currentUser.displayName || 'مستخدم',
-        avatar: currentUser.photoURL || '',
-        type: 'text',
-        text: filteredText,
-        isAdmin: isAdminUser,
-        timestamp: Date.now()
-    };
-
-    if (replyingToData) {
-        newMessage.replyTo = replyingToData;
-    }
-
-    push(chatRef, newMessage);
-
-    chatInputField.value = '';
-    replyingToData = null;
-    replyPreviewBox.style.display = 'none';
-}
-
-function escapeHtml(string) {
-    return String(string).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-chatSendBtn.addEventListener('click', sendChatMessage);
-chatInputField.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        sendChatMessage();
-    }
-});
-        
+    Object.keys(reactions).
