@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getDatabase, ref, push, onChildAdded, onChildRemoved, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -19,83 +19,6 @@ const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
 
 const ADMIN_EMAIL = "ahmadmamdouh333388@gmail.com"; 
-
-const translations = {
-    ar: {
-        welcomeBack: "مرحباً بك مجدداً",
-        loginDesc: "سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.",
-        splashTitle: "مرحباً بكم في King Store",
-        splashDesc: "جاري تهيئة وتجهيز متجرك...",
-        warningTitle: "⚠️ تحذير هام",
-        warningDesc: "لا يمكن استرجاع البيانات نهائياً. هل أنت متأكد من رغبتك في حذف بيانات هذا الحساب؟",
-        cancel: "إلغاء",
-        confirmDelete: "تأكيد الحذف",
-        logout: "تسجيل الخروج",
-        languageLabel: "لغة الموقع:",
-        themeLabel: "تخصيص ألوان الموقع:",
-        support: "مركز الدعم الفني",
-        deleteAccount: "حذف بيانات الحساب",
-        purchasesTitle: "المشتريات والمنتجات",
-        addProduct: "إضافة منتج",
-        addNewProduct: "إضافة منتج جديد للمتجر",
-        publishProduct: "نشر المنتج",
-        chatHeader: "دردشة King Store",
-        typeMessage: "اكتب رسالتك هنا..."
-    },
-    en: {
-        welcomeBack: "Welcome Back",
-        loginDesc: "Sign in now and enjoy a smart and secure shopping experience.",
-        splashTitle: "Welcome to King Store",
-        splashDesc: "Preparing your store...",
-        warningTitle: "⚠️ Important Warning",
-        warningDesc: "Data cannot be recovered. Are you sure you want to delete your account data?",
-        cancel: "Cancel",
-        confirmDelete: "Confirm Delete",
-        logout: "Logout",
-        languageLabel: "Website Language:",
-        themeLabel: "Theme Customization:",
-        support: "Support Center",
-        deleteAccount: "Delete Account Data",
-        purchasesTitle: "Purchases & Products",
-        addProduct: "Add Product",
-        addNewProduct: "Add New Product",
-        publishProduct: "Publish Product",
-        chatHeader: "King Store Chat",
-        typeMessage: "Type your message here..."
-    }
-};
-
-let currentLang = localStorage.getItem('king_store_lang') || 'ar';
-
-window.changeLanguage = function(lang) {
-    currentLang = lang;
-    localStorage.setItem('king_store_lang', lang);
-    applyTranslations();
-    const settingsPopupMenu = document.getElementById('settings-popup-menu');
-    if(settingsPopupMenu) settingsPopupMenu.classList.remove('active');
-};
-
-function applyTranslations() {
-    const htmlRoot = document.getElementById('html-root');
-    if(htmlRoot) {
-        htmlRoot.setAttribute('lang', currentLang);
-        htmlRoot.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
-    }
-
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (translations[currentLang] && translations[currentLang][key]) {
-            el.textContent = translations[currentLang][key];
-        }
-    });
-
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-        const key = el.getAttribute('data-i18n-placeholder');
-        if (translations[currentLang] && translations[currentLang][key]) {
-            el.setAttribute('placeholder', translations[currentLang][key]);
-        }
-    });
-}
 
 const loginScreen = document.getElementById('login-screen');
 const splashScreen = document.getElementById('splash-screen');
@@ -147,11 +70,6 @@ if(supportWaLink) {
     supportWaLink.href = `https://wa.me/201225428692?text=${encodeURIComponent("مرحباً، أريد الدعم الفني والاستفسار عن خدمات King Store.")}`;
 }
 
-// معالجة العودة من تسجيل الدخول بالتوجيه
-getRedirectResult(auth).catch((err) => {
-    console.log("Redirect auth error:", err);
-});
-
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
@@ -162,7 +80,7 @@ onAuthStateChanged(auth, (user) => {
                 if(splashScreen) splashScreen.style.display = 'none';
                 if(storeScreen) storeScreen.style.display = 'block';
                 sessionStorage.setItem('splash_shown', 'true');
-            }, 3000);
+            }, 2500);
             isLoginHandled = true;
         } else {
             if(splashScreen) splashScreen.style.display = 'none';
@@ -186,17 +104,17 @@ onAuthStateChanged(auth, (user) => {
         if(adminAddProductBtn) adminAddProductBtn.style.display = 'none';
         if(adminProductFormBox) adminProductFormBox.style.display = 'none';
     }
-    applyTranslations();
 });
 
-// زر تسجيل الدخول باستخدام Redirect لضمان عدم تجمد الشاشة على الهواتف
+// استخدام Popup مع معالجة الأخطاء لمنع التجمد
 if(googleLoginBtn) {
     googleLoginBtn.addEventListener('click', async () => {
-        if(authErrorMsg) authErrorMsg.textContent = "جاري تحويلك لتسجيل الدخول...";
+        if(authErrorMsg) authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
         try {
-            await signInWithRedirect(auth, provider);
+            await signInWithPopup(auth, provider);
         } catch (err) {
-            if(authErrorMsg) authErrorMsg.textContent = "خطأ في التسجيل: " + err.code;
+            console.error(err);
+            if(authErrorMsg) authErrorMsg.textContent = "فشل التسجيل، تأكد من السماح بالنافذة المنبثقة.";
         }
     });
 }
@@ -253,7 +171,6 @@ if(adminAddProductBtn) {
     });
 }
 
-// حفظ ونشر المنتج مع الصورة والفيديو الاختياري
 if(saveProductBtn) {
     saveProductBtn.addEventListener('click', () => {
         const title = newProductTitle ? newProductTitle.value.trim() : '';
@@ -314,7 +231,6 @@ onChildRemoved(productsRef, (snapshot) => {
     if (el) el.remove();
 });
 
-// عرض المنتج مع تشغيل الفيديو إذا وُجد بجانب الصورة
 function renderProduct(id, data) {
     if(!productsGridContainer) return;
     const isUserAdmin = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح");
@@ -323,9 +239,7 @@ function renderProduct(id, data) {
 
     let mediaHtml = `<img src="${data.image}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 10px; margin-bottom: 10px;">`;
     if (data.video && data.video.trim() !== "") {
-        mediaHtml = `
-            <video src="${data.video}" controls style="width: 100%; height: 140px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; background: #000;"></video>
-        `;
+        mediaHtml = `<video src="${data.video}" controls style="width: 100%; height: 140px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; background: #000;"></video>`;
     }
 
     const card = document.createElement('div');
@@ -352,11 +266,10 @@ window.deleteProduct = function(id) {
             remove(ref(db, `products/${id}`));
         }
     } else {
-        alert("غير مسموح لك بحذف المنتج، هذه الصلاحية للمشرف فقط!");
+        alert("غير مسموح لك بحذف المنتج!");
     }
 };
 
-// نافذة المواصفات والتحويل ورقم 01214563781 والواتساب 01225428692
 window.openProductModal = function(productTitle) {
     let existingModal = document.getElementById('custom-checkout-modal');
     if (existingModal) existingModal.remove();
@@ -395,10 +308,7 @@ window.openProductModal = function(productTitle) {
     });
 };
 
-const badWordsPatterns = [
-    /شرموط/i, /قحب/i, /منيوك/i, /متناك/i, /عرص/i, /خول/i, /أحا/i, /احا/i, /وسخ/i, /كلب/i, /حمار/i, /زفت/i, /طيز/i, /قذر/i, /عاهر/i, /عاهرة/i,
-    /fuck/i, /shit/i, /bitch/i, /asshole/i, /cunt/i, /dick/i, /bastard/i, /idiot/i, /suck/i
-];
+const badWordsPatterns = [/شرموط/i, /قحب/i, /منيوك/i, /متناك/i, /عرص/i, /خول/i, /أحا/i, /احا/i, /وسخ/i, /كلب/i, /حمار/i, /زفت/i, /طيز/i, /قذر/i, /عاهر/i, /عاهرة/i, /fuck/i, /shit/i, /bitch/i, /asshole/i, /cunt/i, /dick/i, /bastard/i, /idiot/i, /suck/i];
 
 function aiSmartCensor(text) {
     let cleanText = text;
@@ -442,4 +352,65 @@ function renderMessage(msgId, data) {
     const adminBadgeHtml = isMsgAdmin ? `<span class="admin-badge"><i class="fa-solid fa-crown"></i> مشرف</span>` : '';
 
     let messageBodyHtml = `<div class="chat-msg-text">${escapeHtml(data.text)}</div>`;
-    const isUserAdmin = currentUser && (currentUser.email === ADM
+    const isUserAdmin = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح");
+    let deleteBtnHtml = (currentUser && (data.uid === currentUser.uid || isUserAdmin)) ? `<button class="delete-msg-btn" onclick="deleteMessage('${msgId}')">حذف</button>` : '';
+
+    const msgRow = document.createElement('div');
+    msgRow.id = `msg-${msgId}`;
+    msgRow.className = rowClass;
+    msgRow.innerHTML = `
+        <img src="${data.avatar || ''}" class="chat-msg-avatar">
+        <div class="chat-msg-content">
+            <div class="chat-msg-header-info">
+                <span class="chat-msg-username">${escapeHtml(data.username)}</span>
+                ${adminBadgeHtml}
+            </div>
+            ${messageBodyHtml}
+            <div style="text-align: left; margin-top: 4px;">
+                ${deleteBtnHtml}
+            </div>
+        </div>
+    `;
+    chatMessagesArea.appendChild(msgRow);
+    chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+}
+
+window.deleteMessage = function(msgId) {
+    if (!currentUser) return;
+    remove(ref(db, `messages/${msgId}`));
+};
+
+function sendChatMessage() {
+    if(!chatInputField) return;
+    const rawText = chatInputField.value.trim();
+    if (!rawText || !currentUser) return;
+
+    const filteredText = aiSmartCensor(rawText);
+    const isAdminUser = currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح";
+
+    const newMessage = {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        username: currentUser.displayName || 'مستخدم',
+        avatar: currentUser.photoURL || '',
+        type: 'text',
+        text: filteredText,
+        isAdmin: isAdminUser,
+        timestamp: Date.now()
+    };
+
+    push(chatRef, newMessage);
+    chatInputField.value = '';
+}
+
+function escapeHtml(string) {
+    return String(string).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+if(chatSendBtn) chatSendBtn.addEventListener('click', sendChatMessage);
+if(chatInputField) {
+    chatInputField.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChatMessage();
+    });
+    }
+            
