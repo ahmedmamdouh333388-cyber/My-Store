@@ -1,4 +1,3 @@
-// إعدادات تواصل فايربيس (استبدلها ببيانات مشروعك الخاصة)
 const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_AUTH_DOMAIN",
@@ -41,7 +40,6 @@ auth.onAuthStateChanged(user => {
         userInfo.style.display = "flex";
         userName.textContent = user.displayName;
 
-        // التحقق مما إذا كان المستخدم هو الأدمن المعتمد
         if (user.email === ADMIN_EMAIL) {
             adminPanel.style.display = "block";
         } else {
@@ -91,7 +89,7 @@ db.ref("products").on("value", snapshot => {
                 <p>${product.desc}</p>
                 <p><strong>${product.price}</strong></p>
                 <a href="${product.stripeLink}" target="_blank"><button class="btn-3d success">شراء الآن</button></a>
-                ${auth.currentUser && auth.currentUser.email === ADMIN_EMAIL ? `<button onclick="deleteProduct('${id}')" class="btn-3d danger" style="margin-top:5px;">حذف</button>` : ''}
+                ${auth.currentUser && auth.currentUser.email === ADMIN_EMAIL ? `<button onclick="deleteProduct('${id}')" class="btn-3d danger" style="margin-top:8px;">حذف</button>` : ''}
             `;
             productsGrid.appendChild(card);
         });
@@ -135,6 +133,7 @@ db.ref("chats").on("value", snapshot => {
         Object.keys(chats).forEach(id => {
             const chat = chats[id];
             const msgDiv = document.createElement("div");
+            msgDiv.style.margin = "5px 0";
             msgDiv.innerHTML = `<strong>${chat.user}:</strong> ${chat.text}`;
             chatMessages.appendChild(msgDiv);
         });
