@@ -17,7 +17,6 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-main);
     color: var(--text-color);
-    direction: inherit;
 }
 
 #login-screen, #splash-screen {
@@ -36,15 +35,6 @@ body {
     text-align: center;
 }
 
-.splash-inner img, .logo-box img {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    object-fit: cover;
-    box-shadow: 0 0 20px var(--primary-color);
-    margin-bottom: 15px;
-}
-
 .login-card {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -56,7 +46,7 @@ body {
     max-width: 380px;
 }
 
-.login-title { font-size: 22px; font-weight: bold; margin-bottom: 8px; }
+.login-title { font-size: 22px; font-weight: bold; margin-bottom: 8px; color: #fff; }
 .login-desc { font-size: 13px; color: #9ca3af; margin-bottom: 25px; }
 
 .google-signin-btn {
