@@ -20,7 +20,6 @@ const provider = new GoogleAuthProvider();
 
 const ADMIN_EMAIL = "ahmadmamdouh333388@gmail.com"; 
 
-// نظام الترجمة
 const translations = {
     ar: {
         welcomeBack: "مرحباً بك مجدداً",
@@ -72,24 +71,26 @@ window.changeLanguage = function(lang) {
     currentLang = lang;
     localStorage.setItem('king_store_lang', lang);
     applyTranslations();
-    settingsPopupMenu.classList.remove('active');
+    if(settingsPopupMenu) settingsPopupMenu.classList.remove('active');
 };
 
 function applyTranslations() {
     const htmlRoot = document.getElementById('html-root');
-    htmlRoot.setAttribute('lang', currentLang);
-    htmlRoot.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+    if(htmlRoot) {
+        htmlRoot.setAttribute('lang', currentLang);
+        htmlRoot.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+    }
 
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (translations[currentLang][key]) {
+        if (translations[currentLang] && translations[currentLang][key]) {
             el.textContent = translations[currentLang][key];
         }
     });
 
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.getAttribute('data-i18n-placeholder');
-        if (translations[currentLang][key]) {
+        if (translations[currentLang] && translations[currentLang][key]) {
             el.setAttribute('placeholder', translations[currentLang][key]);
         }
     });
@@ -146,131 +147,150 @@ if (activeTheme) document.body.className = activeTheme;
 window.changeTheme = function(themeName) {
     document.body.className = themeName;
     localStorage.setItem('king_store_theme', themeName);
-    settingsPopupMenu.classList.remove('active');
+    if(settingsPopupMenu) settingsPopupMenu.classList.remove('active');
 };
 
-supportWaLink.href = `https://wa.me/201225428692?text=${encodeURIComponent("مرحباً، أريد الدعم الفني والاستفسار عن خدمات King Store.")}`;
+if(supportWaLink) {
+    supportWaLink.href = `https://wa.me/201225428692?text=${encodeURIComponent("مرحباً، أريد الدعم الفني والاستفسار عن خدمات King Store.")}`;
+}
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
-        loginScreen.style.display = 'none';
+        if(loginScreen) loginScreen.style.display = 'none';
         if (!isLoginHandled && !sessionStorage.getItem('splash_shown')) {
-            splashScreen.style.display = 'flex';
+            if(splashScreen) splashScreen.style.display = 'flex';
             setTimeout(() => {
-                splashScreen.style.display = 'none';
-                storeScreen.style.display = 'block';
+                if(splashScreen) splashScreen.style.display = 'none';
+                if(storeScreen) storeScreen.style.display = 'block';
                 sessionStorage.setItem('splash_shown', 'true');
             }, 3000);
             isLoginHandled = true;
         } else {
-            splashScreen.style.display = 'none';
-            storeScreen.style.display = 'block';
+            if(splashScreen) splashScreen.style.display = 'none';
+            if(storeScreen) storeScreen.style.display = 'block';
         }
-        menuUserImg.src = user.photoURL || "";
-        menuUserName.textContent = user.displayName || "مستخدم متميز";
+        if(menuUserImg) menuUserImg.src = user.photoURL || "";
+        if(menuUserName) menuUserName.textContent = user.displayName || "مستخدم متميز";
 
-        // إظهار لوحة التحكم للمشرف فقط
         if (user.email === ADMIN_EMAIL || user.displayName === "احمد ممدوح") {
-            adminAddProductBtn.style.display = 'block';
+            if(adminAddProductBtn) adminAddProductBtn.style.display = 'block';
         }
     } else {
         currentUser = null;
         isLoginHandled = false;
         sessionStorage.removeItem('splash_shown');
-        splashScreen.style.display = 'none';
-        storeScreen.style.display = 'none';
-        loginScreen.style.display = 'flex';
-        settingsPopupMenu.classList.remove('active');
-        chatModalContainer.classList.remove('active');
-        adminAddProductBtn.style.display = 'none';
-        adminProductFormBox.style.display = 'none';
+        if(splashScreen) splashScreen.style.display = 'none';
+        if(storeScreen) storeScreen.style.display = 'none';
+        if(loginScreen) loginScreen.style.display = 'flex';
+        if(settingsPopupMenu) settingsPopupMenu.classList.remove('active');
+        if(chatModalContainer) chatModalContainer.classList.remove('active');
+        if(adminAddProductBtn) adminAddProductBtn.style.display = 'none';
+        if(adminProductFormBox) adminProductFormBox.style.display = 'none';
     }
     applyTranslations();
 });
 
-googleLoginBtn.addEventListener('click', async () => {
-    authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
-    try {
-        await signInWithPopup(auth, provider);
-    } catch (err) {
-        authErrorMsg.textContent = "خطأ في التسجيل: " + err.code;
-    }
-});
+if(googleLoginBtn) {
+    googleLoginBtn.addEventListener('click', async () => {
+        if(authErrorMsg) authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
+        try {
+            await signInWithPopup(auth, provider);
+        } catch (err) {
+            if(authErrorMsg) authErrorMsg.textContent = "خطأ في التسجيل: " + err.code;
+        }
+    });
+}
 
-settingsTriggerBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    settingsPopupMenu.classList.toggle('active');
-});
+if(settingsTriggerBtn) {
+    settingsTriggerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if(settingsPopupMenu) settingsPopupMenu.classList.toggle('active');
+    });
+}
 
 window.addEventListener('click', () => {
-    settingsPopupMenu.classList.remove('active');
+    if(settingsPopupMenu) settingsPopupMenu.classList.remove('active');
 });
 
-settingsPopupMenu.addEventListener('click', (e) => {
-    e.stopPropagation();
-});
+if(settingsPopupMenu) {
+    settingsPopupMenu.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+}
 
-menuLogoutTrigger.addEventListener('click', async () => {
-    try { await signOut(auth); } catch (e) { console.log(e); }
-});
+if(menuLogoutTrigger) {
+    menuLogoutTrigger.addEventListener('click', async () => {
+        try { await signOut(auth); } catch (e) { console.log(e); }
+    });
+}
 
-triggerDeleteModal.addEventListener('click', () => {
-    settingsPopupMenu.classList.remove('active');
-    deleteAlertModal.style.display = 'flex';
-});
+if(triggerDeleteModal) {
+    triggerDeleteModal.addEventListener('click', () => {
+        if(settingsPopupMenu) settingsPopupMenu.classList.remove('active');
+        if(deleteAlertModal) deleteAlertModal.style.display = 'flex';
+    });
+}
 
-cancelDeleteAction.addEventListener('click', () => {
-    deleteAlertModal.style.display = 'none';
-});
+if(cancelDeleteAction) {
+    cancelDeleteAction.addEventListener('click', () => {
+        if(deleteAlertModal) deleteAlertModal.style.display = 'none';
+    });
+}
 
-confirmDeleteAction.addEventListener('click', async () => {
-    deleteAlertModal.style.display = 'none';
-    localStorage.clear();
-    sessionStorage.clear();
-    try { await signOut(auth); } catch (e) { console.log(e); }
-    window.location.reload();
-});
+if(confirmDeleteAction) {
+    confirmDeleteAction.addEventListener('click', async () => {
+        if(deleteAlertModal) deleteAlertModal.style.display = 'none';
+        localStorage.clear();
+        sessionStorage.clear();
+        try { await signOut(auth); } catch (e) { console.log(e); }
+        window.location.reload();
+    });
+}
 
-// إدارة المنتجات ورفعها بـ Base64
-adminAddProductBtn.addEventListener('click', () => {
-    adminProductFormBox.style.display = adminProductFormBox.style.display === 'none' ? 'block' : 'none';
-});
+if(adminAddProductBtn) {
+    adminAddProductBtn.addEventListener('click', () => {
+        if(adminProductFormBox) {
+            adminProductFormBox.style.display = adminProductFormBox.style.display === 'none' ? 'block' : 'none';
+        }
+    });
+}
 
-saveProductBtn.addEventListener('click', () => {
-    const title = newProductTitle.value.trim();
-    const price = newProductPrice.value.trim();
-    const file = newProductImgFile.files[0];
+if(saveProductBtn) {
+    saveProductBtn.addEventListener('click', () => {
+        const title = newProductTitle ? newProductTitle.value.trim() : '';
+        const price = newProductPrice ? newProductPrice.value.trim() : '';
+        const file = newProductImgFile && newProductImgFile.files ? newProductImgFile.files[0] : null;
 
-    if (!title || !price || !file) {
-        alert("يرجى إدخال اسم المنتج، السعر، واختيار صورة.");
-        return;
-    }
+        if (!title || !price || !file) {
+            alert("يرجى إدخال اسم المنتج، السعر، واختيار صورة.");
+            return;
+        }
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = () => {
-        const base64Image = reader.result;
-        const productsRef = ref(db, 'products');
-        
-        push(productsRef, {
-            title: title,
-            price: price,
-            image: base64Image,
-            timestamp: Date.now()
-        }).then(() => {
-            newProductTitle.value = '';
-            newProductPrice.value = '';
-            newProductImgFile.value = '';
-            adminProductFormBox.style.display = 'none';
-            alert("تم نشر المنتج بنجاح!");
-        }).catch(err => {
-            alert("حدث خطأ أثناء النشر: " + err.message);
-        });
-    };
-});
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = () => {
+            const base64Image = reader.result;
+            const productsRef = ref(db, 'products');
+            
+            push(productsRef, {
+                title: title,
+                price: price,
+                image: base64Image,
+                timestamp: Date.now()
+            }).then(() => {
+                if(newProductTitle) newProductTitle.value = '';
+                if(newProductPrice) newProductPrice.value = '';
+                if(newProductImgFile) newProductImgFile.value = '';
+                if(adminProductFormBox) adminProductFormBox.style.display = 'none';
+                alert("تم نشر المنتج بنجاح!");
+            }).catch(err => {
+                alert("حدث خطأ أثناء النشر: " + err.message);
+            });
+        };
+    });
+}
 
-// جلب وعرض المنتجات في قسم المشتريات
 const productsRef = ref(db, 'products');
 onChildAdded(productsRef, (snapshot) => {
     renderProduct(snapshot.key, snapshot.val());
@@ -281,6 +301,7 @@ onChildRemoved(productsRef, (snapshot) => {
 });
 
 function renderProduct(id, data) {
+    if(!productsGridContainer) return;
     const isUserAdmin = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح");
     let deleteProductBtn = isUserAdmin ? `<button onclick="deleteProduct('${id}')" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 8px;">حذف المنتج</button>` : '';
 
@@ -304,7 +325,6 @@ window.deleteProduct = function(id) {
     }
 };
 
-// ذكاء اصطناعي لفلترة السب والقذف والشتائم بدقة عالية
 const badWordsPatterns = [
     /شرموط/i, /قحب/i, /منيوك/i, /متناك/i, /عرص/i, /خول/i, /أحا/i, /احا/i, /وسخ/i, /كلب/i, /حمار/i, /زفت/i, /طيز/i, /قذر/i, /عاهر/i, /عاهرة/i,
     /fuck/i, /shit/i, /bitch/i, /asshole/i, /cunt/i, /dick/i, /bastard/i, /idiot/i, /suck/i
@@ -318,19 +338,27 @@ function aiSmartCensor(text) {
     return cleanText;
 }
 
-chatFloatBtn.addEventListener('click', () => {
-    chatModalContainer.classList.toggle('active');
-    chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
-});
+if(chatFloatBtn) {
+    chatFloatBtn.addEventListener('click', () => {
+        if(chatModalContainer) {
+            chatModalContainer.classList.toggle('active');
+            if(chatMessagesArea) chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+        }
+    });
+}
 
-chatCloseBtn.addEventListener('click', () => {
-    chatModalContainer.classList.remove('active');
-});
+if(chatCloseBtn) {
+    chatCloseBtn.addEventListener('click', () => {
+        if(chatModalContainer) chatModalContainer.classList.remove('active');
+    });
+}
 
-cancelReplyBtn.addEventListener('click', () => {
-    replyingToData = null;
-    replyPreviewBox.style.display = 'none';
-});
+if(cancelReplyBtn) {
+    cancelReplyBtn.addEventListener('click', () => {
+        replyingToData = null;
+        if(replyPreviewBox) replyPreviewBox.style.display = 'none';
+    });
+}
 
 const chatRef = ref(db, 'messages');
 
@@ -346,6 +374,7 @@ onChildRemoved(chatRef, (snapshot) => {
 });
 
 function renderMessage(msgId, data) {
+    if(!chatMessagesArea) return;
     const isMyMessage = currentUser && (data.email === ADMIN_EMAIL || data.uid === currentUser.uid);
     const rowClass = isMyMessage ? 'chat-msg-row my-message' : 'chat-msg-row other-message';
     
@@ -435,60 +464,15 @@ function renderMessage(msgId, data) {
         const progressFill = document.getElementById(`progress-${msgId}`);
         const currentTimeText = document.getElementById(`current-time-${msgId}`);
 
-        audioEl.addEventListener('timeupdate', () => {
-            if (audioEl.duration) {
-                const percent = (audioEl.currentTime / audioEl.duration) * 100;
-                progressFill.style.width = percent + '%';
-                const mins = Math.floor(audioEl.currentTime / 60);
-                const secs = Math.floor(audioEl.currentTime % 60);
-                currentTimeText.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-            }
-        });
+        if(audioEl) {
+            audioEl.addEventListener('timeupdate', () => {
+                if (audioEl.duration) {
+                    const percent = (audioEl.currentTime / audioEl.duration) * 100;
+                    if(progressFill) progressFill.style.width = percent + '%';
+                    const mins = Math.floor(audioEl.currentTime / 60);
+                    const secs = Math.floor(audioEl.currentTime % 60);
+                    if(currentTimeText) currentTimeText.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                }
+            });
 
-        audioEl.addEventListener('ended', () => {
-            playIcon.className = "fa-solid fa-play";
-            progressFill.style.width = '0%';
-            audioEl.currentTime = 0;
-        });
-    }
-}
-
-window.togglePlayAudio = function(msgId) {
-    const audioEl = document.getElementById(`audio-el-${msgId}`);
-    const playIcon = document.getElementById(`play-icon-${msgId}`);
-
-    document.querySelectorAll('audio').forEach(el => {
-        if (el.id !== `audio-el-${msgId}`) {
-            el.pause();
-            el.currentTime = 0;
-            const otherId = el.id.replace('audio-el-', '');
-            const otherIcon = document.getElementById(`play-icon-${otherId}`);
-            if (otherIcon) otherIcon.className = "fa-solid fa-play";
-        }
-    });
-
-    if (audioEl.paused) {
-        audioEl.play();
-        playIcon.className = "fa-solid fa-pause";
-    } else {
-        audioEl.pause();
-        playIcon.className = "fa-solid fa-play";
-    }
-};
-
-window.prepareReply = function(msgId, username, text) {
-    replyingToData = { username, text };
-    replyingToText.textContent = `الرد على ${username}: ${text.substring(0, 25)}...`;
-    replyPreviewBox.style.display = 'block';
-    chatInputField.focus();
-};
-
-window.toggleReaction = async function(msgId, emoji) {
-    if (!currentUser) return;
-    const userKey = currentUser.uid.replace(/[.#$[\]]/g, "_");
-    const msgRef = ref(db, `messages/${msgId}/reactions`);
-    
-    const snapshot = await get(msgRef);
-    let reactions = snapshot.exists() ? snapshot.val() : {};
-
-    Object.keys(reactions).
+         
