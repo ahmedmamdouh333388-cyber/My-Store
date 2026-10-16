@@ -13,70 +13,79 @@
 </head>
 <body class="theme-blue">
 
+    <!-- شاشة تسجيل الدخول -->
     <div id="login-screen">
+        <div class="login-card-glow"></div>
         <div class="login-card">
             <div class="logo-box">
                 <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Logo">
             </div>
-            <div class="login-title">مرحباً بك مجدداً</div>
-            <p class="login-desc">سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.</p>
+            <div class="login-title">أهلاً بك يا ملك 👑</div>
+            <p class="login-desc">سجل دخولك الآن واستمتع بتجربة تسوق ودردشة ملكية استثنائية.</p>
             <button id="google-login-btn" class="google-signin-btn">
                 <i class="fa-brands fa-google"></i>
-                <span>Continue with Google</span>
+                <span>المتابعة باستخدام Google</span>
             </button>
             <p id="auth-error-msg"></p>
         </div>
     </div>
 
+    <!-- شاشة الترحيب -->
     <div id="splash-screen">
         <div class="splash-inner">
             <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Logo">
-            <h2>مرحباً بكم في متجر King Store</h2>
-            <p>جاري تهيئة وتجهيز متجرك الملكي...</p>
+            <h2>جاري تحضير عرش المتجر...</h2>
+            <div class="splash-loader-bar"><span></span></div>
         </div>
     </div>
 
+    <!-- نافذة تأكيد الحذف -->
     <div id="delete-alert-modal">
         <div class="alert-box-content">
-            <h3>⚠️ تحذير هام</h3>
-            <p>لا يمكن استرجاع البيانات نهائياً. هل أنت متأكد من رغبتك في حذف بيانات هذا الحساب؟</p>
+            <div class="alert-icon-wrap"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3>تحذير ملكي خطير</h3>
+            <p>لا يمكن استرجاع البيانات نهائياً بعد الحذف. هل أنت متأكد تماماً من رغبتك في مسح السجل؟</p>
             <div class="alert-btns-row">
-                <button id="cancel-delete-action" class="alert-btn alert-btn-cancel">إلغاء</button>
-                <button id="confirm-delete-action" class="alert-btn alert-btn-confirm">تأكيد الحذف</button>
+                <button id="cancel-delete-action" class="alert-btn alert-btn-cancel">تراجع</button>
+                <button id="confirm-delete-action" class="alert-btn alert-btn-confirm">نعم، احذف الكل</button>
             </div>
         </div>
     </div>
 
+    <!-- شاشة المتجر والدردشة -->
     <div id="store-screen">
         <header>
-            <div class="brand-title">King Store 👑</div>
+            <div class="brand-box">
+                <div class="brand-logo-mini">👑</div>
+                <div class="brand-title">King Store</div>
+            </div>
             <div style="position: relative;">
                 <button id="settings-trigger-btn" class="settings-icon-btn">
-                    <i class="fa-solid fa-gear"></i>
+                    <i class="fa-solid fa-sliders"></i>
                 </button>
                 <div id="settings-popup-menu" class="settings-dropdown">
                     <div class="user-info-box">
                         <img id="menu-user-img" src="" alt="User" class="user-avatar-img">
                         <div style="overflow: hidden; text-align: right; flex-grow: 1;">
                             <div id="menu-user-name" class="user-name-txt">اسم المستخدم</div>
-                            <span id="menu-logout-trigger" class="logout-action">تسجيل الخروج</span>
+                            <span id="menu-logout-trigger" class="logout-action"><i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج</span>
                         </div>
                     </div>
-                    <div class="colors-label">تخصيص ألوان الموقع:</div>
+                    <div class="colors-label">تخصيص لوحة الألوان الملكية:</div>
                     <div class="colors-row">
-                        <div class="color-circle blue" onclick="changeTheme('theme-blue')"></div>
-                        <div class="color-circle purple" onclick="changeTheme('theme-purple')"></div>
-                        <div class="color-circle emerald" onclick="changeTheme('theme-emerald')"></div>
-                        <div class="color-circle amber" onclick="changeTheme('theme-amber')"></div>
-                        <div class="color-circle rose" onclick="changeTheme('theme-rose')"></div>
+                        <div class="color-circle blue" onclick="changeTheme('theme-blue')" title="أزرق ملكي"></div>
+                        <div class="color-circle purple" onclick="changeTheme('theme-purple')" title="بنفسجي إمبراطوري"></div>
+                        <div class="color-circle emerald" onclick="changeTheme('theme-emerald')" title="زمردي أخضر"></div>
+                        <div class="color-circle amber" onclick="changeTheme('theme-amber')" title="ذهبي أصفر"></div>
+                        <div class="color-circle rose" onclick="changeTheme('theme-rose')" title="روزي وردي"></div>
                     </div>
                     
                     <a id="support-wa-link" href="#" target="_blank" class="dropdown-link-item">
                         <i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 16px;"></i>
-                        <span>مركز الدعم الفني</span>
+                        <span>الدعم الفني والخدمات</span>
                     </a>
                     <button id="trigger-delete-modal" class="dropdown-link-item danger-item">
-                        <i class="fa-solid fa-trash-can"></i>
+                        <i class="fa-solid fa-user-slash"></i>
                         <span>حذف بيانات الحساب</span>
                     </button>
                 </div>
@@ -84,31 +93,44 @@
         </header>
 
         <div class="purchases-main-area">
-            <h1>المشتريات</h1>
+            <div class="hero-content-card">
+                <div class="hero-badge"><i class="fa-solid fa-crown"></i> النظام الملكي النشط</div>
+                <h1>مرحباً بك في عالم الملوك</h1>
+                <p>استمتع بتجربة متجر متكاملة ومجتمع تفاعلي آمن. اضغط على زر الدردشة في الأسفل للبدء بالحديث مع الأعضاء.</p>
+            </div>
         </div>
 
         <button id="chat-float-btn" class="chat-float-btn" title="دردشة مجتمع الملوك">
-            <i class="fa-solid fa-comments"></i>
+            <i class="fa-solid fa-comment-dots"></i>
+            <span class="pulse-ring"></span>
         </button>
 
+        <!-- نافذة الشات الملكي -->
         <div id="chat-modal-container" class="chat-modal-container">
             <div class="chat-header">
-                <h4><i class="fa-solid fa-hashtag"></i> دردشة مجتمع الملوك</h4>
+                <div class="chat-header-title">
+                    <i class="fa-solid fa-comments"></i>
+                    <div>
+                        <span>مجتمع الملوك</span>
+                        <small>متصل الآن بسلاسة</small>
+                    </div>
+                </div>
                 <button id="chat-close-btn" class="chat-close-btn"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
             <div id="chat-messages-area" class="chat-messages-area"></div>
 
             <div id="reply-preview-box" class="reply-preview-box" style="display: none;">
-                <div class="reply-preview-content" style="display: flex; justify-content: space-between; width: 100%;">
+                <div class="reply-preview-content">
+                    <i class="fa-solid fa-reply"></i>
                     <span id="replying-to-text">الرد على: ...</span>
-                    <i class="fa-solid fa-xmark" id="cancel-reply-btn" style="cursor: pointer;"></i>
+                    <i class="fa-solid fa-xmark" id="cancel-reply-btn" style="cursor: pointer; margin-right: auto;"></i>
                 </div>
             </div>
 
             <div class="chat-input-area">
-                <button id="chat-mic-btn" class="chat-mic-btn" title="اضغط للتسجيل الصوتي"><i class="fa-solid fa-microphone"></i></button>
-                <input type="text" id="chat-input-field" class="chat-input-field" placeholder="اكتب رسالتك هنا...">
+                <button id="chat-mic-btn" class="chat-mic-btn" title="تسجيل صوتي"><i class="fa-solid fa-microphone"></i></button>
+                <input type="text" id="chat-input-field" class="chat-input-field" placeholder="اكتب رسالتك الملكية هنا...">
                 <button id="chat-send-btn" class="chat-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
