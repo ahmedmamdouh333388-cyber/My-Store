@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>King Store</title>
+    <title id="page-title">King Store</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#030712">
@@ -18,8 +18,8 @@
             <div class="logo-box">
                 <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Logo">
             </div>
-            <div class="login-title">مرحباً بك مجدداً</div>
-            <p class="login-desc">سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.</p>
+            <div class="login-title" data-i18n="welcomeBack">مرحباً بك مجدداً</div>
+            <p class="login-desc" data-i18n="loginDesc">سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.</p>
             <button id="google-login-btn" class="google-signin-btn">
                 <i class="fa-brands fa-google"></i>
                 <span>Continue with Google</span>
@@ -31,18 +31,18 @@
     <div id="splash-screen">
         <div class="splash-inner">
             <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Logo">
-            <h2>مرحباً بكم في King Store</h2>
-            <p>جاري تهيئة وتجهيز متجرك...</p>
+            <h2 data-i18n="splashTitle">مرحباً بكم في King Store</h2>
+            <p data-i18n="splashDesc">جاري تهيئة وتجهيز متجرك...</p>
         </div>
     </div>
 
     <div id="delete-alert-modal">
         <div class="alert-box-content">
-            <h3>⚠️ تحذير هام</h3>
-            <p>لا يمكن استرجاع البيانات نهائياً. هل أنت متأكد من رغبتك في حذف بيانات هذا الحساب؟</p>
+            <h3 data-i18n="warningTitle">⚠️ تحذير هام</h3>
+            <p data-i18n="warningDesc">لا يمكن استرجاع البيانات نهائياً. هل أنت متأكد من رغبتك في حذف بيانات هذا الحساب؟</p>
             <div class="alert-btns-row">
-                <button id="cancel-delete-action" class="alert-btn alert-btn-cancel">إلغاء</button>
-                <button id="confirm-delete-action" class="alert-btn alert-btn-confirm">تأكيد الحذف</button>
+                <button id="cancel-delete-action" class="alert-btn alert-btn-cancel" data-i18n="cancel">إلغاء</button>
+                <button id="confirm-delete-action" class="alert-btn alert-btn-confirm" data-i18n="confirmDelete">تأكيد الحذف</button>
             </div>
         </div>
     </div>
@@ -59,10 +59,18 @@
                         <img id="menu-user-img" src="" alt="User" class="user-avatar-img">
                         <div style="overflow: hidden; text-align: right; flex-grow: 1;">
                             <div id="menu-user-name" class="user-name-txt">اسم المستخدم</div>
-                            <span id="menu-logout-trigger" class="logout-action">تسجيل الخروج</span>
+                            <span id="menu-logout-trigger" class="logout-action" data-i18n="logout">تسجيل الخروج</span>
                         </div>
                     </div>
-                    <div class="colors-label">تخصيص ألوان الموقع:</div>
+
+                    <!-- خيار اللغة -->
+                    <div class="colors-label" data-i18n="languageLabel">لغة الموقع:</div>
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <button onclick="changeLanguage('ar')" style="flex: 1; padding: 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; cursor: pointer;">العربية</button>
+                        <button onclick="changeLanguage('en')" style="flex: 1; padding: 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; cursor: pointer;">English</button>
+                    </div>
+
+                    <div class="colors-label" data-i18n="themeLabel">تخصيص ألوان الموقع:</div>
                     <div class="colors-row">
                         <div class="color-circle blue" onclick="changeTheme('theme-blue')"></div>
                         <div class="color-circle purple" onclick="changeTheme('theme-purple')"></div>
@@ -73,18 +81,36 @@
                     
                     <a id="support-wa-link" href="#" target="_blank" class="dropdown-link-item">
                         <i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 16px;"></i>
-                        <span>مركز الدعم الفني</span>
+                        <span data-i18n="support">مركز الدعم الفني</span>
                     </a>
                     <button id="trigger-delete-modal" class="dropdown-link-item danger-item">
                         <i class="fa-solid fa-trash-can"></i>
-                        <span>حذف بيانات الحساب</span>
+                        <span data-i18n="deleteAccount">حذف بيانات الحساب</span>
                     </button>
                 </div>
             </div>
         </header>
 
         <div class="purchases-main-area">
-            <h1>المشتريات</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1 data-i18n="purchasesTitle" style="margin: 0;">المشتريات والمنتجات</h1>
+                <!-- لوحة التحكم للمشرف فقط -->
+                <button id="admin-add-product-btn" style="display: none; background: #25d366; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                    <i class="fa-solid fa-plus"></i> <span data-i18n="addProduct">إضافة منتج</span>
+                </button>
+            </div>
+
+            <!-- نموذج إضافة منتج (يظهر للمشرف فقط عند النقر) -->
+            <div id="admin-product-form-box" style="display: none; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                <h3 style="margin-top: 0; font-size: 16px; color: #fff;" data-i18n="addNewProduct">إضافة منتج جديد للمتجر</h3>
+                <input type="text" id="new-product-title" placeholder="اسم المنتج..." style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ccc; background: rgba(0,0,0,0.2); color: #fff;">
+                <input type="text" id="new-product-price" placeholder="سعر المنتج (مثال: $50)..." style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ccc; background: rgba(0,0,0,0.2); color: #fff;">
+                <input type="file" id="new-product-img-file" accept="image/*" style="width: 100%; margin-bottom: 10px; color: #fff;">
+                <button id="save-product-btn" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" data-i18n="publishProduct">نشر المنتج</button>
+            </div>
+
+            <!-- شبكة عرض المنتجات -->
+            <div id="products-grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px;"></div>
         </div>
 
         <button id="chat-float-btn" class="chat-float-btn" title="دردشة King Store">
@@ -93,7 +119,7 @@
 
         <div id="chat-modal-container" class="chat-modal-container">
             <div class="chat-header">
-                <h4><i class="fa-solid fa-hashtag"></i> دردشة King Store</h4>
+                <h4 data-i18n="chatHeader"><i class="fa-solid fa-hashtag"></i> دردشة King Store</h4>
                 <button id="chat-close-btn" class="chat-close-btn"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
@@ -107,8 +133,8 @@
             </div>
 
             <div class="chat-input-area">
-                <button id="chat-mic-btn" class="chat-mic-btn" title="اضغط للتسجيل الصوتي"><i class="fa-solid fa-microphone"></i></button>
-                <input type="text" id="chat-input-field" class="chat-input-field" placeholder="اكتب رسالتك هنا...">
+                <button id="chat-mic-btn" class="chat-mic-btn" title="تسجيل صوتي"><i class="fa-solid fa-microphone"></i></button>
+                <input type="text" id="chat-input-field" class="chat-input-field" data-i18n-placeholder="typeMessage" placeholder="اكتب رسالتك هنا...">
                 <button id="chat-send-btn" class="chat-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
