@@ -57,6 +57,100 @@ let mediaRecorder = null;
 let audioChunks = [];
 let isRecording = false;
 
+// نظام الترجمة واللغات (عربي / إنجليزي)
+const translations = {
+    ar: {
+        pageTitle: "King Store",
+        loginTitle: "أهلاً بك",
+        loginDesc: "سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.",
+        googleBtn: "المتابعة باستخدام Google",
+        splashText: "جاري تهيئة متجر King Store...",
+        alertTitle: "تحذير هام",
+        alertDesc: "لا يمكن استرجاع البيانات نهائياً. هل أنت متأكد من رغبتك في حذف بيانات هذا الحساب؟",
+        cancelBtn: "إلغاء",
+        confirmBtn: "تأكيد الحذف",
+        logoutTxt: "تسجيل الخروج",
+        langLabel: "لغة الموقع / Language:",
+        themeLabel: "تخصيص ألوان الموقع:",
+        supportTxt: "مركز الدعم الفني",
+        deleteAccountTxt: "حذف بيانات الحساب",
+        heroBadge: "منصة King Store النشطة",
+        heroTitle: "مرحباً بك في King Store",
+        heroDesc: "استمتع بتجربة متجر متكاملة ومجتمع تفاعلي آمن. اضغط على زر الدردشة في الأسفل للبدء بالحديث مع الأعضاء.",
+        chatHeaderTitle: "دردشة المجتمع",
+        chatHeaderSub: "متصل الآن بسلاسة",
+        chatPlaceholder: "اكتب رسالتك هنا...",
+        replyingTo: "الرد على"
+    },
+    en: {
+        pageTitle: "King Store",
+        loginTitle: "Welcome Back",
+        loginDesc: "Sign in now and enjoy a smart, secure shopping experience.",
+        googleBtn: "Continue with Google",
+        splashText: "Initializing King Store...",
+        alertTitle: "Important Warning",
+        alertDesc: "Data cannot be recovered once deleted. Are you sure you want to clear your account data?",
+        cancelBtn: "Cancel",
+        confirmBtn: "Confirm Delete",
+        logoutTxt: "Logout",
+        langLabel: "Select Language / اللغة:",
+        themeLabel: "Theme Colors:",
+        supportTxt: "Technical Support",
+        deleteAccountTxt: "Delete Account Data",
+        heroBadge: "King Store Platform",
+        heroTitle: "Welcome to King Store",
+        heroDesc: "Enjoy an integrated store experience and a secure community. Click the chat button below to start communicating with members.",
+        chatHeaderTitle: "Community Chat",
+        chatHeaderSub: "Online & Active",
+        chatPlaceholder: "Type your message here...",
+        replyingTo: "Replying to"
+    }
+};
+
+let currentLang = localStorage.getItem('king_store_lang') || 'ar';
+
+window.switchLanguage = function(lang) {
+    currentLang = lang;
+    localStorage.setItem('king_store_lang', lang);
+    applyLanguage(lang);
+    settingsPopupMenu.classList.remove('active');
+};
+
+function applyLanguage(lang) {
+    const htmlRoot = document.getElementById('html-root');
+    htmlRoot.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    htmlRoot.setAttribute('lang', lang);
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+            el.textContent = translations[lang][key];
+        }
+    });
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (translations[lang][key]) {
+            el.placeholder = translations[lang][key];
+        }
+    });
+
+    const arBtn = document.getElementById('lang-ar-btn');
+    const enBtn = document.getElementById('lang-en-btn');
+    if (arBtn && enBtn) {
+        if (lang === 'ar') {
+            arBtn.classList.add('active');
+            enBtn.classList.remove('active');
+        } else {
+            enBtn.classList.add('active');
+            arBtn.classList.remove('active');
+        }
+    }
+}
+
+// تطبيق اللغة المخزنة عند التحميل
+applyLanguage(currentLang);
+
 const activeTheme = localStorage.getItem('king_store_theme');
 if (activeTheme) document.body.className = activeTheme;
 
@@ -66,7 +160,7 @@ window.changeTheme = function(themeName) {
     settingsPopupMenu.classList.remove('active');
 };
 
-supportWaLink.href = `https://wa.me/201225428692?text=${encodeURIComponent("مرحباً، أريد الدعم الفني والاستفسار عن خدمات متجر King Store.")}`;
+supportWaLink.href = `https://wa.me/201225428692?text=${encodeURIComponent("Hello, I need technical support and inquiries about King Store services.")}`;
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -85,7 +179,7 @@ onAuthStateChanged(auth, (user) => {
             storeScreen.style.display = 'block';
         }
         menuUserImg.src = user.photoURL || "";
-        menuUserName.textContent = user.displayName || "مستخدم متميز";
+        menuUserName.textContent = user.displayName || "VIP User";
     } else {
         currentUser = null;
         isLoginHandled = false;
@@ -99,11 +193,11 @@ onAuthStateChanged(auth, (user) => {
 });
 
 googleLoginBtn.addEventListener('click', async () => {
-    authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
+    authErrorMsg.textContent = currentLang === 'ar' ? "جاري فتح نافذة تسجيل الدخول..." : "Opening login window...";
     try {
         await signInWithPopup(auth, provider);
     } catch (err) {
-        authErrorMsg.textContent = "خطأ في التسجيل: " + err.code;
+        authErrorMsg.textContent = (currentLang === 'ar' ? "خطأ في التسجيل: " : "Auth Error: ") + err.code;
     }
 });
 
@@ -195,7 +289,7 @@ function renderMessage(msgId, data) {
     const rowClass = isMyMessage ? 'chat-msg-row my-message' : 'chat-msg-row other-message';
     
     const isMsgAdmin = data.email === ADMIN_EMAIL || data.username === "احمد ممدوح" || data.isAdmin === true;
-    const adminBadgeHtml = isMsgAdmin ? `<span class="admin-badge"><i class="fa-solid fa-crown"></i> مشرف</span>` : '';
+    const adminBadgeHtml = isMsgAdmin ? `<span class="admin-badge"><i class="fa-solid fa-crown"></i> ${currentLang === 'ar' ? 'مشرف' : 'Admin'}</span>` : '';
 
     let replyHtml = '';
     if (data.replyTo) {
@@ -233,7 +327,7 @@ function renderMessage(msgId, data) {
                     </div>
                     <div class="wa-audio-time">
                         <span id="current-time-${msgId}">0:00</span>
-                        <span>🎤 صوتية</span>
+                        <span>🎤 ${currentLang === 'ar' ? 'صوتية' : 'Voice'}</span>
                     </div>
                 </div>
                 <audio id="audio-el-${msgId}" src="${data.audioUrl}" preload="metadata"></audio>
@@ -246,8 +340,10 @@ function renderMessage(msgId, data) {
     const isUserAdmin = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح");
     let deleteBtnHtml = '';
     if (currentUser && (data.uid === currentUser.uid || isUserAdmin)) {
-        deleteBtnHtml = `<button class="delete-msg-btn" onclick="deleteMessage('${msgId}')">حذف</button>`;
+        deleteBtnHtml = `<button class="delete-msg-btn" onclick="deleteMessage('${msgId}')">${currentLang === 'ar' ? 'حذف' : 'Delete'}</button>`;
     }
+
+    const replyWord = currentLang === 'ar' ? 'رد' : 'Reply';
 
     const msgRow = document.createElement('div');
     msgRow.id = `msg-${msgId}`;
@@ -264,7 +360,7 @@ function renderMessage(msgId, data) {
             <div class="message-reactions-row">${reactionsHtml}</div>
             
             <div class="msg-actions-row">
-                <button class="reply-action-btn" onclick="prepareReply('${msgId}', '${escapeHtml(data.username)}', '${data.type === 'audio' ? 'رسالة صوتية 🎤' : escapeHtml(data.text)}')">رد</button>
+                <button class="reply-action-btn" onclick="prepareReply('${msgId}', '${escapeHtml(data.username)}', '${data.type === 'audio' ? (currentLang === 'ar' ? 'رسالة صوتية 🎤' : 'Voice message 🎤') : escapeHtml(data.text)}')">${replyWord}</button>
                 ${deleteBtnHtml}
             </div>
             
@@ -279,7 +375,6 @@ function renderMessage(msgId, data) {
     chatMessagesArea.appendChild(msgRow);
     chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
 
-    // ربط أحداث الصوت ليعمل مثل الواتساب تماماً
     if (data.type === 'audio') {
         const audioEl = document.getElementById(`audio-el-${msgId}`);
         const playIcon = document.getElementById(`play-icon-${msgId}`);
@@ -305,12 +400,10 @@ function renderMessage(msgId, data) {
     }
 }
 
-// دالة تشغيل وإيقاف الصوت بلمسة واحدة مثل الواتساب
 window.togglePlayAudio = function(msgId) {
     const audioEl = document.getElementById(`audio-el-${msgId}`);
     const playIcon = document.getElementById(`play-icon-${msgId}`);
 
-    // إيقاف أي صوت آخر يعمل حالياً في الدردشة
     document.querySelectorAll('audio').forEach(el => {
         if (el.id !== `audio-el-${msgId}`) {
             el.pause();
@@ -332,7 +425,8 @@ window.togglePlayAudio = function(msgId) {
 
 window.prepareReply = function(msgId, username, text) {
     replyingToData = { username, text };
-    replyingToText.textContent = `الرد على ${username}: ${text.substring(0, 25)}...`;
+    const prefix = currentLang === 'ar' ? 'الرد على' : 'Replying to';
+    replyingToText.textContent = `${prefix} ${username}: ${text.substring(0, 25)}...`;
     replyPreviewBox.style.display = 'block';
     chatInputField.focus();
 };
@@ -395,7 +489,7 @@ chatMicBtn.addEventListener('click', async () => {
             isRecording = true;
             chatMicBtn.classList.add('recording');
         } catch (err) {
-            alert("عذراً، يرجى السماح للمتصفح بالوصول إلى الميكروفون.");
+            alert(currentLang === 'ar' ? "عذراً، يرجى السماح للمتصفح بالوصول إلى الميكروفون." : "Sorry, please allow microphone access.");
         }
     } else {
         mediaRecorder.stop();
@@ -410,60 +504,9 @@ function sendAudioMessage(audioUrl) {
     const newMessage = {
         uid: currentUser.uid,
         email: currentUser.email,
-        username: currentUser.displayName || 'مستخدم',
+        username: currentUser.displayName || 'User',
         avatar: currentUser.photoURL || '',
         type: 'audio',
         audioUrl: audioUrl,
         isAdmin: isAdminUser,
-        timestamp: Date.now()
-    };
-
-    if (replyingToData) {
-        newMessage.replyTo = replyingToData;
-    }
-
-    push(chatRef, newMessage);
-    replyingToData = null;
-    replyPreviewBox.style.display = 'none';
-}
-
-function sendChatMessage() {
-    const rawText = chatInputField.value.trim();
-    if (!rawText || !currentUser) return;
-
-    const filteredText = censorBadWords(rawText);
-    const isAdminUser = currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح";
-
-    const newMessage = {
-        uid: currentUser.uid,
-        email: currentUser.email,
-        username: currentUser.displayName || 'مستخدم',
-        avatar: currentUser.photoURL || '',
-        type: 'text',
-        text: filteredText,
-        isAdmin: isAdminUser,
-        timestamp: Date.now()
-    };
-
-    if (replyingToData) {
-        newMessage.replyTo = replyingToData;
-    }
-
-    push(chatRef, newMessage);
-
-    chatInputField.value = '';
-    replyingToData = null;
-    replyPreviewBox.style.display = 'none';
-}
-
-function escapeHtml(string) {
-    return String(string).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-chatSendBtn.addEventListener('click', sendChatMessage);
-chatInputField.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        sendChatMessage();
-    }
-});
-    
+        timesta    
