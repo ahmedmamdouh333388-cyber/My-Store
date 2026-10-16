@@ -20,98 +20,6 @@ const provider = new GoogleAuthProvider();
 
 const ADMIN_EMAIL = "ahmadmamdouh333388@gmail.com"; 
 
-const translations = {
-    ar: {
-        welcome_back: "مرحباً بك مجدداً",
-        login_desc: "سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.",
-        google_btn: "Continue with Google",
-        splash_title: "مرحباً بكم في King Store",
-        splash_desc: "جاري تهيئة وتجهيز متجرك...",
-        alert_title: "⚠️ تحذير هام",
-        alert_desc: "لا يمكن استرجاع البيانات نهائياً. هل أنت متأكد من رغبتك في حذف بيانات هذا الحساب؟",
-        cancel_btn: "إلغاء",
-        confirm_delete_btn: "تأكيد الحذف",
-        logout_txt: "تسجيل الخروج",
-        language_label: "لغة الموقع:",
-        colors_label: "تخصيص ألوان الموقع:",
-        support_txt: "مركز الدعم الفني",
-        delete_account_txt: "حذف بيانات الحساب",
-        purchases_title: "المشتريات",
-        chat_title: "دردشة مجتمع King Store",
-        chat_placeholder: "اكتب رسالتك هنا..."
-    },
-    en: {
-        welcome_back: "Welcome Back",
-        login_desc: "Sign in now and enjoy a smart & secure shopping experience.",
-        google_btn: "Continue with Google",
-        splash_title: "Welcome to King Store",
-        splash_desc: "Preparing your store...",
-        alert_title: "⚠️ Important Warning",
-        alert_desc: "Data cannot be recovered. Are you sure you want to delete your account data?",
-        cancel_btn: "Cancel",
-        confirm_delete_btn: "Confirm Delete",
-        logout_txt: "Logout",
-        language_label: "Language:",
-        colors_label: "Theme Colors:",
-        support_txt: "Support Center",
-        delete_account_txt: "Delete Account Data",
-        purchases_title: "Purchases",
-        chat_title: "King Store Community Chat",
-        chat_placeholder: "Type your message here..."
-    }
-};
-
-let currentLang = localStorage.getItem('king_store_lang') || 'ar';
-
-function applyLanguage(lang) {
-    currentLang = lang;
-    localStorage.setItem('king_store_lang', lang);
-    
-    const htmlRoot = document.getElementById('html-root');
-    if (htmlRoot) {
-        htmlRoot.setAttribute('lang', lang);
-        htmlRoot.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-    }
-
-    const langNameTxt = document.getElementById('lang-name-txt');
-    if (langNameTxt) {
-        langNameTxt.textContent = lang === 'ar' ? 'English' : 'العربية';
-    }
-
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (translations[lang] && translations[lang][key]) {
-            el.textContent = translations[lang][key];
-        }
-    });
-
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-        const key = el.getAttribute('data-i18n-placeholder');
-        if (translations[lang] && translations[lang][key]) {
-            el.placeholder = translations[lang][key];
-        }
-    });
-
-    updateSupportLinkText();
-}
-
-window.toggleLanguage = function() {
-    const newLang = currentLang === 'ar' ? 'en' : 'ar';
-    applyLanguage(newLang);
-    if (settingsPopupMenu) settingsPopupMenu.classList.remove('active');
-};
-
-function updateSupportLinkText() {
-    const supportWaLink = document.getElementById('support-wa-link');
-    if (!supportWaLink) return;
-    const supportText = currentLang === 'ar' ? "مركز الدعم الفني" : "Support Center";
-    const greetingText = currentLang === 'ar' ? "مرحباً، أريد الدعم الفني والاستفسار عن خدمات متجر King Store." : "Hello, I need support regarding King Store services.";
-    
-    supportWaLink.href = `https://wa.me/201225428692?text=${encodeURIComponent(greetingText)}`;
-    const spanEl = supportWaLink.querySelector('span');
-    if (spanEl) spanEl.textContent = supportText;
-}
-
 const loginScreen = document.getElementById('login-screen');
 const splashScreen = document.getElementById('splash-screen');
 const storeScreen = document.getElementById('store-screen');
@@ -123,6 +31,7 @@ const settingsPopupMenu = document.getElementById('settings-popup-menu');
 const menuUserImg = document.getElementById('menu-user-img');
 const menuUserName = document.getElementById('menu-user-name');
 const menuLogoutTrigger = document.getElementById('menu-logout-trigger');
+const supportWaLink = document.getElementById('support-wa-link');
 
 const triggerDeleteModal = document.getElementById('trigger-delete-modal');
 const deleteAlertModal = document.getElementById('delete-alert-modal');
@@ -148,126 +57,103 @@ let mediaRecorder = null;
 let audioChunks = [];
 let isRecording = false;
 
-// تطبيق اللغة والتصميم بأمان بعد قراءة عناصر الصفحة
-applyLanguage(currentLang);
-
 const activeTheme = localStorage.getItem('king_store_theme');
 if (activeTheme) document.body.className = activeTheme;
 
 window.changeTheme = function(themeName) {
     document.body.className = themeName;
     localStorage.setItem('king_store_theme', themeName);
-    if (settingsPopupMenu) settingsPopupMenu.classList.remove('active');
+    settingsPopupMenu.classList.remove('active');
 };
+
+supportWaLink.href = `https://wa.me/201225428692?text=${encodeURIComponent("مرحباً، أريد الدعم الفني والاستفسار عن خدمات King Store.")}`;
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
-        if (loginScreen) loginScreen.style.display = 'none';
+        loginScreen.style.display = 'none';
         if (!isLoginHandled && !sessionStorage.getItem('splash_shown')) {
-            if (splashScreen) splashScreen.style.display = 'flex';
+            splashScreen.style.display = 'flex';
             setTimeout(() => {
-                if (splashScreen) splashScreen.style.display = 'none';
-                if (storeScreen) storeScreen.style.display = 'block';
+                splashScreen.style.display = 'none';
+                storeScreen.style.display = 'block';
                 sessionStorage.setItem('splash_shown', 'true');
             }, 3000);
             isLoginHandled = true;
         } else {
-            if (splashScreen) splashScreen.style.display = 'none';
-            if (storeScreen) storeScreen.style.display = 'block';
+            splashScreen.style.display = 'none';
+            storeScreen.style.display = 'block';
         }
-        if (menuUserImg) menuUserImg.src = user.photoURL || "";
-        if (menuUserName) menuUserName.textContent = user.displayName || "مستخدم متميز";
+        menuUserImg.src = user.photoURL || "";
+        menuUserName.textContent = user.displayName || "مستخدم متميز";
     } else {
         currentUser = null;
         isLoginHandled = false;
         sessionStorage.removeItem('splash_shown');
-        if (splashScreen) splashScreen.style.display = 'none';
-        if (storeScreen) storeScreen.style.display = 'none';
-        if (loginScreen) loginScreen.style.display = 'flex';
-        if (settingsPopupMenu) settingsPopupMenu.classList.remove('active');
-        if (chatModalContainer) chatModalContainer.classList.remove('active');
+        splashScreen.style.display = 'none';
+        storeScreen.style.display = 'none';
+        loginScreen.style.display = 'flex';
+        settingsPopupMenu.classList.remove('active');
+        chatModalContainer.classList.remove('active');
     }
 });
 
-if (googleLoginBtn) {
-    googleLoginBtn.addEventListener('click', async () => {
-        if (authErrorMsg) authErrorMsg.textContent = currentLang === 'ar' ? "جاري فتح نافذة تسجيل الدخول..." : "Opening login window...";
-        try {
-            await signInWithPopup(auth, provider);
-        } catch (err) {
-            if (authErrorMsg) authErrorMsg.textContent = (currentLang === 'ar' ? "خطأ في التسجيل: " : "Login Error: ") + err.code;
-        }
-    });
-}
-
-if (settingsTriggerBtn) {
-    settingsTriggerBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (settingsPopupMenu) settingsPopupMenu.classList.toggle('active');
-    });
-}
-
-window.addEventListener('click', () => {
-    if (settingsPopupMenu) settingsPopupMenu.classList.remove('active');
+googleLoginBtn.addEventListener('click', async () => {
+    authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
+    try {
+        await signInWithPopup(auth, provider);
+    } catch (err) {
+        authErrorMsg.textContent = "خطأ في التسجيل: " + err.code;
+    }
 });
 
-if (settingsPopupMenu) {
-    settingsPopupMenu.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
-}
+settingsTriggerBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    settingsPopupMenu.classList.toggle('active');
+});
 
-if (menuLogoutTrigger) {
-    menuLogoutTrigger.addEventListener('click', async () => {
-        try { await signOut(auth); } catch (e) { console.log(e); }
-    });
-}
+window.addEventListener('click', () => {
+    settingsPopupMenu.classList.remove('active');
+});
 
-if (triggerDeleteModal) {
-    triggerDeleteModal.addEventListener('click', () => {
-        if (settingsPopupMenu) settingsPopupMenu.classList.remove('active');
-        if (deleteAlertModal) deleteAlertModal.style.display = 'flex';
-    });
-}
+settingsPopupMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+});
 
-if (cancelDeleteAction) {
-    cancelDeleteAction.addEventListener('click', () => {
-        if (deleteAlertModal) deleteAlertModal.style.display = 'none';
-    });
-}
+menuLogoutTrigger.addEventListener('click', async () => {
+    try { await signOut(auth); } catch (e) { console.log(e); }
+});
 
-if (confirmDeleteAction) {
-    confirmDeleteAction.addEventListener('click', async () => {
-        if (deleteAlertModal) deleteAlertModal.style.display = 'none';
-        localStorage.clear();
-        sessionStorage.clear();
-        try { await signOut(auth); } catch (e) { console.log(e); }
-        window.location.reload();
-    });
-}
+triggerDeleteModal.addEventListener('click', () => {
+    settingsPopupMenu.classList.remove('active');
+    deleteAlertModal.style.display = 'flex';
+});
 
-if (chatFloatBtn) {
-    chatFloatBtn.addEventListener('click', () => {
-        if (chatModalContainer) {
-            chatModalContainer.classList.toggle('active');
-            if (chatMessagesArea) chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
-        }
-    });
-}
+cancelDeleteAction.addEventListener('click', () => {
+    deleteAlertModal.style.display = 'none';
+});
 
-if (chatCloseBtn) {
-    chatCloseBtn.addEventListener('click', () => {
-        if (chatModalContainer) chatModalContainer.classList.remove('active');
-    });
-}
+confirmDeleteAction.addEventListener('click', async () => {
+    deleteAlertModal.style.display = 'none';
+    localStorage.clear();
+    sessionStorage.clear();
+    try { await signOut(auth); } catch (e) { console.log(e); }
+    window.location.reload();
+});
 
-if (cancelReplyBtn) {
-    cancelReplyBtn.addEventListener('click', () => {
-        replyingToData = null;
-        if (replyPreviewBox) replyPreviewBox.style.display = 'none';
-    });
-}
+chatFloatBtn.addEventListener('click', () => {
+    chatModalContainer.classList.toggle('active');
+    chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+});
+
+chatCloseBtn.addEventListener('click', () => {
+    chatModalContainer.classList.remove('active');
+});
+
+cancelReplyBtn.addEventListener('click', () => {
+    replyingToData = null;
+    replyPreviewBox.style.display = 'none';
+});
 
 const badWords = ["شرموط", "قحبة", "منيوك", "متناك", "عرص", "خول", "احا", "وسخ", "كلب", "حمار", "زفت", "طيز", "قذر", "لعنة", "لعن", "اوسخ", "عاهر", "عاهرة", "fuck", "shit", "bitch", "asshole", "cunt", "dick"];
 
@@ -309,7 +195,7 @@ function renderMessage(msgId, data) {
     const rowClass = isMyMessage ? 'chat-msg-row my-message' : 'chat-msg-row other-message';
     
     const isMsgAdmin = data.email === ADMIN_EMAIL || data.username === "احمد ممدوح" || data.isAdmin === true;
-    const adminBadgeHtml = isMsgAdmin ? `<span class="admin-badge"><i class="fa-solid fa-crown"></i> ${currentLang === 'ar' ? 'مشرف' : 'Admin'}</span>` : '';
+    const adminBadgeHtml = isMsgAdmin ? `<span class="admin-badge"><i class="fa-solid fa-crown"></i> مشرف</span>` : '';
 
     let replyHtml = '';
     if (data.replyTo) {
@@ -347,7 +233,7 @@ function renderMessage(msgId, data) {
                     </div>
                     <div class="wa-audio-time">
                         <span id="current-time-${msgId}">0:00</span>
-                        <span>🎤 ${currentLang === 'ar' ? 'صوتية' : 'Audio'}</span>
+                        <span>🎤 صوتية</span>
                     </div>
                 </div>
                 <audio id="audio-el-${msgId}" src="${data.audioUrl}" preload="metadata"></audio>
@@ -360,10 +246,8 @@ function renderMessage(msgId, data) {
     const isUserAdmin = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح");
     let deleteBtnHtml = '';
     if (currentUser && (data.uid === currentUser.uid || isUserAdmin)) {
-        deleteBtnHtml = `<button class="delete-msg-btn" onclick="deleteMessage('${msgId}')">${currentLang === 'ar' ? 'حذف' : 'Delete'}</button>`;
+        deleteBtnHtml = `<button class="delete-msg-btn" onclick="deleteMessage('${msgId}')">حذف</button>`;
     }
-
-    const replyBtnText = currentLang === 'ar' ? 'رد' : 'Reply';
 
     const msgRow = document.createElement('div');
     msgRow.id = `msg-${msgId}`;
@@ -380,7 +264,7 @@ function renderMessage(msgId, data) {
             <div class="message-reactions-row">${reactionsHtml}</div>
             
             <div class="msg-actions-row">
-                <button class="reply-action-btn" onclick="prepareReply('${msgId}', '${escapeHtml(data.username)}', '${data.type === 'audio' ? (currentLang === 'ar' ? 'رسالة صوتية 🎤' : 'Audio message 🎤') : escapeHtml(data.text)}')">${replyBtnText}</button>
+                <button class="reply-action-btn" onclick="prepareReply('${msgId}', '${escapeHtml(data.username)}', '${data.type === 'audio' ? 'رسالة صوتية 🎤' : escapeHtml(data.text)}')">رد</button>
                 ${deleteBtnHtml}
             </div>
             
@@ -392,10 +276,8 @@ function renderMessage(msgId, data) {
             </div>
         </div>
     `;
-    if (chatMessagesArea) {
-        chatMessagesArea.appendChild(msgRow);
-        chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
-    }
+    chatMessagesArea.appendChild(msgRow);
+    chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
 
     if (data.type === 'audio') {
         const audioEl = document.getElementById(`audio-el-${msgId}`);
@@ -403,31 +285,28 @@ function renderMessage(msgId, data) {
         const progressFill = document.getElementById(`progress-${msgId}`);
         const currentTimeText = document.getElementById(`current-time-${msgId}`);
 
-        if (audioEl) {
-            audioEl.addEventListener('timeupdate', () => {
-                if (audioEl.duration && progressFill && currentTimeText) {
-                    const percent = (audioEl.currentTime / audioEl.duration) * 100;
-                    progressFill.style.width = percent + '%';
-                    
-                    const mins = Math.floor(audioEl.currentTime / 60);
-                    const secs = Math.floor(audioEl.currentTime % 60);
-                    currentTimeText.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                }
-            });
+        audioEl.addEventListener('timeupdate', () => {
+            if (audioEl.duration) {
+                const percent = (audioEl.currentTime / audioEl.duration) * 100;
+                progressFill.style.width = percent + '%';
+                
+                const mins = Math.floor(audioEl.currentTime / 60);
+                const secs = Math.floor(audioEl.currentTime % 60);
+                currentTimeText.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            }
+        });
 
-            audioEl.addEventListener('ended', () => {
-                if (playIcon) playIcon.className = "fa-solid fa-play";
-                if (progressFill) progressFill.style.width = '0%';
-                audioEl.currentTime = 0;
-            });
-        }
+        audioEl.addEventListener('ended', () => {
+            playIcon.className = "fa-solid fa-play";
+            progressFill.style.width = '0%';
+            audioEl.currentTime = 0;
+        });
     }
 }
 
 window.togglePlayAudio = function(msgId) {
     const audioEl = document.getElementById(`audio-el-${msgId}`);
     const playIcon = document.getElementById(`play-icon-${msgId}`);
-    if (!audioEl) return;
 
     document.querySelectorAll('audio').forEach(el => {
         if (el.id !== `audio-el-${msgId}`) {
@@ -441,19 +320,18 @@ window.togglePlayAudio = function(msgId) {
 
     if (audioEl.paused) {
         audioEl.play();
-        if (playIcon) playIcon.className = "fa-solid fa-pause";
+        playIcon.className = "fa-solid fa-pause";
     } else {
         audioEl.pause();
-        if (playIcon) playIcon.className = "fa-solid fa-play";
+        playIcon.className = "fa-solid fa-play";
     }
 };
 
 window.prepareReply = function(msgId, username, text) {
     replyingToData = { username, text };
-    const prefix = currentLang === 'ar' ? 'الرد على' : 'Replying to';
-    if (replyingToText) replyingToText.textContent = `${prefix} ${username}: ${text.substring(0, 25)}...`;
-    if (replyPreviewBox) replyPreviewBox.style.display = 'block';
-    if (chatInputField) chatInputField.focus();
+    replyingToText.textContent = `الرد على ${username}: ${text.substring(0, 25)}...`;
+    replyPreviewBox.style.display = 'block';
+    chatInputField.focus();
 };
 
 window.toggleReaction = async function(msgId, emoji) {
@@ -487,18 +365,102 @@ window.deleteMessage = function(msgId) {
     remove(msgRef);
 };
 
-if (chatMicBtn) {
-    chatMicBtn.addEventListener('click', async () => {
-        if (!currentUser) return;
+chatMicBtn.addEventListener('click', async () => {
+    if (!currentUser) return;
 
-        if (!isRecording) {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
+    if (!isRecording) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
 
-                mediaRecorder.ondataavailable = (event) => {
-                    audioChunks.push(event.data);
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => {
+                    const base64AudioMessage = reader.result;
+                    sendAudioMessage(base64AudioMessage);
                 };
+            };
 
-                mediaRecorder.o
+            mediaRecorder.start();
+            isRecording = true;
+            chatMicBtn.classList.add('recording');
+        } catch (err) {
+            alert("عذراً، يرجى السماح للمتصفح بالوصول إلى الميكروفون.");
+        }
+    } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        chatMicBtn.classList.remove('recording');
+    }
+});
+
+function sendAudioMessage(audioUrl) {
+    const isAdminUser = currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح";
+
+    const newMessage = {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        username: currentUser.displayName || 'مستخدم',
+        avatar: currentUser.photoURL || '',
+        type: 'audio',
+        audioUrl: audioUrl,
+        isAdmin: isAdminUser,
+        timestamp: Date.now()
+    };
+
+    if (replyingToData) {
+        newMessage.replyTo = replyingToData;
+    }
+
+    push(chatRef, newMessage);
+    replyingToData = null;
+    replyPreviewBox.style.display = 'none';
+}
+
+function sendChatMessage() {
+    const rawText = chatInputField.value.trim();
+    if (!rawText || !currentUser) return;
+
+    const filteredText = censorBadWords(rawText);
+    const isAdminUser = currentUser.email === ADMIN_EMAIL || currentUser.displayName === "احمد ممدوح";
+
+    const newMessage = {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        username: currentUser.displayName || 'مستخدم',
+        avatar: currentUser.photoURL || '',
+        type: 'text',
+        text: filteredText,
+        isAdmin: isAdminUser,
+        timestamp: Date.now()
+    };
+
+    if (replyingToData) {
+        newMessage.replyTo = replyingToData;
+    }
+
+    push(chatRef, newMessage);
+
+    chatInputField.value = '';
+    replyingToData = null;
+    replyPreviewBox.style.display = 'none';
+}
+
+function escapeHtml(string) {
+    return String(string).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+chatSendBtn.addEventListener('click', sendChatMessage);
+chatInputField.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendChatMessage();
+    }
+});
+        
