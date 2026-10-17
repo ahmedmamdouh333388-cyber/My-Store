@@ -17,7 +17,8 @@ import {
   remove,
   onValue,
   onDisconnect,
-  set
+  set,
+  get
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 if ("serviceWorker" in navigator) {
@@ -39,7 +40,7 @@ const firebaseConfig = {
   measurementId: "G-CT3FQN4BBK"
 };
 
-const ADMIN_EMAIL = "ahmedmamdouh333388@gmail.com";
+const MASTER_ADMIN_EMAIL = "ahmedmamdouh333388@gmail.com";
 const TRANSFER_NUMBER = "01214563781";
 const WHATSAPP_NUMBER = "201225428692";
 
@@ -73,12 +74,25 @@ const userChatReadonly = $("user-chat-readonly");
 const adminChatToggleBox = $("admin-chat-toggle-box");
 const toggleChatPermissionCheckbox = $("toggle-chat-permission-checkbox");
 const onlineCountEl = $("online-count");
+const adminViewOnlineBtn = $("admin-view-online-btn");
+const onlineUsersModal = $("online-users-modal");
+const onlineUsersList = $("online-users-list");
+const adminSettingsSection = $("admin-settings-section");
+const newAdminEmailInput = $("new-admin-email");
+const addAdminBtn = $("add-admin-btn");
+const adminsListContainer = $("admins-list-container");
+const bannedUserEmailInput = $("banned-user-email");
+const banUserBtn = $("ban-user-btn");
+const bannedListContainer = $("banned-list-container");
 
 let currentUser = null;
 let currentPurchase = null;
 let editingProductId = null;
 let confirmCallback = null;
 let chatAllowedForUsers = true;
+let dynamicAdmins = new Set([MASTER_ADMIN_EMAIL]);
+let bannedUsers = new Set();
+let activeOnlineUsersMap = new Map();
 
 const productDataById = new Map();
 
@@ -92,7 +106,13 @@ $("support-wa-link").href =
 
 function isAdmin() {
   if (!currentUser || !currentUser.email) return false;
-  return currentUser.email.trim().toLowerCase() === ADMIN_EMAIL.trim().toLowerCase();
+  const email = currentUser.email.trim().toLowerCase();
+  return email === MASTER_ADMIN_EMAIL.trim().toLowerCase() || dynamicAdmins.has(email);
+}
+
+function isBanned(email) {
+  if (!email) return false;
+  return bannedUsers.has(email.trim().toLowerCase());
 }
 
 function toast(message, isError = false) {
@@ -131,7 +151,6 @@ $("confirm-yes-btn").addEventListener("click", () => {
   confirmCallback = null;
 });
 
-// حل نهائي لتسجيل الدخول واختيار الحساب والدخول فوراً للموقع
 async function handleGoogleLogin() {
   authErrorMsg.textContent = "";
   const btn = $("google-login-btn");
@@ -139,12 +158,29 @@ async function handleGoogleLogin() {
 
   try {
     const result = await signInWithPopup(auth, provider);
+    const email = result.user.email;
+    
+    const bannedSnap = await get(ref(db, `banned_users`));
+    let isUserBanned = false;
+    if (bannedSnap.exists()) {
+      bannedSnap.forEach((child) => {
+        if (child.val().email && child.val().email.trim().toLowerCase() === email.trim().toLowerCase()) {
+          isUserBanned = true;
+        }
+      });
+    }
+
+    if (isUserBanned) {
+      await signOut(auth);
+      authErrorMsg.textContent = "عذراً، هذا الحساب محظور من دخول المتجر.";
+      return;
+    }
+
     currentUser = result.user;
-    // الـ onAuthStateChanged هيتعامل مع فتح الموقع تلقائياً
   } catch (error) {
     console.error("Login Error:", error);
     if (error.code === 'auth/popup-blocked') {
-      authErrorMsg.textContent = "تم حظر النافذة المنبثقة. يرجى السماح بها من المتصفح.";
+      authErrorMsg.textContent = "تم حظر النافذة المنبثقة. يرجى السماح بها.";
     } else if (error.code === 'auth/popup-closed-by-user') {
       authErrorMsg.textContent = "تم إغلاق النافذة قبل اكتمال التسجيل.";
     } else {
@@ -156,84 +192,102 @@ async function handleGoogleLogin() {
 }
 
 $("google-login-btn").addEventListener("click", handleGoogleLogin);
-
-function updateChatUIState() {
-  const admin = isAdmin();
-  
-  if (admin) {
-    adminChatToggleBox.hidden = false;
-    chatComposeBox.hidden = false;
-    userChatReadonly.hidden = true;
-    chatLinkField.hidden = false;
-    $("chat-access-note").textContent = "لوحة تحكم المشرف بالرسائل";
-    toggleChatPermissionCheckbox.checked = chatAllowedForUsers;
-  } else {
-    adminChatToggleBox.hidden = true;
-    chatLinkField.hidden = true;
-    $("chat-access-note").textContent = "إعلانات وتحديثات المتجر";
-
-    if (chatAllowedForUsers) {
-      chatComposeBox.hidden = false;
-      userChatReadonly.hidden = true;
-      chatInputField.placeholder = "اكتب رسالتك للمتجر...";
-    } else {
-      chatComposeBox.hidden = true;
-      userChatReadonly.hidden = false;
-    }
+onValue(ref(db, "admins"), (snapshot) => {
+  dynamicAdmins = new Set([MASTER_ADMIN_EMAIL]);
+  adminsListContainer.innerHTML = "";
+  if (snapshot.exists()) {
+    snapshot.forEach((child) => {
+      const email = child.val().email;
+      if (email) {
+        dynamicAdmins.add(email.trim().toLowerCase());
+        renderAdminItem(child.key, email);
+      }
+    });
   }
-}
+  applyAdminPrivileges();
+});
 
-function applyAdminPrivileges() {
-  const adminMode = isAdmin();
-  if (adminMode) {
-    adminAddProductBtn.hidden = false;
-  } else {
-    adminAddProductBtn.hidden = true;
-    adminProductFormBox.hidden = true;
+onValue(ref(db, "banned_users"), (snapshot) => {
+  bannedUsers = new Set();
+  bannedListContainer.innerHTML = "";
+  if (snapshot.exists()) {
+    snapshot.forEach((child) => {
+      const email = child.val().email;
+      if (email) {
+        bannedUsers.add(email.trim().toLowerCase());
+        renderBannedItem(child.key, email);
+      }
+    });
   }
-  updateChatUIState();
-  productDataById.forEach((data, id) => renderProduct(id, data));
-}
-
-onAuthStateChanged(auth, (user) => {
-  currentUser = user;
-
-  if (user) {
-    loginScreen.style.display = "none";
-
-    const alreadyShown = sessionStorage.getItem("king_splash_shown");
-
-    if (!alreadyShown) {
-      splashScreen.style.display = "flex";
-      storeScreen.style.display = "none";
-
-      window.setTimeout(() => {
-        splashScreen.style.display = "none";
-        storeScreen.style.display = "block";
-        sessionStorage.setItem("king_splash_shown", "true");
-        applyAdminPrivileges();
-      }, 1000);
-    } else {
-      splashScreen.style.display = "none";
-      storeScreen.style.display = "block";
-      applyAdminPrivileges();
-    }
-
-    $("menu-user-img").src = user.photoURL || "";
-    $("menu-user-name").textContent = user.displayName || "مستخدم King Store";
-    $("menu-user-email").textContent = user.email || "";
-
-  } else {
-    loginScreen.style.display = "flex";
-    splashScreen.style.display = "none";
-    storeScreen.style.display = "none";
-
-    settingsPopupMenu.classList.remove("active");
-    applyAdminPrivileges();
-
-    sessionStorage.removeItem("king_splash_shown");
+  if (currentUser && isBanned(currentUser.email)) {
+    signOut(auth);
+    toast("تم حظرك من الموقع.", true);
   }
 });
+
+function renderAdminItem(id, email) {
+  const row = document.createElement("div");
+  row.className = "admin-subitem";
+  row.innerHTML = `<span>${email}</span>${email.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase() ? `<button data-remove-admin="${id}"><i class="fa-solid fa-trash"></i></button>` : '<small>الرئيسي</small>'}`;
+  adminsListContainer.appendChild(row);
+}
+
+function renderBannedItem(id, email) {
+  const row = document.createElement("div");
+  row.className = "admin-subitem";
+  row.innerHTML = `<span>${email}</span><button data-unban="${id}"><i class="fa-solid fa-lock-open"></i> رفع الحظر</button>`;
+  bannedListContainer.appendChild(row);
+}
+
+addAdminBtn.addEventListener("click", async () => {
+  if (!isAdmin()) return;
+  const email = newAdminEmailInput.value.trim().toLowerCase();
+  if (!email || !email.includes("@")) return toast("أدخل بريداً صحيحاً.", true);
+  try {
+    await push(ref(db, "admins"), { email });
+    newAdminEmailInput.value = "";
+    toast("تمت إضافة المشرف بنجاح.");
+  } catch {
+    toast("تعذر إضافة المشرف.", true);
+  }
+});
+
+banUserBtn.addEventListener("click", async () => {
+  if (!isAdmin()) return;
+  const email = bannedUserEmailInput.value.trim().toLowerCase();
+  if (!email || !email.includes("@")) return toast("أدخل بريداً صحيحاً للحظر.", true);
+  if (email === MASTER_ADMIN_EMAIL.toLowerCase()) return toast("لا يمكنك حظر المشرف الرئيسي!", true);
+  try {
+    await push(ref(db, "banned_users"), { email });
+    bannedUserEmailInput.value = "";
+    toast("تم حظر المستخدم بنجاح.");
+  } catch {
+    toast("تعذر حظر المستخدم.", true);
+  }
+});
+
+adminsListContainer.addEventListener("click", async (e) => {
+  const btn = e.target.closest("[data-remove-admin]");
+  if (!btn || !isAdmin()) return;
+  try {
+    await remove(ref(db, `admins/${btn.dataset.removeAdmin}`));
+    toast("تم إزالة المشرف.");
+  } catch {
+    toast("تعذر إزالة المشرف.", true);
+  }
+});
+
+bannedListContainer.addEventListener("click", async (e) => {
+  const btn = e.target.closest("[data-unban]");
+  if (!btn || !isAdmin()) return;
+  try {
+    await remove(ref(db, `banned_users/${btn.dataset.unban}`));
+    toast("تم رفع الحظر عن المستخدم.");
+  } catch {
+    toast("تعذر رفع الحظر.", true);
+  }
+});
+
 const chatPermissionRef = ref(db, "settings/chatAllowedForUsers");
 onValue(chatPermissionRef, (snapshot) => {
   if (snapshot.exists()) {
@@ -254,7 +308,7 @@ toggleChatPermissionCheckbox.addEventListener("change", async () => {
   } catch (error) {
     console.error("Permission error:", error);
     toggleChatPermissionCheckbox.checked = !newState;
-    toast("تعذر تغيير الإذن. تأكد من قواعد فايربيس.", true);
+    toast("تعذر تغيير الإذن.", true);
   }
 });
 
@@ -262,21 +316,61 @@ const connectedRef = ref(db, ".info/connected");
 const onlineUsersRef = ref(db, "online_users");
 
 onValue(connectedRef, (snap) => {
-  if (snap.val() === true) {
+  if (snap.val() === true && currentUser) {
+    if (isBanned(currentUser.email)) {
+      signOut(auth);
+      return;
+    }
     const userPresenceRef = push(onlineUsersRef);
     onDisconnect(userPresenceRef).remove();
     set(userPresenceRef, {
       onlineAt: Date.now(),
-      email: currentUser ? currentUser.email : "زائر"
+      email: currentUser.email || "زائر"
     });
   }
 });
 
 onValue(onlineUsersRef, (snapshot) => {
-  const count = snapshot.exists() ? snapshot.size : 1;
-  if (onlineCountEl) {
-    onlineCountEl.textContent = count;
+  activeOnlineUsersMap.clear();
+  let count = 0;
+  if (snapshot.exists()) {
+    snapshot.forEach((child) => {
+      count++;
+      activeOnlineUsersMap.set(child.key, child.val().email);
+    });
   }
+  if (onlineCountEl) {
+    onlineCountEl.textContent = Math.max(1, count);
+  }
+  renderOnlineUsersModalList();
+});
+
+function renderOnlineUsersModalList() {
+  if (!onlineUsersList) return;
+  onlineUsersList.innerHTML = "";
+  if (activeOnlineUsersMap.size === 0) {
+    onlineUsersList.innerHTML = '<div class="empty-chat">لا يوجد مستخدمون متصلون حالياً.</div>';
+    return;
+  }
+  activeOnlineUsersMap.forEach((email) => {
+    const row = document.createElement("div");
+    row.className = "online-user-row";
+    row.innerHTML = `<span><i class="fa-solid fa-circle" style="color:#22c55e;font-size:8px;margin-left:6px;"></i> ${escapeHtml(email)}</span>`;
+    onlineUsersList.appendChild(row);
+  });
+}
+
+adminViewOnlineBtn.addEventListener("click", () => {
+  if (!isAdmin()) return;
+  onlineUsersModal.classList.add("active");
+});
+
+$("close-online-modal").addEventListener("click", () => {
+  onlineUsersModal.classList.remove("active");
+});
+
+onlineUsersModal.addEventListener("click", (e) => {
+  if (e.target === onlineUsersModal) onlineUsersModal.classList.remove("active");
 });
 
 settingsTriggerBtn.addEventListener("click", (event) => {
@@ -325,6 +419,87 @@ const savedTheme = localStorage.getItem("king_store_theme");
 if (savedTheme && /^theme-(blue|violet|mint|gold)$/.test(savedTheme)) {
   document.body.className = savedTheme;
 }
+function updateChatUIState() {
+  const adminMode = isAdmin();
+  
+  if (adminMode) {
+    adminChatToggleBox.hidden = false;
+    chatComposeBox.hidden = false;
+    userChatReadonly.hidden = true;
+    chatLinkField.hidden = false;
+    $("chat-access-note").textContent = "لوحة تحكم المشرف بالرسائل";
+    toggleChatPermissionCheckbox.checked = chatAllowedForUsers;
+  } else {
+    adminChatToggleBox.hidden = true;
+    chatLinkField.hidden = true;
+    $("chat-access-note").textContent = "إعلانات وتحديثات المتجر";
+
+    if (chatAllowedForUsers) {
+      chatComposeBox.hidden = false;
+      userChatReadonly.hidden = true;
+      chatInputField.placeholder = "اكتب رسالتك للمتجر...";
+    } else {
+      chatComposeBox.hidden = true;
+      userChatReadonly.hidden = false;
+    }
+  }
+}
+
+function applyAdminPrivileges() {
+  const adminMode = isAdmin();
+  document.querySelectorAll(".admin-only").forEach(el => {
+    el.hidden = !adminMode;
+  });
+  updateChatUIState();
+  productDataById.forEach((data, id) => renderProduct(id, data));
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    if (isBanned(user.email)) {
+      await signOut(auth);
+      loginScreen.style.display = "flex";
+      storeScreen.style.display = "none";
+      authErrorMsg.textContent = "عذراً، هذا الحساب محظور من دخول المتجر.";
+      return;
+    }
+    currentUser = user;
+    loginScreen.style.display = "none";
+
+    const alreadyShown = sessionStorage.getItem("king_splash_shown");
+
+    if (!alreadyShown) {
+      splashScreen.style.display = "flex";
+      storeScreen.style.display = "none";
+
+      window.setTimeout(() => {
+        splashScreen.style.display = "none";
+        storeScreen.style.display = "block";
+        sessionStorage.setItem("king_splash_shown", "true");
+        applyAdminPrivileges();
+      }, 1000);
+    } else {
+      splashScreen.style.display = "none";
+      storeScreen.style.display = "block";
+      applyAdminPrivileges();
+    }
+
+    $("menu-user-img").src = user.photoURL || "";
+    $("menu-user-name").textContent = user.displayName || "مستخدم King Store";
+    $("menu-user-email").textContent = user.email || "";
+
+  } else {
+    currentUser = null;
+    loginScreen.style.display = "flex";
+    splashScreen.style.display = "none";
+    storeScreen.style.display = "none";
+
+    settingsPopupMenu.classList.remove("active");
+    applyAdminPrivileges();
+
+    sessionStorage.removeItem("king_splash_shown");
+  }
+});
 
 function openProductForm(productId = null) {
   if (!isAdmin()) return toast("هذه الخاصية للمشرف فقط.", true);
@@ -585,6 +760,7 @@ document.addEventListener("keydown", (event) => {
     closePurchaseModal();
     customConfirmModal.classList.remove("active");
     settingsPopupMenu.classList.remove("active");
+    onlineUsersModal.classList.remove("active");
   }
 });
 
@@ -728,4 +904,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   });
 });
-                                    
+    
