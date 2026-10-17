@@ -1,7 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
   getAuth,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged
@@ -98,13 +99,17 @@ function openSettings() {
   settingsPopupMenu.classList.toggle("active");
 }
 
-// تسجيل الدخول باستخدام Google
+// معالجة نتيجة إعادة التوجيه بعد العودة من Google
+getRedirectResult(auth).catch((error) => {
+  authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.code || error.message}`;
+});
+
+// تسجيل الدخول باستخدام التحويل المباشر (موصى به للهواتف)
 $("google-login-btn").addEventListener("click", async () => {
-  authErrorMsg.textContent = "جاري فتح تسجيل الدخول...";
+  authErrorMsg.textContent = "جاري تحويلك لتسجيل الدخول...";
 
   try {
-    await signInWithPopup(auth, provider);
-    authErrorMsg.textContent = "";
+    await signInWithRedirect(auth, provider);
   } catch (error) {
     authErrorMsg.textContent =
       `تعذر تسجيل الدخول: ${error.code || error.message}`;
@@ -713,9 +718,4 @@ chatLinkField.addEventListener("keydown", (event) => {
 });
 
 // حذف رسالة بواسطة المشرف
-chatMessagesArea.addEventListener("click", async (event) => {
-  const button = event.target.closest("[data-delete-message]");
-
-  if (!button || !isAdmin()) return;
-
-  if (!window.confirm("هل تريد حذف رسالة 
+ch
