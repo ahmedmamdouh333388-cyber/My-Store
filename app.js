@@ -70,7 +70,7 @@ let currentUser = null;
 let currentPurchase = null;
 let editingProductId = null;
 let confirmCallback = null;
-let chatAllowedForUsers = true; // الحالة الافتراضية للسماح بالكتابة
+let chatAllowedForUsers = true;
 
 const productDataById = new Map();
 
@@ -123,7 +123,6 @@ $("confirm-yes-btn").addEventListener("click", () => {
   confirmCallback = null;
 });
 
-// نظام تسجيل الدخول الآمن تماماً ضد التجميد عبر Redirect
 async function handleGoogleLogin() {
   authErrorMsg.textContent = "جاري التحويل لـ Google...";
   try {
@@ -220,8 +219,6 @@ onAuthStateChanged(auth, (user) => {
     sessionStorage.removeItem("king_splash_shown");
   }
 });
-
-// مراقبة إذن كتابة المستخدمين من قاعدة البيانات في الوقت الحقيقي
 const chatPermissionRef = ref(db, "settings/chatAllowedForUsers");
 onValue(chatPermissionRef, (snapshot) => {
   if (snapshot.exists()) {
@@ -233,7 +230,6 @@ onValue(chatPermissionRef, (snapshot) => {
   updateChatUIState();
 });
 
-// زر تحكم المشرف لتبديل حالة السماح بالكتابة
 toggleChatPermissionBtn.addEventListener("click", async () => {
   if (!isAdmin()) return;
   const newState = !chatAllowedForUsers;
@@ -245,7 +241,6 @@ toggleChatPermissionBtn.addEventListener("click", async () => {
   }
 });
 
-// نظام عداد المتصلين الحي
 const connectedRef = ref(db, ".info/connected");
 const onlineUsersRef = ref(db, "online_users");
 
@@ -636,4 +631,84 @@ function renderStoreMessage(id, data) {
     : "";
 
   const linkMarkup = data.link
-    ? `<br><a href="${escapeHtml(data.link)}" target="_blank" rel="noopener noreferrer" class="chat-message-link">
+    ? `<br><a href="${escapeHtml(data.link)}" target="_blank" rel="noopener noreferrer" class="chat-message-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> زيارة الرابط</a>`
+    : "";
+
+  message.innerHTML = `
+    <div class="chat-message-top">
+      <strong><i class="fa-solid fa-crown"></i> ${escapeHtml(data.username || "King Store")}</strong>
+      <time>${escapeHtml(date)}</time>
+    </div>
+    <p>${escapeHtml(data.text || "")}${linkMarkup}</p>
+    ${
+      isAdmin()
+        ? `<button class="chat-delete-btn" data-delete-message="${escapeHtml(id)}">
+            <i class="fa-solid fa-trash"></i> حذف الرسالة
+          </button>`
+        : ""
+    }
+  `;
+
+  chatMessagesArea.appendChild(message);
+  chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+}
+
+$("chat-float-btn").addEventListener("click", () => {
+  chatPanel.classList.toggle("active");
+  chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+});
+
+$("chat-close-btn").addEventListener("click", () => {
+  chatPanel.classList.remove("active");
+});
+
+async function sendStoreMessage() {
+  const text = chatInputField.value.trim();
+  const link = chatLinkField.value.trim();
+  if (!text) return;
+
+  if (!isAdmin() && !chatAllowedForUsers) {
+    return toast("عذراً، الكتابة مغلقة من قبل المشرف حالياً.", true);
+  }
+
+  chatSendBtn.disabled = true;
+
+  try {
+    await push(messagesRef, {
+      uid: currentUser.uid,
+      email: currentUser.email,
+      username: isAdmin() ? "King Store (المشرف)" : (currentUser.displayName || "مستخدم"),
+      text,
+      link: isAdmin() ? (link || "") : "",
+      timestamp: Date.now(),
+      isAdmin: isAdmin()
+    });
+
+    chatInputField.value = "";
+    chatLinkField.value = "";
+    toast("تم إرسال الرسالة بنجاح.");
+  } catch {
+    toast("تعذر إرسال الرسالة.", true);
+  } finally {
+    chatSendBtn.disabled = false;
+  }
+}
+
+chatSendBtn.addEventListener("click", sendStoreMessage);
+chatInputField.addEventListener("keydown", (e) => { if (e.key === "Enter") sendStoreMessage(); });
+chatLinkField.addEventListener("keydown", (e) => { if (e.key === "Enter") sendStoreMessage(); });
+
+chatMessagesArea.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-delete-message]");
+  if (!button || !isAdmin()) return;
+
+  showCustomConfirm("حذف الرسالة", "هل أنت متأكد من رغبتك في حذف هذه الرسالة من المتجر؟", async () => {
+    try {
+      await remove(ref(db, `messages/${button.dataset.deleteMessage}`));
+      toast("تم حذف الرسالة.");
+    } catch {
+      toast("تعذر حذف الرسالة.", true);
+    }
+  });
+});
+    
