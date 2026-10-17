@@ -419,7 +419,7 @@ const savedTheme = localStorage.getItem("king_store_theme");
 if (savedTheme && /^theme-(blue|violet|mint|gold)$/.test(savedTheme)) {
   document.body.className = savedTheme;
 }
-function updateChatUIState() {
+  function updateChatUIState() {
   const adminMode = isAdmin();
   
   if (adminMode) {
@@ -904,4 +904,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   });
 });
-    
+  
