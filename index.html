@@ -45,11 +45,13 @@
         <span><strong>King <em>Store</em></strong><small>SMART SHOPPING EXPERIENCE</small></span>
       </a>
       <div class="top-actions">
+        <!-- عداد المتصلين مع زر تحكم المشرف -->
         <div id="online-users-pill" class="tech-pulse-pill" title="الزوار المتصلين الآن">
           <span class="pulse-dot"></span>
           <i class="fa-solid fa-network-wired"></i>
           <span class="pill-label">متصل:</span>
           <b id="online-count">1</b>
+          <button id="admin-view-online-btn" class="admin-only admin-online-pill-btn" hidden title="عرض المتصلين"><i class="fa-solid fa-eye"></i></button>
         </div>
         
         <button id="settings-trigger-btn" class="icon-btn" aria-label="الإعدادات"><i class="fa-solid fa-sliders"></i></button>
@@ -58,6 +60,24 @@
             <img id="menu-user-img" src="" alt="" class="user-avatar-img">
             <div class="user-meta"><strong id="menu-user-name">المستخدم</strong><small id="menu-user-email"></small></div>
           </div>
+          
+          <!-- لوحة تحكم المشرفين داخل الإعدادات -->
+          <div id="admin-settings-section" class="admin-only" hidden>
+            <div class="menu-label">لوحة إدارة المشرفين</div>
+            <div class="admin-input-group">
+              <input type="email" id="new-admin-email" placeholder="أدخل البريد لإضافته مشرفاً...">
+              <button id="add-admin-btn" class="btn btn-small btn-primary">إضافة</button>
+            </div>
+            <div id="admins-list-container" class="admin-sublist"></div>
+
+            <div class="menu-label">إدارة الحظر (المنع من الموقع)</div>
+            <div class="admin-input-group">
+              <input type="email" id="banned-user-email" placeholder="أدخل البريد للحظر...">
+              <button id="ban-user-btn" class="btn btn-small btn-danger-custom">حظر</button>
+            </div>
+            <div id="banned-list-container" class="admin-sublist"></div>
+          </div>
+
           <button id="language-toggle" class="menu-row"><i class="fa-solid fa-language"></i><span>تغيير اللغة / Language</span><i class="fa-solid fa-chevron-left"></i></button>
           <div class="menu-label">لون الواجهة</div>
           <div class="colors-row">
@@ -124,6 +144,17 @@
     <footer><a href="#" class="footer-brand"><i class="fa-solid fa-crown"></i> King Store</a><span>تسوق بذكاء. اختار بثقة.</span><span>© <span id="current-year"></span> King Store</span></footer>
   </div>
 
+  <!-- نافذة عرض المتصلين للمشرف -->
+  <div id="online-users-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-card glass-card">
+      <button id="close-online-modal" class="modal-close icon-btn" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-icon"><i class="fa-solid fa-network-wired"></i></div>
+      <span class="eyebrow">LIVE USERS</span>
+      <h2>المستخدمون المتصلون الآن</h2>
+      <div id="online-users-list" class="online-users-list"></div>
+    </div>
+  </div>
+
   <div id="purchase-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="purchase-title">
     <div class="modal-card glass-card">
       <button id="close-purchase-modal" class="modal-close icon-btn" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
@@ -184,5 +215,4 @@
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
   <script type="module" src="app.js"></script>
 </body>
-          </html>
-                                                                                             
+</html>
