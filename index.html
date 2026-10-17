@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>King Store</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#030712">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -14,35 +17,35 @@
     <div id="login-screen">
         <div class="login-card">
             <div class="logo-box">
-                <i class="fa-solid fa-crown" style="font-size: 40px; color: var(--primary-color);"></i>
+                <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Logo">
             </div>
-            <div class="login-title">مرحباً بك مجدداً</div>
-            <p class="login-desc">سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.</p>
+            <div class="login-title" data-i18n="welcomeBack">مرحباً بك مجدداً</div>
+            <p class="login-desc" data-i18n="loginDesc">سجل دخولك الآن واستمتع بتجربة تسوق ذكية وآمنة.</p>
             <button id="google-login-btn" class="google-signin-btn">
                 <i class="fa-brands fa-google"></i>
                 <span>Continue with Google</span>
             </button>
-            <p id="auth-error-msg" style="color: #ef4444; font-size: 12px; margin-top: 10px;"></p>
+            <p id="auth-error-msg"></p>
         </div>
     </div>
 
     <!-- شاشة الترحيب المؤقتة -->
     <div id="splash-screen">
         <div class="splash-inner">
-            <i class="fa-solid fa-crown" style="font-size: 50px; color: var(--primary-color); margin-bottom: 15px;"></i>
-            <h2>مرحباً بكم في King Store</h2>
-            <p>جاري تهيئة وتجهيز متجرك...</p>
+            <img src="file_000000006a0881f4ab25ca2d85fb53a0.png" alt="Logo">
+            <h2 data-i18n="splashTitle">مرحباً بكم في King Store</h2>
+            <p data-i18n="splashDesc">جاري تهيئة وتجهيز متجرك...</p>
         </div>
     </div>
 
     <!-- نافذة تأكيد الحذف -->
     <div id="delete-alert-modal">
         <div class="alert-box-content">
-            <h3>⚠️ تحذير هام</h3>
-            <p>لا يمكن استرجاع البيانات نهائياً. هل أنت متأكد من رغبتك في حذف بيانات هذا الحساب؟</p>
+            <h3 data-i18n="warningTitle">⚠️ تحذير هام</h3>
+            <p data-i18n="warningDesc">لا يمكن استرجاع البيانات نهائياً. هل أنت متأكد من رغبتك في حذف بيانات هذا الحساب؟</p>
             <div class="alert-btns-row">
-                <button id="cancel-delete-action" class="alert-btn alert-btn-cancel">إلغاء</button>
-                <button id="confirm-delete-action" class="alert-btn alert-btn-confirm">تأكيد الحذف</button>
+                <button id="cancel-delete-action" class="alert-btn alert-btn-cancel" data-i18n="cancel">إلغاء</button>
+                <button id="confirm-delete-action" class="alert-btn alert-btn-confirm" data-i18n="confirmDelete">تأكيد الحذف</button>
             </div>
         </div>
     </div>
@@ -60,11 +63,18 @@
                         <img id="menu-user-img" src="" alt="User" class="user-avatar-img">
                         <div style="overflow: hidden; text-align: right; flex-grow: 1;">
                             <div id="menu-user-name" class="user-name-txt">اسم المستخدم</div>
-                            <span id="menu-logout-trigger" class="logout-action">تسجيل الخروج</span>
+                            <span id="menu-logout-trigger" class="logout-action" data-i18n="logout">تسجيل الخروج</span>
                         </div>
                     </div>
 
-                    <div class="colors-label">تخصيص ألوان الموقع:</div>
+                    <!-- تبديل اللغة -->
+                    <div class="colors-label" data-i18n="languageLabel">لغة الموقع:</div>
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <button onclick="changeLanguage('ar')" style="flex: 1; padding: 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; cursor: pointer;">العربية</button>
+                        <button onclick="changeLanguage('en')" style="flex: 1; padding: 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; cursor: pointer;">English</button>
+                    </div>
+
+                    <div class="colors-label" data-i18n="themeLabel">تخصيص ألوان الموقع:</div>
                     <div class="colors-row">
                         <div class="color-circle blue" onclick="changeTheme('theme-blue')"></div>
                         <div class="color-circle purple" onclick="changeTheme('theme-purple')"></div>
@@ -75,39 +85,35 @@
                     
                     <a id="support-wa-link" href="#" target="_blank" class="dropdown-link-item">
                         <i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 16px;"></i>
-                        <span>مركز الدعم الفني</span>
+                        <span data-i18n="support">مركز الدعم الفني</span>
                     </a>
                     <button id="trigger-delete-modal" class="dropdown-link-item danger-item">
                         <i class="fa-solid fa-trash-can"></i>
-                        <span>حذف بيانات الحساب</span>
+                        <span data-i18n="deleteAccount">حذف بيانات الحساب</span>
                     </button>
                 </div>
             </div>
         </header>
 
+        <!-- قسم المنتجات والمشتريات -->
         <div class="purchases-main-area" style="padding: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h1 style="margin: 0; color: #fff; font-size: 22px;">المشتريات والمنتجات</h1>
+                <h1 data-i18n="purchasesTitle" style="margin: 0; color: #fff; font-size: 22px;">المشتريات والمنتجات</h1>
                 <button id="admin-add-product-btn" style="display: none; background: #25d366; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                    <i class="fa-solid fa-plus"></i> <span>إضافة منتج</span>
+                    <i class="fa-solid fa-plus"></i> <span data-i18n="addProduct">إضافة منتج</span>
                 </button>
             </div>
 
-            <!-- لوحة إضافة منتج للمشرف -->
+            <!-- نموذج إضافة منتج (يظهر للمشرف فقط) -->
             <div id="admin-product-form-box" style="display: none; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                <h3 style="margin-top: 0; font-size: 16px; color: #fff;">إضافة منتج جديد للمتجر</h3>
+                <h3 style="margin-top: 0; font-size: 16px; color: #fff;" data-i18n="addNewProduct">إضافة منتج جديد للمتجر</h3>
                 <input type="text" id="new-product-title" placeholder="اسم المنتج..." style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: #fff; box-sizing: border-box;">
                 <input type="text" id="new-product-price" placeholder="سعر المنتج (مثال: $50)..." style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: #fff; box-sizing: border-box;">
-                
-                <label style="display: block; font-size: 13px; color: #9ca3af; margin-bottom: 4px;">صورة المنتج:</label>
                 <input type="file" id="new-product-img-file" accept="image/*" style="width: 100%; margin-bottom: 10px; color: #fff;">
-                
-                <label style="display: block; font-size: 13px; color: #9ca3af; margin-bottom: 4px;">فيديو المنتج (اختياري):</label>
-                <input type="file" id="new-product-video-file" accept="video/*" style="width: 100%; margin-bottom: 12px; color: #fff;">
-
-                <button id="save-product-btn" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">نشر المنتج</button>
+                <button id="save-product-btn" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;" data-i18n="publishProduct">نشر المنتج</button>
             </div>
 
+            <!-- شبكة عرض المنتجات -->
             <div id="products-grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px;"></div>
         </div>
 
@@ -119,14 +125,22 @@
         <!-- نافذة الشات -->
         <div id="chat-modal-container" class="chat-modal-container">
             <div class="chat-header">
-                <h4><i class="fa-solid fa-hashtag"></i> دردشة King Store</h4>
+                <h4 data-i18n="chatHeader"><i class="fa-solid fa-hashtag"></i> دردشة King Store</h4>
                 <button id="chat-close-btn" class="chat-close-btn"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
             <div id="chat-messages-area" class="chat-messages-area"></div>
 
+            <div id="reply-preview-box" class="reply-preview-box" style="display: none;">
+                <div class="reply-preview-content" style="display: flex; justify-content: space-between; width: 100%;">
+                    <span id="replying-to-text">الرد على: ...</span>
+                    <i class="fa-solid fa-xmark" id="cancel-reply-btn" style="cursor: pointer;"></i>
+                </div>
+            </div>
+
             <div class="chat-input-area">
-                <input type="text" id="chat-input-field" class="chat-input-field" placeholder="اكتب رسالتك هنا...">
+                <button id="chat-mic-btn" class="chat-mic-btn" title="تسجيل صوتي"><i class="fa-solid fa-microphone"></i></button>
+                <input type="text" id="chat-input-field" class="chat-input-field" data-i18n-placeholder="typeMessage" placeholder="اكتب رسالتك هنا...">
                 <button id="chat-send-btn" class="chat-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
@@ -134,5 +148,4 @@
 
     <script type="module" src="app.js"></script>
 </body>
-                    </html>
-                    
+</html>
