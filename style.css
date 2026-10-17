@@ -17,6 +17,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-main);
     color: var(--text-color);
+    direction: inherit;
 }
 
 #login-screen, #splash-screen {
@@ -35,6 +36,15 @@ body {
     text-align: center;
 }
 
+.splash-inner img, .logo-box img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 20px var(--primary-color);
+    margin-bottom: 15px;
+}
+
 .login-card {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -46,7 +56,7 @@ body {
     max-width: 380px;
 }
 
-.login-title { font-size: 22px; font-weight: bold; margin-bottom: 8px; color: #fff; }
+.login-title { font-size: 22px; font-weight: bold; margin-bottom: 8px; }
 .login-desc { font-size: 13px; color: #9ca3af; margin-bottom: 25px; }
 
 .google-signin-btn {
@@ -152,6 +162,7 @@ header {
 .dropdown-link-item:hover { background: rgba(255,255,255,0.05); }
 .danger-item { color: #ef4444; }
 
+/* نافذة التحذير للحذف */
 #delete-alert-modal {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -177,6 +188,7 @@ header {
 .alert-btn-cancel { background: rgba(255,255,255,0.1); color: #fff; }
 .alert-btn-confirm { background: #ef4444; color: #fff; }
 
+/* زر الشات العائم */
 .chat-float-btn {
     position: fixed;
     bottom: 20px;
@@ -195,6 +207,7 @@ header {
     z-index: 90;
 }
 
+/* نافذة الدردشة */
 .chat-modal-container {
     position: fixed;
     bottom: 85px;
@@ -274,7 +287,7 @@ header {
     outline: none;
 }
 
-.chat-send-btn {
+.chat-send-btn, .chat-mic-btn {
     background: var(--primary-color);
     color: #fff;
     border: none;
@@ -286,5 +299,11 @@ header {
     justify-content: center;
 }
 
-.delete-msg-btn { background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; font-size: 11px; }
-    
+.chat-mic-btn.recording { background: #ef4444; animation: pulse 1.2s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+.msg-actions-row { display: flex; gap: 8px; margin-top: 4px; font-size: 10px; }
+.reply-action-btn, .delete-msg-btn { background: none; border: none; color: inherit; cursor: pointer; padding: 0; opacity: 0.7; }
+.reply-action-btn:hover, .delete-msg-btn:hover { opacity: 1; text-decoration: underline; }
+
+.reply-preview-box { background: rgba(0,0,0,0.3); padding: 6px 10px; font-size: 11px; border-top: 1px solid var(--border-color); }
