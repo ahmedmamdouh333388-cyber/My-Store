@@ -40,8 +40,14 @@
         <span><strong>King <em>Store</em></strong><small>SMART SHOPPING EXPERIENCE</small></span>
       </a>
       <div class="top-actions">
-        <span id="online-users-pill" class="status-pill"><i class="fa-solid fa-users"></i> المتصلين: <b id="online-count">1</b></span>
-        <span id="connection-status" class="status-pill"><i class="fa-solid fa-circle"></i> متصل</span>
+        <!-- عداد المتصلين بالشكل التكنولوجي الجديد -->
+        <div id="online-users-pill" class="tech-pulse-pill" title="الزوار المتصلين الآن">
+          <span class="pulse-dot"></span>
+          <i class="fa-solid fa-network-wired"></i>
+          <span class="pill-label">متصل:</span>
+          <b id="online-count">1</b>
+        </div>
+        
         <button id="settings-trigger-btn" class="icon-btn" aria-label="الإعدادات"><i class="fa-solid fa-sliders"></i></button>
         <div id="settings-popup-menu" class="settings-dropdown glass-card">
           <div class="user-info-box">
@@ -153,15 +159,17 @@
       <button id="chat-close-btn" class="icon-btn" aria-label="إغلاق الرسائل"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <!-- زر تحكم المشرف في السماح للآخرين بالكتابة -->
+    <!-- زر تحكم المشرف الدائري الصغير -->
     <div id="admin-chat-toggle-box" class="admin-chat-toggle-box admin-only" hidden>
       <span>السماح للمستخدمين بالكتابة:</span>
-      <button id="toggle-chat-permission-btn" class="btn btn-small btn-quiet">مفعل (جاري التحميل...)</button>
+      <label class="switch-toggle" aria-label="تبديل إذن الكتابة">
+        <input type="checkbox" id="toggle-chat-permission-checkbox">
+        <span class="switch-slider"></span>
+      </label>
     </div>
 
     <div id="chat-messages-area" class="chat-messages-area"><div class="empty-chat">جاري تحميل الرسائل...</div></div>
 
-    <!-- صندوق الكتابة الموحد (يظهر للمشرف دائماً، وللأعضاء لو المشرف سمح لهم) -->
     <div id="chat-compose-box" class="admin-chat-compose">
       <input id="chat-input-field" type="text" maxlength="500" placeholder="اكتب رسالتك هنا...">
       <input id="chat-link-field" type="url" class="admin-only" placeholder="رابط اختياري يظهر تحت الرسالة (https://...)" hidden>
@@ -173,5 +181,5 @@
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
   <script type="module" src="app.js"></script>
 </body>
-  </html>
-  
+      </html>
+      
