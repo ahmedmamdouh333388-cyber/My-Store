@@ -28,8 +28,8 @@ const firebaseConfig = {
   measurementId: "G-CT3FQN4BBK"
 };
 
-// إيميل المشرف الأساسي
-const ADMIN_EMAIL = "ahmadmamdouh333388@gmail.com";
+// إيميل المشرف الصحيح والمطابق لصورتك تماماً
+const ADMIN_EMAIL = "ahmedmamdouh333388@gmail.com";
 
 // رقم التحويل ورقم واتساب الدعم
 const TRANSFER_NUMBER = "01214563781";
@@ -75,12 +75,9 @@ $("support-wa-link").href =
     "مرحباً، أحتاج مساعدة من دعم King Store."
   )}`;
 
-// دالة فحص المشرف المؤكدة 100%
 function isAdmin() {
   if (!currentUser || !currentUser.email) return false;
-  const userEmail = currentUser.email.trim().toLowerCase();
-  const targetAdmin = ADMIN_EMAIL.trim().toLowerCase();
-  return userEmail === targetAdmin;
+  return currentUser.email.trim().toLowerCase() === ADMIN_EMAIL.trim().toLowerCase();
 }
 
 function toast(message, isError = false) {
@@ -139,7 +136,6 @@ function applyAdminPrivileges() {
     $("chat-access-note").textContent = "إعلانات وتحديثات المتجر";
   }
 
-  // إعادة رسم المنتجات لضمان ظهور أزرار التعديل والحذف للمشرف
   productDataById.forEach((data, id) => renderProduct(id, data));
 }
 
@@ -419,7 +415,7 @@ function escapeHtml(value) {
   }[char]));
 }
 
-// عرض بطاقة المنتج مع أزرار المشرف والرابط الاختياري
+// عرض بطاقة المنتج
 function renderProduct(id, data) {
   if (!data || !productsGridContainer) return;
 
@@ -506,7 +502,7 @@ onChildChanged(productsRef, (snapshot) => {
 
 window.setTimeout(showEmptyProducts, 3500);
 
-// أزرار الشراء والتعديل والحذف للمنتجات
+// أزرار الشراء والتعديل والحذف
 productsGridContainer.addEventListener("click", async (event) => {
   const buyButton = event.target.closest("[data-buy]");
   const editButton = event.target.closest("[data-edit]");
@@ -703,3 +699,12 @@ async function sendStoreMessage() {
       username: "King Store",
       text,
       link: link || "",
+      timestamp: Date.now(),
+      isAdmin: true
+    });
+
+    chatInputField.value = "";
+    chatLinkField.value = "";
+    toast("تم إرسال رسالة المتجر.");
+  } catch {
+    toast("تع
