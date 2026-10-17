@@ -1,8 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
   getAuth,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged
@@ -29,7 +28,7 @@ const firebaseConfig = {
   measurementId: "G-CT3FQN4BBK"
 };
 
-// إيميل المشرف المحدد بدقة
+// إيميل المشرف الصحيح
 const ADMIN_EMAIL = "ahmadmamdouh333388@gmail.com";
 
 // رقم التحويل ورقم واتساب الدعم
@@ -77,8 +76,8 @@ $("support-wa-link").href =
   )}`;
 
 function isAdmin() {
-  if (!currentUser || !currentUser.email) return false;
-  return currentUser.email.trim().toLowerCase() === ADMIN_EMAIL.trim().toLowerCase();
+  return !!currentUser &&
+    currentUser.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 }
 
 function toast(message, isError = false) {
@@ -99,42 +98,18 @@ function openSettings() {
   settingsPopupMenu.classList.toggle("active");
 }
 
-// معالجة نتيجة إعادة التوجيه بعد العودة من Google
-getRedirectResult(auth).catch((error) => {
-  authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.code || error.message}`;
-});
-
-// تسجيل الدخول باستخدام التحويل المباشر
+// تسجيل الدخول باستخدام Google (الطريقة الأصلية)
 $("google-login-btn").addEventListener("click", async () => {
-  authErrorMsg.textContent = "جاري تحويلك لتسجيل الدخول...";
+  authErrorMsg.textContent = "جاري فتح تسجيل الدخول...";
 
   try {
-    await signInWithRedirect(auth, provider);
+    await signInWithPopup(auth, provider);
+    authErrorMsg.textContent = "";
   } catch (error) {
     authErrorMsg.textContent =
       `تعذر تسجيل الدخول: ${error.code || error.message}`;
   }
 });
-
-// تحديث واجهة المستخدم بالكامل حسب صلاحيات المشرف
-function updateUIAccess() {
-  const admin = isAdmin();
-  
-  adminAddProductBtn.hidden = !admin;
-  adminChatCompose.hidden = !admin;
-  userChatReadonly.hidden = admin;
-
-  if (!admin) {
-    adminProductFormBox.hidden = true;
-  }
-
-  $("chat-access-note").textContent = admin
-    ? "أنت كمشرف تقدر ترسل تحديثات ورابط للمستخدمين"
-    : "إعلانات وتحديثات المتجر";
-
-  // إعادة رسم المنتجات لإظهار/إخفاء أزرار التعديل والحذف الخاصة بالمشرف
-  productDataById.forEach((data, id) => renderProduct(id, data));
-}
 
 // متابعة حالة تسجيل الدخول
 onAuthStateChanged(auth, (user) => {
@@ -165,7 +140,20 @@ onAuthStateChanged(auth, (user) => {
       user.displayName || "مستخدم King Store";
     $("menu-user-email").textContent = user.email || "";
 
-    updateUIAccess();
+    adminAddProductBtn.hidden = !isAdmin();
+    adminChatCompose.hidden = !isAdmin();
+    userChatReadonly.hidden = isAdmin();
+
+    if (!isAdmin()) {
+      adminProductFormBox.hidden = true;
+    }
+
+    $("chat-access-note").textContent = isAdmin()
+      ? "أنت كمشرف تقدر ترسل تحديثات ورابط للمستخدمين"
+      : "إعلانات وتحديثات المتجر";
+
+    // إعادة رسم المنتجات لإظهار أدوات الإدارة للمشرف فقط
+    productDataById.forEach((data, id) => renderProduct(id, data));
   } else {
     loginScreen.style.display = "flex";
     splashScreen.style.display = "none";
@@ -197,7 +185,6 @@ document.addEventListener("click", () => {
 
 $("menu-logout-trigger").addEventListener("click", async () => {
   try {
-    settingsPopupMenu.classList.remove("active");
     await signOut(auth);
     toast("تم تسجيل الخروج.");
   } catch {
@@ -717,4 +704,18 @@ async function sendStoreMessage() {
 
 chatSendBtn.addEventListener("click", sendStoreMessage);
 
-chatInputField.addEventListener("keydown", (event) => 
+chatInputField.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") sendStoreMessage();
+});
+
+chatLinkField.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") sendStoreMessage();
+});
+
+// حذف رسالة بواسطة المشرف
+chatMessagesArea.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-delete-message]");
+
+  if (!button || !isAdmin()) return;
+
+  if (!window.confirm("
