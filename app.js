@@ -40,6 +40,11 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
 
+// إعداد المزود لفتح نافذة اختيار الحساب بسلاسة
+provider.setCustomParameters({
+  prompt: 'select_account'
+});
+
 const $ = (id) => document.getElementById(id);
 
 const loginScreen = $("login-screen");
@@ -119,6 +124,7 @@ $("confirm-yes-btn").addEventListener("click", () => {
   confirmCallback = null;
 });
 
+// دالة تسجيل الدخول المحدثة والآمنة ضد التجميد
 async function handleGoogleLogin() {
   authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
   try {
@@ -126,19 +132,25 @@ async function handleGoogleLogin() {
     currentUser = result.user;
     authErrorMsg.textContent = "";
   } catch (error) {
-    console.error("Login Error:", error);
+    console.error("Login Error Details:", error);
     if (error.code === 'auth/popup-blocked') {
-      authErrorMsg.textContent = "تم حظر النافذة المنبثقة. يرجى السماح بها من المتصفح.";
+      authErrorMsg.textContent = "تم حظر النافذة من المتصفح. يرجى السماح بالمنبثقات.";
     } else if (error.code === 'auth/popup-closed-by-user') {
       authErrorMsg.textContent = "تم إغلاق نافذة تسجيل الدخول.";
+    } else if (error.code === 'auth/cancelled-popup-request') {
+      authErrorMsg.textContent = "تم إلغاء الطلب السابق، حاول مرة أخرى.";
     } else {
-      authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
+      authErrorMsg.textContent = `خطأ في الدخول: ${error.message || error.code}`;
     }
   }
 }
 
-// تفعيل زر تسجيل الدخول بقوة وثبات
-$("google-login-btn").addEventListener("click", handleGoogleLogin);
+// تفعيل الزر برمجياً بشكل قاطع
+const loginBtn = $("google-login-btn");
+if (loginBtn) {
+  loginBtn.replaceWith(loginBtn.cloneNode(true)); // إزالة أي تكرار للـ listeners القديمة
+  $("google-login-btn").addEventListener("click", handleGoogleLogin);
+}
 
 function applyAdminPrivileges() {
   const adminMode = isAdmin();
@@ -199,7 +211,7 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// نظام عداد المتصلين بالوقت الحقيقي
+// نظام عداد المتصلين
 const connectedRef = ref(db, ".info/connected");
 const onlineUsersRef = ref(db, "online_users");
 
@@ -314,7 +326,6 @@ $("cancel-product-form-secondary").addEventListener("click", () => {
   editingProductId = null;
 });
 
-// رفع الحد الأقصى للصورة ليكون 5 ميجابايت
 function readImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
@@ -623,20 +634,4 @@ $("chat-close-btn").addEventListener("click", () => {
 });
 
 async function sendStoreMessage() {
-  if (!isAdmin()) return toast("إرسال الرسائل للمشرف فقط.", true);
-
-  const text = chatInputField.value.trim();
-  const link = chatLinkField.value.trim();
-  if (!text) return;
-
-  chatSendBtn.disabled = true;
-
-  try {
-    await push(messagesRef, {
-      uid: currentUser.uid,
-      email: currentUser.email,
-      username: "King Store",
-      text,
-      link: link || "",
-      timestamp: Date.now(),
-      isAdmin
+  if (!isAdmin()) return toa
