@@ -284,6 +284,15 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
 .modal-icon { width: 55px; height: 55px; border-radius: 18px; font-size: 22px; }
 .modal-card h2 { margin: 5px 0; }
 .modal-card > p { font-size: 12px; line-height: 1.9; }
+
+/* تصميم نافذة التأكيد المخصصة */
+.confirm-modal-card { width: min(100%, 380px); }
+.warning-icon { background: linear-gradient(135deg, #ff9b42, #e65c00); box-shadow: 0 12px 35px rgba(230,92,0,0.25); }
+.confirm-modal-card h3 { margin: 10px 0; font-size: 20px; }
+.confirm-actions { display: flex; gap: 10px; margin-top: 20px; }
+.confirm-actions .btn { flex: 1; }
+.btn-danger-custom { background: linear-gradient(135deg, #ff647c, #d93853); color: #fff; }
+
 .order-summary { display: flex; align-items: center; gap: 13px; text-align: right; background: #0b1220; padding: 12px; border-radius: 14px; margin: 18px 0; }
 .order-summary img { width: 65px; height: 65px; object-fit: cover; border-radius: 10px; background: #1b2639; }
 .order-summary strong, .order-summary small, .order-summary b { display: block; }
@@ -350,5 +359,4 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .modal-card { padding: 25px 18px; }
   .chat-float-btn { bottom: 17px; left: 17px; }
   .chat-panel { bottom: 85px; left: 15px; }
-                                    }
-  
+              }
