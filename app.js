@@ -77,7 +77,7 @@ $("support-wa-link").href =
 
 function isAdmin() {
   return !!currentUser &&
-    currentUser.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    currentUser.email?.trim().toLowerCase() === ADMIN_EMAIL.trim().toLowerCase();
 }
 
 function toast(message, isError = false) {
@@ -98,20 +98,28 @@ function openSettings() {
   settingsPopupMenu.classList.toggle("active");
 }
 
-// تسجيل الدخول باستخدام Google (الطريقة الأصلية)
-$("google-login-btn").addEventListener("click", async () => {
-  authErrorMsg.textContent = "جاري فتح تسجيل الدخول...";
-
+// أداة جافاسكريبت مستقلة ومخصصة لمعالجة تسجيل الدخول عبر Google بمرونة عالية
+async function handleGoogleLogin() {
+  authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
   try {
-    await signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    currentUser = result.user;
     authErrorMsg.textContent = "";
   } catch (error) {
-    authErrorMsg.textContent =
-      `تعذر تسجيل الدخول: ${error.code || error.message}`;
+    console.error("Login Error:", error);
+    if (error.code === 'auth/popup-blocked') {
+      authErrorMsg.textContent = "تم حظر النافذة المنبثقة من المتجر. يرجى السماح للنوافذ المنبثقة.";
+    } else if (error.code === 'auth/popup-closed-by-user') {
+      authErrorMsg.textContent = "تم إغلاق نافذة تسجيل الدخول قبل إتمامها.";
+    } else {
+      authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
+    }
   }
-});
+}
 
-// متابعة حالة تسجيل الدخول
+$("google-login-btn").addEventListener("click", handleGoogleLogin);
+
+// متابعة حالة تسجيل الدخول وتحديث واجهة المستخدم
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
 
@@ -152,7 +160,6 @@ onAuthStateChanged(auth, (user) => {
       ? "أنت كمشرف تقدر ترسل تحديثات ورابط للمستخدمين"
       : "إعلانات وتحديثات المتجر";
 
-    // إعادة رسم المنتجات لإظهار أدوات الإدارة للمشرف فقط
     productDataById.forEach((data, id) => renderProduct(id, data));
   } else {
     loginScreen.style.display = "flex";
@@ -185,6 +192,7 @@ document.addEventListener("click", () => {
 
 $("menu-logout-trigger").addEventListener("click", async () => {
   try {
+    settingsPopupMenu.classList.remove("active");
     await signOut(auth);
     toast("تم تسجيل الخروج.");
   } catch {
@@ -702,20 +710,4 @@ async function sendStoreMessage() {
   }
 }
 
-chatSendBtn.addEventListener("click", sendStoreMessage);
-
-chatInputField.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") sendStoreMessage();
-});
-
-chatLinkField.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") sendStoreMessage();
-});
-
-// حذف رسالة بواسطة المشرف
-chatMessagesArea.addEventListener("click", async (event) => {
-  const button = event.target.closest("[data-delete-message]");
-
-  if (!button || !isAdmin()) return;
-
-  if (!window.confirm("
+    
