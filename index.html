@@ -45,7 +45,6 @@
         <span><strong>King <em>Store</em></strong><small>SMART SHOPPING EXPERIENCE</small></span>
       </a>
       <div class="top-actions">
-        <!-- عداد المتصلين مع زر تحكم المشرف -->
         <div id="online-users-pill" class="tech-pulse-pill" title="الزوار المتصلين الآن">
           <span class="pulse-dot"></span>
           <i class="fa-solid fa-network-wired"></i>
@@ -55,17 +54,17 @@
         </div>
         
         <button id="settings-trigger-btn" class="icon-btn" aria-label="الإعدادات"><i class="fa-solid fa-sliders"></i></button>
+        
         <div id="settings-popup-menu" class="settings-dropdown glass-card">
           <div class="user-info-box">
             <img id="menu-user-img" src="" alt="" class="user-avatar-img">
             <div class="user-meta"><strong id="menu-user-name">المستخدم</strong><small id="menu-user-email"></small></div>
           </div>
           
-          <!-- لوحة تحكم المشرفين داخل الإعدادات -->
           <div id="admin-settings-section" class="admin-only" hidden>
             <div class="menu-label">لوحة إدارة المشرفين</div>
             <div class="admin-input-group">
-              <input type="email" id="new-admin-email" placeholder="أدخل البريد لإضافته مشرفاً...">
+              <input type="email" id="new-admin-email" placeholder="أدخل البريد لإضافته...">
               <button id="add-admin-btn" class="btn btn-small btn-primary">إضافة</button>
             </div>
             <div id="admins-list-container" class="admin-sublist"></div>
@@ -144,7 +143,6 @@
     <footer><a href="#" class="footer-brand"><i class="fa-solid fa-crown"></i> King Store</a><span>تسوق بذكاء. اختار بثقة.</span><span>© <span id="current-year"></span> King Store</span></footer>
   </div>
 
-  <!-- نافذة عرض المتصلين للمشرف -->
   <div id="online-users-modal" class="modal-backdrop" role="dialog" aria-modal="true">
     <div class="modal-card glass-card">
       <button id="close-online-modal" class="modal-close icon-btn" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
@@ -215,4 +213,5 @@
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
   <script type="module" src="app.js"></script>
 </body>
-</html>
+        </html>
+                                                      
