@@ -28,10 +28,9 @@ const firebaseConfig = {
   measurementId: "G-CT3FQN4BBK"
 };
 
-// إيميل المشرف الصحيح والمطابق لصورتك تماماً
+// إيميل المشرف الحصري والمقيد بدقة
 const ADMIN_EMAIL = "ahmedmamdouh333388@gmail.com";
 
-// رقم التحويل ورقم واتساب الدعم
 const TRANSFER_NUMBER = "01214563781";
 const WHATSAPP_NUMBER = "201225428692";
 
@@ -98,7 +97,6 @@ function openSettings() {
   settingsPopupMenu.classList.toggle("active");
 }
 
-// أداة تسجيل الدخول
 async function handleGoogleLogin() {
   authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
   try {
@@ -107,19 +105,12 @@ async function handleGoogleLogin() {
     authErrorMsg.textContent = "";
   } catch (error) {
     console.error("Login Error:", error);
-    if (error.code === 'auth/popup-blocked') {
-      authErrorMsg.textContent = "تم حظر النافذة المنبثقة. يرجى السماح بها.";
-    } else if (error.code === 'auth/popup-closed-by-user') {
-      authErrorMsg.textContent = "تم إغلاق نافذة تسجيل الدخول.";
-    } else {
-      authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
-    }
+    authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
   }
 }
 
 $("google-login-btn").addEventListener("click", handleGoogleLogin);
 
-// دالة تحديث صلاحيات وعناصر واجهة المشرف فوراً
 function applyAdminPrivileges() {
   const adminMode = isAdmin();
   
@@ -139,7 +130,6 @@ function applyAdminPrivileges() {
   productDataById.forEach((data, id) => renderProduct(id, data));
 }
 
-// متابعة حالة تسجيل الدخول وتحديث الواجهة تلقائياً
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
 
@@ -157,7 +147,7 @@ onAuthStateChanged(auth, (user) => {
         storeScreen.style.display = "block";
         sessionStorage.setItem("king_splash_shown", "true");
         applyAdminPrivileges();
-      }, 1100);
+      }, 1000);
     } else {
       splashScreen.style.display = "none";
       storeScreen.style.display = "block";
@@ -180,7 +170,6 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// الإعدادات وتسجيل الخروج
 settingsTriggerBtn.addEventListener("click", (event) => {
   event.stopPropagation();
   openSettings();
@@ -200,11 +189,10 @@ $("menu-logout-trigger").addEventListener("click", async () => {
     await signOut(auth);
     toast("تم تسجيل الخروج.");
   } catch {
-    toast("تعذر تسجيل الخروج. حاول مرة أخرى.", true);
+    toast("تعذر تسجيل الخروج.", true);
   }
 });
 
-// تغيير اتجاه الصفحة
 $("language-toggle").addEventListener("click", () => {
   const root = $("html-root");
   const english = root.lang !== "en";
@@ -212,45 +200,28 @@ $("language-toggle").addEventListener("click", () => {
   root.lang = english ? "en" : "ar";
   root.dir = english ? "ltr" : "rtl";
 
-  toast(
-    english
-      ? "تم تغيير اتجاه الصفحة. بعض النصوص تبقى بالعربية."
-      : "تم الرجوع للعرض العربي."
-  );
-
+  toast(english ? "تم تغيير اتجاه الصفحة." : "تم الرجوع للعرض العربي.");
   settingsPopupMenu.classList.remove("active");
 });
 
-// تغيير ألوان الموقع
 document.querySelectorAll("[data-theme]").forEach((button) => {
   button.addEventListener("click", () => {
     document.body.className = button.dataset.theme;
-
-    localStorage.setItem(
-      "king_store_theme",
-      button.dataset.theme
-    );
-
+    localStorage.setItem("king_store_theme", button.dataset.theme);
     settingsPopupMenu.classList.remove("active");
   });
 });
 
 const savedTheme = localStorage.getItem("king_store_theme");
-
 if (savedTheme && /^theme-(blue|violet|mint|gold)$/.test(savedTheme)) {
   document.body.className = savedTheme;
 }
 
-// فتح نموذج إضافة أو تعديل منتج
 function openProductForm(productId = null) {
-  if (!isAdmin()) {
-    return toast("هذه الخاصية للمشرف فقط.", true);
-  }
+  if (!isAdmin()) return toast("هذه الخاصية للمشرف فقط.", true);
 
   editingProductId = productId;
-
-  $("product-form-title").textContent =
-    productId ? "تعديل المنتج" : "إضافة منتج جديد";
+  $("product-form-title").textContent = productId ? "تعديل المنتج" : "إضافة منتج جديد";
 
   $("new-product-title").value = "";
   $("new-product-price").value = "";
@@ -258,31 +229,20 @@ function openProductForm(productId = null) {
   $("new-product-link").value = "";
   $("new-product-img-file").value = "";
 
-  setFormMessage(
-    productId
-      ? "اختار صورة جديدة إذا كنت تريد تغيير الصورة، أو اتركها فارغة للاحتفاظ بالصورة الحالية."
-      : ""
-  );
+  setFormMessage(productId ? "اختار صورة جديدة أو اتركها فارغة." : "");
 
   if (productId) {
     const product = productDataById.get(productId);
-
-    if (!product) {
-      return toast("لم يتم العثور على المنتج.", true);
+    if (product) {
+      $("new-product-title").value = product.title || "";
+      $("new-product-price").value = product.price || "";
+      $("new-product-description").value = product.description || "";
+      $("new-product-link").value = product.link || "";
     }
-
-    $("new-product-title").value = product.title || "";
-    $("new-product-price").value = product.price || "";
-    $("new-product-description").value = product.description || "";
-    $("new-product-link").value = product.link || "";
   }
 
   adminProductFormBox.hidden = false;
-
-  adminProductFormBox.scrollIntoView({
-    behavior: "smooth",
-    block: "center"
-  });
+  adminProductFormBox.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 adminAddProductBtn.addEventListener("click", () => {
@@ -303,34 +263,21 @@ $("cancel-product-form-secondary").addEventListener("click", () => {
   editingProductId = null;
 });
 
-// قراءة صورة المنتج
 function readImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
-
-    if (!file.type.startsWith("image/")) {
-      return reject(new Error("اختار ملف صورة صحيح."));
-    }
-
-    if (file.size > 1_500_000) {
-      return reject(
-        new Error("حجم الصورة كبير. اختار صورة أقل من 1.5 ميجابايت.")
-      );
-    }
+    if (!file.type.startsWith("image/")) return reject(new Error("اختار ملف صورة صحيح."));
+    if (file.size > 1_500_000) return reject(new Error("حجم الصورة كبير جداً."));
 
     const reader = new FileReader();
-
     reader.onload = () => resolve(reader.result);
     reader.onerror = () => reject(new Error("تعذر قراءة الصورة."));
     reader.readAsDataURL(file);
   });
 }
 
-// حفظ المنتج في Firebase
 $("save-product-btn").addEventListener("click", async () => {
-  if (!isAdmin()) {
-    return toast("غير مسموح لك بإدارة المنتجات.", true);
-  }
+  if (!isAdmin()) return toast("غير مسموح لك بإدارة المنتجات.", true);
 
   const title = $("new-product-title").value.trim();
   const price = Number($("new-product-price").value);
@@ -338,31 +285,24 @@ $("save-product-btn").addEventListener("click", async () => {
   const link = $("new-product-link").value.trim();
   const file = $("new-product-img-file").files?.[0] || null;
 
-  const existing = editingProductId
-    ? productDataById.get(editingProductId)
-    : null;
+  const existing = editingProductId ? productDataById.get(editingProductId) : null;
 
   if (!title || !Number.isFinite(price) || price <= 0) {
-    setFormMessage(
-      "اكتب اسم المنتج وسعراً صحيحاً أكبر من صفر.",
-      true
-    );
+    setFormMessage("اختار اسم المنتج وسعراً صحيحاً.", true);
     return;
   }
 
   if (!existing && !file) {
-    setFormMessage("اختار صورة للمنتج قبل الحفظ.", true);
+    setFormMessage("اختار صورة للمنتج.", true);
     return;
   }
 
   const saveButton = $("save-product-btn");
   saveButton.disabled = true;
-  saveButton.innerHTML =
-    '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ';
+  saveButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ';
 
   try {
     const image = await readImage(file);
-
     const product = {
       title,
       price: price.toFixed(2).replace(/\.00$/, ""),
@@ -374,11 +314,7 @@ $("save-product-btn").addEventListener("click", async () => {
     };
 
     if (editingProductId) {
-      await update(
-        ref(db, `products/${editingProductId}`),
-        product
-      );
-
+      await update(ref(db, `products/${editingProductId}`), product);
       toast("تم تعديل المنتج بنجاح.");
     } else {
       await push(ref(db, "products"), {
@@ -386,39 +322,27 @@ $("save-product-btn").addEventListener("click", async () => {
         createdAt: Date.now(),
         createdBy: currentUser.uid
       });
-
       toast("تمت إضافة المنتج بنجاح.");
     }
 
     adminProductFormBox.hidden = true;
     editingProductId = null;
   } catch (error) {
-    setFormMessage(
-      error.message || "حدث خطأ أثناء الحفظ.",
-      true
-    );
+    setFormMessage(error.message || "حدث خطأ أثناء الحفظ.", true);
   } finally {
     saveButton.disabled = false;
-    saveButton.innerHTML =
-      '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ المنتج';
+    saveButton.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ المنتج';
   }
 });
 
-// منع عرض النصوص المدخلة كـ HTML
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[char]));
 }
 
-// عرض بطاقة المنتج
 function renderProduct(id, data) {
   if (!data || !productsGridContainer) return;
-
   productDataById.set(id, data);
 
   const old = $(`product-${id}`);
@@ -443,7 +367,7 @@ function renderProduct(id, data) {
     <div class="product-body">
       <span class="product-category">KING SELECTION</span>
       <h3>${escapeHtml(data.title || "منتج")}</h3>
-      <p class="product-description">${escapeHtml(data.description || "منتج مميز من King Store. تواصل معنا لو محتاج تفاصيل إضافية.")}</p>
+      <p class="product-description">${escapeHtml(data.description || "منتج مميز من King Store.")}</p>
       ${externalLinkMarkup}
       <div class="product-bottom">
         <div class="product-price">${escapeHtml(data.price)} <small>جنيه</small></div>
@@ -475,18 +399,15 @@ function showEmptyProducts() {
       <div class="empty-state">
         <i class="fa-solid fa-box-open"></i>
         <strong>لسه مفيش منتجات</strong>
-        <span>ارجع تاني قريب، المنتجات هتظهر هنا.</span>
+        <span>انتظر قليلاً لتظهر المنتجات.</span>
       </div>`;
   }
 }
 
-// تحميل المنتجات من Firebase
 const productsRef = ref(db, "products");
 
 onChildAdded(productsRef, (snapshot) => {
-  const empty = productsGridContainer.querySelector(".empty-state");
-  if (empty) empty.remove();
-
+  productsGridContainer.querySelector(".empty-state")?.remove();
   renderProduct(snapshot.key, snapshot.val());
 });
 
@@ -500,9 +421,8 @@ onChildChanged(productsRef, (snapshot) => {
   renderProduct(snapshot.key, snapshot.val());
 });
 
-window.setTimeout(showEmptyProducts, 3500);
+window.setTimeout(showEmptyProducts, 3000);
 
-// أزرار الشراء والتعديل والحذف
 productsGridContainer.addEventListener("click", async (event) => {
   const buyButton = event.target.closest("[data-buy]");
   const editButton = event.target.closest("[data-edit]");
@@ -518,38 +438,25 @@ productsGridContainer.addEventListener("click", async (event) => {
   }
 
   if (deleteButton) {
-    if (!isAdmin()) {
-      return toast("هذه الخاصية للمشرف فقط.", true);
-    }
-
+    if (!isAdmin()) return toast("هذه الخاصية للمشرف فقط.", true);
     const id = deleteButton.dataset.delete;
-
     if (window.confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
       try {
         await remove(ref(db, `products/${id}`));
         toast("تم حذف المنتج.");
       } catch {
-        toast("تعذر حذف المنتج. راجع صلاحيات قاعدة البيانات.", true);
+        toast("تعذر حذف المنتج.", true);
       }
     }
   }
 });
 
-// نافذة الشراء
 function openPurchaseModal(id, product) {
   currentPurchase = { id, ...product };
-
-  $("purchase-product-name").textContent =
-    product.title || "منتج";
-
-  $("purchase-product-price").textContent =
-    `${product.price} جنيه`;
-
+  $("purchase-product-name").textContent = product.title || "منتج";
+  $("purchase-product-price").textContent = `${product.price} جنيه`;
   $("purchase-product-image").src = product.image || "";
-
-  $("purchase-product-image").style.visibility =
-    product.image ? "visible" : "hidden";
-
+  $("purchase-product-image").style.visibility = product.image ? "visible" : "hidden";
   purchaseModal.classList.add("active");
 }
 
@@ -558,11 +465,7 @@ function closePurchaseModal() {
   currentPurchase = null;
 }
 
-$("close-purchase-modal").addEventListener(
-  "click",
-  closePurchaseModal
-);
-
+$("close-purchase-modal").addEventListener("click", closePurchaseModal);
 purchaseModal.addEventListener("click", (event) => {
   if (event.target === purchaseModal) closePurchaseModal();
 });
@@ -574,7 +477,6 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-// نسخ رقم التحويل
 $("copy-transfer-number").addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(TRANSFER_NUMBER);
@@ -586,7 +488,6 @@ $("copy-transfer-number").addEventListener("click", async () => {
 
 function orderMessage() {
   if (!currentPurchase) return "";
-
   return `مرحباً King Store، أريد تأكيد طلب:
 المنتج: ${currentPurchase.title}
 السعر: ${currentPurchase.price} جنيه
@@ -595,27 +496,21 @@ function orderMessage() {
 سأرفق صورة التحويل في هذه المحادثة.`;
 }
 
-// فتح واتساب لإرسال تفاصيل الطلب
 $("send-transfer-proof-btn").addEventListener("click", () => {
   if (!currentPurchase) return;
-
-  const url =
-    `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderMessage())}`;
-
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderMessage())}`;
   window.open(url, "_blank", "noopener,noreferrer");
 });
 
-// نسخ تفاصيل الطلب
 $("copy-order-details-btn").addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(orderMessage());
-    toast("تم نسخ تفاصيل الطلب. تقدر تلصقها في واتساب.");
+    toast("تم نسخ تفاصيل الطلب.");
   } catch {
-    toast("تعذر النسخ تلقائياً. استخدم زر واتساب لإرسال التفاصيل.", true);
+    toast("تعذر النسخ تلقائياً.", true);
   }
 });
 
-// رسائل المتجر
 const messagesRef = ref(db, "messages");
 
 onChildAdded(messagesRef, (snapshot) => {
@@ -624,16 +519,13 @@ onChildAdded(messagesRef, (snapshot) => {
 
 onChildRemoved(messagesRef, (snapshot) => {
   $(`store-message-${snapshot.key}`)?.remove();
-
   if (!chatMessagesArea.querySelector(".chat-message")) {
-    chatMessagesArea.innerHTML =
-      '<div class="empty-chat">لا توجد رسائل حتى الآن.</div>';
+    chatMessagesArea.innerHTML = '<div class="empty-chat">لا توجد رسائل حتى الآن.</div>';
   }
 });
 
 function renderStoreMessage(id, data) {
   if (!chatMessagesArea || !data) return;
-
   chatMessagesArea.querySelector(".empty-chat")?.remove();
 
   const message = document.createElement("article");
@@ -641,10 +533,7 @@ function renderStoreMessage(id, data) {
   message.id = `store-message-${id}`;
 
   const date = data.timestamp
-    ? new Date(data.timestamp).toLocaleString("ar-EG", {
-        dateStyle: "short",
-        timeStyle: "short"
-      })
+    ? new Date(data.timestamp).toLocaleString("ar-EG", { dateStyle: "short", timeStyle: "short" })
     : "";
 
   const linkMarkup = data.link
@@ -670,7 +559,6 @@ function renderStoreMessage(id, data) {
   chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
 }
 
-// فتح وإغلاق لوحة الرسائل
 $("chat-float-btn").addEventListener("click", () => {
   chatPanel.classList.toggle("active");
   chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
@@ -680,11 +568,8 @@ $("chat-close-btn").addEventListener("click", () => {
   chatPanel.classList.remove("active");
 });
 
-// إرسال رسالة من المشرف مع الرابط الاختياري
 async function sendStoreMessage() {
-  if (!isAdmin()) {
-    return toast("إرسال الرسائل متاح للمشرف فقط.", true);
-  }
+  if (!isAdmin()) return toast("إرسال الرسائل للمشرف فقط.", true);
 
   const text = chatInputField.value.trim();
   const link = chatLinkField.value.trim();
@@ -707,4 +592,26 @@ async function sendStoreMessage() {
     chatLinkField.value = "";
     toast("تم إرسال رسالة المتجر.");
   } catch {
-    toast("تع
+    toast("تعذر إرسال الرسالة.", true);
+  } finally {
+    chatSendBtn.disabled = false;
+  }
+}
+
+chatSendBtn.addEventListener("click", sendStoreMessage);
+chatInputField.addEventListener("keydown", (e) => { if (e.key === "Enter") sendStoreMessage(); });
+chatLinkField.addEventListener("keydown", (e) => { if (e.key === "Enter") sendStoreMessage(); });
+
+chatMessagesArea.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-delete-message]");
+  if (!button || !isAdmin()) return;
+  if (!window.confirm("هل تريد حذف هذه الرسالة؟")) return;
+
+  try {
+    await remove(ref(db, `messages/${button.dataset.deleteMessage}`));
+    toast("تم حذف الرسالة.");
+  } catch {
+    toast("تعذر حذف الرسالة.", true);
+  }
+});
+    
