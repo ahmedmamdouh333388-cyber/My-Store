@@ -1,8 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
   getAuth,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged
@@ -48,6 +47,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: 'select_account' });
 
 const $ = (id) => document.getElementById(id);
 
@@ -131,21 +131,29 @@ $("confirm-yes-btn").addEventListener("click", () => {
   confirmCallback = null;
 });
 
-// حل نهائي لتسجيل الدخول عبر Redirect ليتخطى حظر المتصفحات والموبايل
+// حل نهائي لتسجيل الدخول واختيار الحساب والدخول فوراً للموقع
 async function handleGoogleLogin() {
-  authErrorMsg.textContent = "جاري التحويل لـ Google...";
+  authErrorMsg.textContent = "";
+  const btn = $("google-login-btn");
+  btn.disabled = true;
+
   try {
-    await signInWithRedirect(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    currentUser = result.user;
+    // الـ onAuthStateChanged هيتعامل مع فتح الموقع تلقائياً
   } catch (error) {
     console.error("Login Error:", error);
-    authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
+    if (error.code === 'auth/popup-blocked') {
+      authErrorMsg.textContent = "تم حظر النافذة المنبثقة. يرجى السماح بها من المتصفح.";
+    } else if (error.code === 'auth/popup-closed-by-user') {
+      authErrorMsg.textContent = "تم إغلاق النافذة قبل اكتمال التسجيل.";
+    } else {
+      authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
+    }
+  } finally {
+    btn.disabled = false;
   }
 }
-
-getRedirectResult(auth).catch((error) => {
-  console.error("Redirect Error:", error);
-  authErrorMsg.textContent = `خطأ في المصادقة: ${error.message}`;
-});
 
 $("google-login-btn").addEventListener("click", handleGoogleLogin);
 
@@ -226,7 +234,7 @@ onAuthStateChanged(auth, (user) => {
     sessionStorage.removeItem("king_splash_shown");
   }
 });
-  const chatPermissionRef = ref(db, "settings/chatAllowedForUsers");
+const chatPermissionRef = ref(db, "settings/chatAllowedForUsers");
 onValue(chatPermissionRef, (snapshot) => {
   if (snapshot.exists()) {
     chatAllowedForUsers = snapshot.val();
@@ -720,4 +728,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   });
 });
-  
+                                    
