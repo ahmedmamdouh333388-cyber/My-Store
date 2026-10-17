@@ -1,13 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" id="html-root">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080b14">
-  <meta name="description" content="King Store — متجر رقمي بتجربة شراء بسيطة وآمنة.">
-  <meta property="og:title" content="King Store — متجر تقني">
-  <meta property="og:description" content="منتجاتك المفضلة في مكان واحد.">
-  <meta property="og:type" content="website">
   <title>King Store — متجر تقني</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -136,13 +133,14 @@
   <section id="chat-panel" class="chat-panel glass-card" aria-label="رسائل King Store">
     <div class="chat-panel-header"><div><span class="eyebrow">KING STORE</span><strong>رسائل المتجر</strong><small id="chat-access-note">إعلانات وتحديثات المتجر</small></div><button id="chat-close-btn" class="icon-btn" aria-label="إغلاق الرسائل"><i class="fa-solid fa-xmark"></i></button></div>
     <div id="chat-messages-area" class="chat-messages-area"><div class="empty-chat">جاري تحميل الرسائل...</div></div>
-    <div id="chat-compose" class="admin-chat-compose">
-      <input id="chat-input-field" type="text" maxlength="500" placeholder="اكتب رسالتك هنا..." aria-label="نص الرسالة">
-      <button id="chat-send-btn" class="btn btn-primary" aria-label="إرسال الرسالة"><i class="fa-solid fa-paper-plane"></i></button>
+    <div id="admin-chat-compose" class="admin-chat-compose admin-only" hidden>
+      <input id="chat-input-field" type="text" maxlength="500" placeholder="اكتب إعلاناً أو رسالة للمستخدمين...">
+      <button id="chat-send-btn" class="btn btn-primary" aria-label="إرسال"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
-    <div class="chat-readonly">تقدر تحذف رسالتك خلال ساعة من إرسالها، والمشرف يقدر يحذف أي رسالة.</div>
+    <div id="user-chat-readonly" class="chat-readonly">الرسائل هنا للقراءة فقط. للتواصل مع الدعم استخدم واتساب.</div>
   </section>
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
   <script type="module" src="app.js"></script>
 </body>
-                                                                                  </html>
+            </html>
+            
