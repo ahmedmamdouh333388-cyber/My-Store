@@ -21,6 +21,15 @@ import {
   set
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+// تسجيل الـ Service Worker لتفعيل التثبيت (PWA)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch((err) => {
+      console.log("SW registration failed: ", err);
+    });
+  });
+}
+
 const firebaseConfig = {
   apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
   authDomain: "my-store-75b70.firebaseapp.com",
@@ -217,7 +226,7 @@ onAuthStateChanged(auth, (user) => {
     sessionStorage.removeItem("king_splash_shown");
   }
 });
-const chatPermissionRef = ref(db, "settings/chatAllowedForUsers");
+  const chatPermissionRef = ref(db, "settings/chatAllowedForUsers");
 onValue(chatPermissionRef, (snapshot) => {
   if (snapshot.exists()) {
     chatAllowedForUsers = snapshot.val();
