@@ -63,7 +63,7 @@ const chatSendBtn = $("chat-send-btn");
 const chatComposeBox = $("chat-compose-box");
 const userChatReadonly = $("user-chat-readonly");
 const adminChatToggleBox = $("admin-chat-toggle-box");
-const toggleChatPermissionBtn = $("toggle-chat-permission-btn");
+const toggleChatPermissionCheckbox = $("toggle-chat-permission-checkbox");
 const onlineCountEl = $("online-count");
 
 let currentUser = null;
@@ -149,9 +149,7 @@ function updateChatUIState() {
     userChatReadonly.hidden = true;
     chatLinkField.hidden = false;
     $("chat-access-note").textContent = "لوحة تحكم المشرف بالرسائل";
-    
-    toggleChatPermissionBtn.textContent = chatAllowedForUsers ? "مفعل (المستخدمون يمكنهم الكتابة)" : "معطل (الكتابة للمشرف فقط)";
-    toggleChatPermissionBtn.className = `btn btn-small ${chatAllowedForUsers ? "btn-whatsapp" : "btn-danger-custom"}`;
+    toggleChatPermissionCheckbox.checked = chatAllowedForUsers;
   } else {
     adminChatToggleBox.hidden = true;
     chatLinkField.hidden = true;
@@ -230,14 +228,16 @@ onValue(chatPermissionRef, (snapshot) => {
   updateChatUIState();
 });
 
-toggleChatPermissionBtn.addEventListener("click", async () => {
+toggleChatPermissionCheckbox.addEventListener("change", async () => {
   if (!isAdmin()) return;
-  const newState = !chatAllowedForUsers;
+  const newState = toggleChatPermissionCheckbox.checked;
   try {
     await set(chatPermissionRef, newState);
     toast(newState ? "تم السماح للمستخدمين بالكتابة." : "تم تعطيل الكتابة للمستخدمين.");
-  } catch {
-    toast("تعذر تغيير الإذن.", true);
+  } catch (error) {
+    console.error("Permission error:", error);
+    toggleChatPermissionCheckbox.checked = !newState;
+    toast("تعذر تغيير الإذن. تأكد من قواعد فايربيس.", true);
   }
 });
 
