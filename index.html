@@ -144,16 +144,34 @@
 
   <button id="chat-float-btn" class="chat-float-btn" aria-label="رسائل المتجر"><i class="fa-solid fa-message"></i></button>
   <section id="chat-panel" class="chat-panel glass-card" aria-label="رسائل King Store">
-    <div class="chat-panel-header"><div><span class="eyebrow">KING STORE</span><strong>رسائل المتجر</strong><small id="chat-access-note">إعلانات وتحديثات المتجر</small></div><button id="chat-close-btn" class="icon-btn" aria-label="إغلاق الرسائل"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="chat-panel-header">
+      <div>
+        <span class="eyebrow">KING STORE</span>
+        <strong>رسائل المتجر</strong>
+        <small id="chat-access-note">إعلانات وتحديثات المتجر</small>
+      </div>
+      <button id="chat-close-btn" class="icon-btn" aria-label="إغلاق الرسائل"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- زر تحكم المشرف في السماح للآخرين بالكتابة -->
+    <div id="admin-chat-toggle-box" class="admin-chat-toggle-box admin-only" hidden>
+      <span>السماح للمستخدمين بالكتابة:</span>
+      <button id="toggle-chat-permission-btn" class="btn btn-small btn-quiet">مفعل (جاري التحميل...)</button>
+    </div>
+
     <div id="chat-messages-area" class="chat-messages-area"><div class="empty-chat">جاري تحميل الرسائل...</div></div>
-    <div id="admin-chat-compose" class="admin-chat-compose admin-only" hidden>
-      <input id="chat-input-field" type="text" maxlength="500" placeholder="اكتب إعلاناً أو رسالة للمستخدمين...">
-      <input id="chat-link-field" type="url" placeholder="رابط اختياري يظهر تحت الرسالة (https://...)">
+
+    <!-- صندوق الكتابة الموحد (يظهر للمشرف دائماً، وللأعضاء لو المشرف سمح لهم) -->
+    <div id="chat-compose-box" class="admin-chat-compose">
+      <input id="chat-input-field" type="text" maxlength="500" placeholder="اكتب رسالتك هنا...">
+      <input id="chat-link-field" type="url" class="admin-only" placeholder="رابط اختياري يظهر تحت الرسالة (https://...)" hidden>
       <button id="chat-send-btn" class="btn btn-primary" aria-label="إرسال"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
-    <div id="user-chat-readonly" class="chat-readonly">الرسائل هنا للقراءة فقط. للتواصل مع الدعم استخدم واتساب.</div>
+    <div id="user-chat-readonly" class="chat-readonly" hidden>الكتابة مغلقة من قبل المشرف حالياً.</div>
   </section>
+
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
   <script type="module" src="app.js"></script>
 </body>
-</html>
+  </html>
+  
