@@ -28,7 +28,7 @@ const firebaseConfig = {
   measurementId: "G-CT3FQN4BBK"
 };
 
-// إيميل المشرف الصحيح
+// إيميل المشرف المحدد بدقة
 const ADMIN_EMAIL = "ahmadmamdouh333388@gmail.com";
 
 // رقم التحويل ورقم واتساب الدعم
@@ -98,7 +98,7 @@ function openSettings() {
   settingsPopupMenu.classList.toggle("active");
 }
 
-// أداة جافاسكريبت مستقلة ومخصصة لمعالجة تسجيل الدخول عبر Google بمرونة عالية
+// أداة جافاسكريبت مستقلة ومخصصة لمعالجة تسجيل الدخول عبر Google
 async function handleGoogleLogin() {
   authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
   try {
@@ -108,7 +108,7 @@ async function handleGoogleLogin() {
   } catch (error) {
     console.error("Login Error:", error);
     if (error.code === 'auth/popup-blocked') {
-      authErrorMsg.textContent = "تم حظر النافذة المنبثقة من المتجر. يرجى السماح للنوافذ المنبثقة.";
+      authErrorMsg.textContent = "تم حظر النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة للمتجر.";
     } else if (error.code === 'auth/popup-closed-by-user') {
       authErrorMsg.textContent = "تم إغلاق نافذة تسجيل الدخول قبل إتمامها.";
     } else {
@@ -710,4 +710,4 @@ async function sendStoreMessage() {
   }
 }
 
-    
+chatSendBt
