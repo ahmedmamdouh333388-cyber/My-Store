@@ -312,8 +312,7 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
 .chat-message-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 12px; background: var(--primary); color: #fff; border-radius: 8px; font-size: 11px; font-weight: bold; }
 .chat-delete-btn { margin-top: 8px; border: 0; background: transparent; color: var(--danger); font-size: 10px; }
 .admin-chat-compose { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-top: 1px solid var(--line); }
-.admin-chat-row { display: flex; gap: 8px; width: 100%; }
-.admin-chat-compose input { margin: 0; min-width: 0; flex: 1; }
+.admin-chat-compose input { margin: 0; min-width: 0; }
 .chat-readonly { padding: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; text-align: center; }
 .toast-region { position: fixed; z-index: 150; top: 18px; left: 18px; display: flex; flex-direction: column; gap: 8px; }
 .toast { max-width: min(360px,calc(100vw - 36px)); background: #182337; border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; box-shadow: var(--shadow); font-size: 12px; animation: toast-in .2s ease-out; }
@@ -351,5 +350,5 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .modal-card { padding: 25px 18px; }
   .chat-float-btn { bottom: 17px; left: 17px; }
   .chat-panel { bottom: 85px; left: 15px; }
-                                                }
+  }
   
