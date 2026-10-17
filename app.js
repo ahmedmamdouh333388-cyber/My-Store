@@ -1,7 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
   getAuth,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged
@@ -39,11 +40,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
-
-// إعداد المزود لفتح نافذة اختيار الحساب بسلاسة
-provider.setCustomParameters({
-  prompt: 'select_account'
-});
 
 const $ = (id) => document.getElementById(id);
 
@@ -124,33 +120,24 @@ $("confirm-yes-btn").addEventListener("click", () => {
   confirmCallback = null;
 });
 
-// دالة تسجيل الدخول المحدثة والآمنة ضد التجميد
+// نظام تسجيل الدخول المضمون عبر Redirect لتجاوز أي تجميد نهائياً
 async function handleGoogleLogin() {
-  authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
+  authErrorMsg.textContent = "جاري تحويلك لتسجيل الدخول...";
   try {
-    const result = await signInWithPopup(auth, provider);
-    currentUser = result.user;
-    authErrorMsg.textContent = "";
+    await signInWithRedirect(auth, provider);
   } catch (error) {
-    console.error("Login Error Details:", error);
-    if (error.code === 'auth/popup-blocked') {
-      authErrorMsg.textContent = "تم حظر النافذة من المتصفح. يرجى السماح بالمنبثقات.";
-    } else if (error.code === 'auth/popup-closed-by-user') {
-      authErrorMsg.textContent = "تم إغلاق نافذة تسجيل الدخول.";
-    } else if (error.code === 'auth/cancelled-popup-request') {
-      authErrorMsg.textContent = "تم إلغاء الطلب السابق، حاول مرة أخرى.";
-    } else {
-      authErrorMsg.textContent = `خطأ في الدخول: ${error.message || error.code}`;
-    }
+    console.error("Login Error:", error);
+    authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
   }
 }
 
-// تفعيل الزر برمجياً بشكل قاطع
-const loginBtn = $("google-login-btn");
-if (loginBtn) {
-  loginBtn.replaceWith(loginBtn.cloneNode(true)); // إزالة أي تكرار للـ listeners القديمة
-  $("google-login-btn").addEventListener("click", handleGoogleLogin);
-}
+// فحص نتيجة العودة من تسجيل الدخول تلقائياً
+getRedirectResult(auth).catch((error) => {
+  console.error("Redirect Error:", error);
+  authErrorMsg.textContent = `خطأ في المصادقة: ${error.message}`;
+});
+
+$("google-login-btn").addEventListener("click", handleGoogleLogin);
 
 function applyAdminPrivileges() {
   const adminMode = isAdmin();
@@ -634,4 +621,27 @@ $("chat-close-btn").addEventListener("click", () => {
 });
 
 async function sendStoreMessage() {
-  if (!isAdmin()) return toa
+  if (!isAdmin()) return toast("إرسال الرسائل للمشرف فقط.", true);
+
+  const text = chatInputField.value.trim();
+  const link = chatLinkField.value.trim();
+  if (!text) return;
+
+  chatSendBtn.disabled = true;
+
+  try {
+    await push(messagesRef, {
+      uid: currentUser.uid,
+      email: currentUser.email,
+      username: "King Store",
+      text,
+      link: link || "",
+      timestamp: Date.now(),
+      isAdmin: true
+    });
+
+    chatInputField.value = "";
+    chatLinkField.value = "";
+    toast("تم إرسال رسالة المتجر.");
+  } catch {
+    toast("تعذر إرسال الرسالة.", true);
