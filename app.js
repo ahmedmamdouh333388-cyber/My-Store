@@ -28,9 +28,7 @@ const firebaseConfig = {
   measurementId: "G-CT3FQN4BBK"
 };
 
-// إيميل المشرف الحصري والمقيد بدقة
 const ADMIN_EMAIL = "ahmedmamdouh333388@gmail.com";
-
 const TRANSFER_NUMBER = "01214563781";
 const WHATSAPP_NUMBER = "201225428692";
 
@@ -51,6 +49,7 @@ const adminAddProductBtn = $("admin-add-product-btn");
 const adminProductFormBox = $("admin-product-form-box");
 const productsGridContainer = $("products-grid-container");
 const purchaseModal = $("purchase-modal");
+const customConfirmModal = $("custom-confirm-modal");
 const toastRegion = $("toast-region");
 const chatPanel = $("chat-panel");
 const chatMessagesArea = $("chat-messages-area");
@@ -63,6 +62,7 @@ const userChatReadonly = $("user-chat-readonly");
 let currentUser = null;
 let currentPurchase = null;
 let editingProductId = null;
+let confirmCallback = null;
 
 const productDataById = new Map();
 
@@ -96,6 +96,25 @@ function setFormMessage(message, isError = false) {
 function openSettings() {
   settingsPopupMenu.classList.toggle("active");
 }
+
+// دالة فتح نافذة التأكيد المخصصة الشيك
+function showCustomConfirm(title, text, onYes) {
+  $("confirm-title").textContent = title;
+  $("confirm-text").textContent = text;
+  confirmCallback = onYes;
+  customConfirmModal.classList.add("active");
+}
+
+$("confirm-no-btn").addEventListener("click", () => {
+  customConfirmModal.classList.remove("active");
+  confirmCallback = null;
+});
+
+$("confirm-yes-btn").addEventListener("click", () => {
+  customConfirmModal.classList.remove("active");
+  if (confirmCallback) confirmCallback();
+  confirmCallback = null;
+});
 
 async function handleGoogleLogin() {
   authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
@@ -263,11 +282,12 @@ $("cancel-product-form-secondary").addEventListener("click", () => {
   editingProductId = null;
 });
 
+// رفع الحد الأقصى للصورة ليصبح 5 ميجابايت
 function readImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
     if (!file.type.startsWith("image/")) return reject(new Error("اختار ملف صورة صحيح."));
-    if (file.size > 1_500_000) return reject(new Error("حجم الصورة كبير جداً."));
+    if (file.size > 5_000_000) return reject(new Error("حجم الصورة كبير جداً. الحد الأقصى 5 ميجابايت."));
 
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
@@ -440,14 +460,16 @@ productsGridContainer.addEventListener("click", async (event) => {
   if (deleteButton) {
     if (!isAdmin()) return toast("هذه الخاصية للمشرف فقط.", true);
     const id = deleteButton.dataset.delete;
-    if (window.confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
+    
+    // استخدام نافذة التأكيد المخصصة الشيك بدل نافذة المتصفح المزعجة
+    showCustomConfirm("حذف المنتج", "هل أنت متأكد من رغبتك في حذف هذا المنتج نهائياً؟", async () => {
       try {
         await remove(ref(db, `products/${id}`));
         toast("تم حذف المنتج.");
       } catch {
         toast("تعذر حذف المنتج.", true);
       }
-    }
+    });
   }
 });
 
@@ -473,6 +495,7 @@ purchaseModal.addEventListener("click", (event) => {
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closePurchaseModal();
+    customConfirmModal.classList.remove("active");
     settingsPopupMenu.classList.remove("active");
   }
 });
@@ -605,13 +628,8 @@ chatLinkField.addEventListener("keydown", (e) => { if (e.key === "Enter") sendSt
 chatMessagesArea.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-delete-message]");
   if (!button || !isAdmin()) return;
-  if (!window.confirm("هل تريد حذف هذه الرسالة؟")) return;
 
-  try {
-    await remove(ref(db, `messages/${button.dataset.deleteMessage}`));
-    toast("تم حذف الرسالة.");
-  } catch {
-    toast("تعذر حذف الرسالة.", true);
-  }
-});
-    
+  // استخدام نافذة التأكيد المخصصة لحذف الرسائل أيضاً
+  showCustomConfirm("حذف الرسالة", "هل أنت متأكد من رغبتك في حذف هذه الرسالة من المتجر؟", async () => {
+    try {
+      await remove(ref(db, `messages/${button.dataset.deleteM
