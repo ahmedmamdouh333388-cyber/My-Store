@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080b14">
   <title>King Store — متجر تقني</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -15,8 +16,11 @@
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
 
-  <section id="login-screen" class="screen-overlay">
+  <section id="login-screen" class="screen-overlay login-overlay-with-bg">
     <div class="login-card glass-card">
+      <div class="login-img-preview">
+        <img src="login-bg.png" alt="King Store" class="login-custom-img">
+      </div>
       <div class="brand-mark"><i class="fa-solid fa-crown"></i></div>
       <p class="eyebrow">WELCOME TO THE NEXT LEVEL</p>
       <h1>King <span>Store</span></h1>
@@ -40,7 +44,6 @@
         <span><strong>King <em>Store</em></strong><small>SMART SHOPPING EXPERIENCE</small></span>
       </a>
       <div class="top-actions">
-        <!-- عداد المتصلين بالشكل التكنولوجي الجديد -->
         <div id="online-users-pill" class="tech-pulse-pill" title="الزوار المتصلين الآن">
           <span class="pulse-dot"></span>
           <i class="fa-solid fa-network-wired"></i>
@@ -159,7 +162,6 @@
       <button id="chat-close-btn" class="icon-btn" aria-label="إغلاق الرسائل"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <!-- زر تحكم المشرف الدائري الصغير -->
     <div id="admin-chat-toggle-box" class="admin-chat-toggle-box admin-only" hidden>
       <span>السماح للمستخدمين بالكتابة:</span>
       <label class="switch-toggle" aria-label="تبديل إذن الكتابة">
@@ -181,5 +183,5 @@
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
   <script type="module" src="app.js"></script>
 </body>
-      </html>
-      
+  </html>
+                                                                                                   
