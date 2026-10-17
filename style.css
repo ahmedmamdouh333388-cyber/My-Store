@@ -60,8 +60,24 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .login-card {
   width: min(100%, 430px);
-  padding: 38px 30px;
+  padding: 32px 26px;
   text-align: center;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.login-img-preview {
+  width: 100%;
+  height: 140px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 15px;
+  border: 1px solid var(--line);
+  background: #060911;
+}
+.login-custom-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .glass-card {
   background: rgba(17,24,39,.92);
@@ -73,16 +89,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .brand-mark, .modal-icon {
   display: grid;
   place-items: center;
-  width: 70px;
-  height: 70px;
-  margin: 0 auto 18px;
-  border-radius: 22px;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 14px;
+  border-radius: 18px;
   background: linear-gradient(135deg,var(--primary),var(--primary-2));
   color: white;
-  font-size: 28px;
+  font-size: 24px;
   box-shadow: 0 12px 35px color-mix(in srgb,var(--primary) 25%,transparent);
 }
-.login-card h1, .splash-screen h2 { font-size: 35px; margin: 8px 0; }
+.login-card h1, .splash-screen h2 { font-size: 32px; margin: 6px 0; }
 .login-card h1 span, .splash-screen h2 span, .brand-lockup em { color: var(--primary); font-style: normal; }
 .eyebrow { color: var(--primary); font-size: 11px; font-weight: 900; letter-spacing: 1.4px; }
 .muted { color: var(--muted); }
@@ -114,7 +130,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .btn-primary:hover { filter: brightness(1.08); }
 .btn-google {
   width: 100%;
-  margin: 18px 0 10px;
+  margin: 14px 0 8px;
   background: #fff;
   color: #202124;
 }
@@ -160,7 +176,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .brand-lockup small { display: block; color: var(--muted); font-size: 9px; letter-spacing: 1px; }
 .top-actions { display: flex; align-items: center; gap: 10px; position: relative; flex-wrap: wrap; justify-content: flex-end; }
 
-/* عداد المتصلين بالشكل التكنولوجي الجديد (Cyber Tech Pill) */
 .tech-pulse-pill {
   display: inline-flex;
   align-items: center;
@@ -174,15 +189,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   box-shadow: 0 0 15px rgba(109, 124, 255, 0.15);
   backdrop-filter: blur(8px);
 }
-.tech-pulse-pill i {
-  color: var(--primary);
-  font-size: 11px;
-}
-.tech-pulse-pill b {
-  color: #fff;
-  font-weight: 900;
-  font-size: 12px;
-}
+.tech-pulse-pill i { color: var(--primary); font-size: 11px; }
+.tech-pulse-pill b { color: #fff; font-weight: 900; font-size: 12px; }
 .pulse-dot {
   width: 7px;
   height: 7px;
@@ -345,7 +353,6 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
 .chat-panel-header strong, .chat-panel-header small { display: block; }
 .chat-panel-header small { color: var(--muted); font-size: 10px; }
 
-/* تصميم زر التبديل الدائري الصغير (Switch Toggle) */
 .admin-chat-toggle-box { display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; background: #0c1321; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); }
 .switch-toggle { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
 .switch-toggle input { opacity: 0; width: 0; height: 0; }
