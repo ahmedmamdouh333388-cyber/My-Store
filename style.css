@@ -71,15 +71,13 @@ button:focus, a:focus, input:focus, textarea:focus, *:focus-visible {
   height: 76px;
   margin: 0 auto 16px;
   border-radius: 50%;
-  overflow: hidden;
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  color: var(--primary);
   border: 2px solid var(--primary);
   box-shadow: 0 0 25px color-mix(in srgb, var(--primary) 40%, transparent);
   background: #111827;
-}
-.login-custom-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 .glass-card {
   background: rgba(17,24,39,.92);
@@ -171,7 +169,7 @@ button:focus, a:focus, input:focus, textarea:focus, *:focus-visible {
 .brand-lockup { display: flex; align-items: center; gap: 12px; }
 .brand-icon {
   width: 46px; height: 46px; border-radius: 15px;
-  display: grid; place-items: center;
+  display: grid; place-items: center; color: white;
   background: linear-gradient(135deg,var(--primary),var(--primary-2));
 }
 .brand-lockup strong { display: block; font-size: 20px; line-height: 1.3; }
@@ -407,4 +405,5 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .modal-card { padding: 25px 18px; }
   .chat-float-btn { bottom: 17px; left: 17px; }
   .chat-panel { bottom: 85px; left: 15px; }
-  }
+        }
+  
