@@ -158,9 +158,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .brand-lockup strong { display: block; font-size: 20px; line-height: 1.3; }
 .brand-lockup small { display: block; color: var(--muted); font-size: 9px; letter-spacing: 1px; }
-.top-actions { display: flex; align-items: center; gap: 12px; position: relative; }
-.status-pill { font-size: 11px; color: #7be3b0; }
-.status-pill i { font-size: 7px; margin-left: 4px; }
+.top-actions { display: flex; align-items: center; gap: 10px; position: relative; flex-wrap: wrap; justify-content: flex-end; }
+.status-pill { font-size: 11px; color: #7be3b0; background: #111827; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 5px; }
+.status-pill i { font-size: 7px; }
 .settings-dropdown {
   display: none;
   position: absolute;
@@ -282,10 +282,7 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
 .modal-card { width: min(100%,440px); position: relative; padding: 28px; text-align: center; }
 .modal-close { position: absolute; top: 13px; left: 13px; }
 .modal-icon { width: 55px; height: 55px; border-radius: 18px; font-size: 22px; }
-.modal-card h2 { margin: 5px 0; }
-.modal-card > p { font-size: 12px; line-height: 1.9; }
 
-/* تصميم نافذة التأكيد المخصصة */
 .confirm-modal-card { width: min(100%, 380px); }
 .warning-icon { background: linear-gradient(135deg, #ff9b42, #e65c00); box-shadow: 0 12px 35px rgba(230,92,0,0.25); }
 .confirm-modal-card h3 { margin: 10px 0; font-size: 20px; }
@@ -339,7 +336,6 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .brand-lockup strong { font-size: 17px; }
   .brand-lockup small { font-size: 7px; }
   .brand-icon { width: 40px; height: 40px; }
-  .status-pill { display: none; }
   .hero-section { grid-template-columns: 1fr; padding: 38px 0 20px; }
   .hero-copy h1 { font-size: 35px; }
   .hero-art { min-height: 260px; }
@@ -359,4 +355,5 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .modal-card { padding: 25px 18px; }
   .chat-float-btn { bottom: 17px; left: 17px; }
   .chat-panel { bottom: 85px; left: 15px; }
-              }
+  }
+    
