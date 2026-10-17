@@ -1,6 +1,5 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-
 import {
   getAuth,
   signInWithPopup,
@@ -8,7 +7,6 @@ import {
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
 import {
   getDatabase,
   ref,
@@ -17,13 +15,8 @@ import {
   onChildRemoved,
   onChildChanged,
   update,
-  remove,
-  serverTimestamp
+  remove
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-// ===============================
-// Firebase Configuration
-// ===============================
 
 const firebaseConfig = {
   apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
@@ -36,7 +29,10 @@ const firebaseConfig = {
   measurementId: "G-CT3FQN4BBK"
 };
 
-const ADMIN_EMAIL = "ahmedmamdouh333388@gmail.com";
+// غيّر الإيميل ده لإيميل حساب المشرف الصحيح
+const ADMIN_EMAIL = "ahmadmamdouh333388@gmail.com";
+
+// رقم التحويل ورقم واتساب الدعم
 const TRANSFER_NUMBER = "01214563781";
 const WHATSAPP_NUMBER = "201225428692";
 
@@ -44,10 +40,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
-
-// ===============================
-// HTML Elements
-// ===============================
 
 const $ = (id) => document.getElementById(id);
 
@@ -66,113 +58,70 @@ const chatPanel = $("chat-panel");
 const chatMessagesArea = $("chat-messages-area");
 const chatInputField = $("chat-input-field");
 const chatSendBtn = $("chat-send-btn");
+const adminChatCompose = $("admin-chat-compose");
+const userChatReadonly = $("user-chat-readonly");
 
 let currentUser = null;
 let currentPurchase = null;
 let editingProductId = null;
 
-let productListeners = [];
-let messageListeners = [];
-
 const productDataById = new Map();
-const messageDataById = new Map();
 
-// ===============================
-// Initial Setup
-// ===============================
+$("current-year").textContent = new Date().getFullYear();
+$("transfer-number").textContent = TRANSFER_NUMBER;
 
-if ($("current-year")) {
-  $("current-year").textContent = new Date().getFullYear();
-}
-
-if ($("transfer-number")) {
-  $("transfer-number").textContent = TRANSFER_NUMBER;
-}
-
-if ($("support-wa-link")) {
-  $("support-wa-link").href =
-    `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-      "مرحباً، أحتاج مساعدة من دعم King Store."
-    )}`;
-}
+$("support-wa-link").href =
+  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    "مرحباً، أحتاج مساعدة من دعم King Store."
+  )}`;
 
 function isAdmin() {
-  return Boolean(
-    currentUser &&
-    currentUser.email &&
-    currentUser.email.toLowerCase() === ADMIN_EMAIL
-  );
+  return !!currentUser &&
+    currentUser.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 }
 
 function toast(message, isError = false) {
-  if (!toastRegion) {
-    alert(message);
-    return;
-  }
-
   const item = document.createElement("div");
   item.className = `toast${isError ? " error" : ""}`;
   item.textContent = message;
   toastRegion.appendChild(item);
-
   window.setTimeout(() => item.remove(), 3600);
 }
 
 function setFormMessage(message, isError = false) {
   const el = $("product-form-message");
-  if (!el) return;
-
   el.textContent = message;
   el.style.color = isError ? "var(--danger)" : "var(--muted)";
 }
 
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  }[char]));
+function openSettings() {
+  settingsPopupMenu.classList.toggle("active");
 }
 
-// ===============================
-// Google Login
-// ===============================
+// تسجيل الدخول باستخدام Google
+$("google-login-btn").addEventListener("click", async () => {
+  authErrorMsg.textContent = "جاري فتح تسجيل الدخول...";
 
-if ($("google-login-btn")) {
-  $("google-login-btn").addEventListener("click", async () => {
-    if (authErrorMsg) {
-      authErrorMsg.textContent = "جاري فتح تسجيل الدخول...";
-    }
+  try {
+    await signInWithPopup(auth, provider);
+    authErrorMsg.textContent = "";
+  } catch (error) {
+    authErrorMsg.textContent =
+      `تعذر تسجيل الدخول: ${error.code || error.message}`;
+  }
+});
 
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Login error:", error);
-
-      if (authErrorMsg) {
-        authErrorMsg.textContent =
-          `تعذر تسجيل الدخول: ${error.code || error.message}`;
-      }
-    }
-  });
-}
-
-// ===============================
-// Authentication State
-// ===============================
-
+// متابعة حالة تسجيل الدخول
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
 
   if (user) {
-    if (loginScreen) loginScreen.style.display = "none";
+    loginScreen.style.display = "none";
 
     const alreadyShown =
       sessionStorage.getItem("king_splash_shown");
 
-    if (splashScreen && storeScreen && !alreadyShown) {
+    if (!alreadyShown) {
       splashScreen.style.display = "flex";
       storeScreen.style.display = "none";
 
@@ -182,119 +131,85 @@ onAuthStateChanged(auth, (user) => {
         sessionStorage.setItem("king_splash_shown", "true");
       }, 1100);
     } else {
-      if (splashScreen) splashScreen.style.display = "none";
-      if (storeScreen) storeScreen.style.display = "block";
+      splashScreen.style.display = "none";
+      storeScreen.style.display = "block";
     }
 
-    if ($("menu-user-img")) {
-      $("menu-user-img").src = user.photoURL || "";
-    }
+    $("menu-user-img").src = user.photoURL || "";
+    $("menu-user-name").textContent =
+      user.displayName || "مستخدم King Store";
+    $("menu-user-email").textContent = user.email || "";
 
-    if ($("menu-user-name")) {
-      $("menu-user-name").textContent =
-        user.displayName || "مستخدم King Store";
-    }
+    adminAddProductBtn.hidden = !isAdmin();
+    adminChatCompose.hidden = !isAdmin();
+    userChatReadonly.hidden = isAdmin();
 
-    if ($("menu-user-email")) {
-      $("menu-user-email").textContent = user.email || "";
-    }
-
-    if (adminAddProductBtn) {
-      adminAddProductBtn.hidden = !isAdmin();
-    }
-
-    if (adminProductFormBox && !isAdmin()) {
+    if (!isAdmin()) {
       adminProductFormBox.hidden = true;
     }
 
-    if ($("chat-access-note")) {
-      $("chat-access-note").textContent = isAdmin()
-        ? "أنت كمشرف تقدر ترسل تحديثات للمستخدمين"
-        : "تقدر تقرأ الرسائل وترسل رسالتك";
-    }
+    $("chat-access-note").textContent = isAdmin()
+      ? "أنت كمشرف تقدر ترسل تحديثات للمستخدمين"
+      : "إعلانات وتحديثات المتجر";
 
-    attachProductListeners();
-    attachMessageListeners();
-
+    // إعادة رسم المنتجات لإظهار أدوات الإدارة للمشرف فقط
+    productDataById.forEach((data, id) => renderProduct(id, data));
   } else {
-    if (loginScreen) loginScreen.style.display = "flex";
-    if (splashScreen) splashScreen.style.display = "none";
-    if (storeScreen) storeScreen.style.display = "none";
+    loginScreen.style.display = "flex";
+    splashScreen.style.display = "none";
+    storeScreen.style.display = "none";
 
-    if (settingsPopupMenu) {
-      settingsPopupMenu.classList.remove("active");
-    }
-
-    if (adminAddProductBtn) adminAddProductBtn.hidden = true;
-    if (adminProductFormBox) adminProductFormBox.hidden = true;
-
-    productListeners.forEach((unsubscribe) => unsubscribe());
-    productListeners = [];
-
-    messageListeners.forEach((unsubscribe) => unsubscribe());
-    messageListeners = [];
-
-    productDataById.clear();
-    messageDataById.clear();
-
-    if (productsGridContainer) productsGridContainer.innerHTML = "";
-    if (chatMessagesArea) chatMessagesArea.innerHTML = "";
+    settingsPopupMenu.classList.remove("active");
+    adminAddProductBtn.hidden = true;
+    adminProductFormBox.hidden = true;
+    adminChatCompose.hidden = true;
+    userChatReadonly.hidden = false;
 
     sessionStorage.removeItem("king_splash_shown");
   }
 });
 
-// ===============================
-// Settings Menu
-// ===============================
+// الإعدادات وتسجيل الخروج
+settingsTriggerBtn.addEventListener("click", (event) => {
+  event.stopPropagation();
+  openSettings();
+});
 
-if (settingsTriggerBtn && settingsPopupMenu) {
-  settingsTriggerBtn.addEventListener("click", (event) => {
-    event.stopPropagation();
-    settingsPopupMenu.classList.toggle("active");
-  });
+settingsPopupMenu.addEventListener("click", (event) => {
+  event.stopPropagation();
+});
 
-  settingsPopupMenu.addEventListener("click", (event) => {
-    event.stopPropagation();
-  });
+document.addEventListener("click", () => {
+  settingsPopupMenu.classList.remove("active");
+});
 
-  document.addEventListener("click", () => {
-    settingsPopupMenu.classList.remove("active");
-  });
-}
+$("menu-logout-trigger").addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+    toast("تم تسجيل الخروج.");
+  } catch {
+    toast("تعذر تسجيل الخروج. حاول مرة أخرى.", true);
+  }
+});
 
-if ($("menu-logout-trigger")) {
-  $("menu-logout-trigger").addEventListener("click", async () => {
-    try {
-      await signOut(auth);
-      toast("تم تسجيل الخروج.");
-    } catch (error) {
-      console.error(error);
-      toast("تعذر تسجيل الخروج. حاول مرة أخرى.", true);
-    }
-  });
-}
+// تغيير اتجاه الصفحة
+$("language-toggle").addEventListener("click", () => {
+  const root = $("html-root");
+  const english = root.lang !== "en";
 
-if ($("language-toggle")) {
-  $("language-toggle").addEventListener("click", () => {
-    const root = $("html-root");
-    if (!root) return;
+  root.lang = english ? "en" : "ar";
+  root.dir = english ? "ltr" : "rtl";
 
-    const english = root.lang !== "en";
+  toast(
+    english
+      ? "تم تغيير اتجاه الصفحة. بعض النصوص تبقى بالعربية."
+      : "تم الرجوع للعرض العربي."
+  );
 
-    root.lang = english ? "en" : "ar";
-    root.dir = english ? "ltr" : "rtl";
+  settingsPopupMenu.classList.remove("active");
+});
 
-    toast(
-      english
-        ? "تم تغيير اتجاه الصفحة. بعض النصوص تبقى بالعربية."
-        : "تم الرجوع للعرض العربي."
-    );
-
-    settingsPopupMenu?.classList.remove("active");
-  });
-}
-
+// تغيير ألوان الموقع
 document.querySelectorAll("[data-theme]").forEach((button) => {
   button.addEventListener("click", () => {
     document.body.className = button.dataset.theme;
@@ -304,7 +219,7 @@ document.querySelectorAll("[data-theme]").forEach((button) => {
       button.dataset.theme
     );
 
-    settingsPopupMenu?.classList.remove("active");
+    settingsPopupMenu.classList.remove("active");
   });
 });
 
@@ -314,17 +229,11 @@ if (savedTheme && /^theme-(blue|violet|mint|gold)$/.test(savedTheme)) {
   document.body.className = savedTheme;
 }
 
-// ===============================
-// Product Form
-// ===============================
-
+// فتح نموذج إضافة أو تعديل منتج
 function openProductForm(productId = null) {
   if (!isAdmin()) {
-    toast("هذه الخاصية للمشرف فقط.", true);
-    return;
+    return toast("هذه الخاصية للمشرف فقط.", true);
   }
-
-  if (!adminProductFormBox) return;
 
   editingProductId = productId;
 
@@ -346,13 +255,13 @@ function openProductForm(productId = null) {
     const product = productDataById.get(productId);
 
     if (!product) {
-      toast("لم يتم العثور على المنتج.", true);
-      return;
+      return toast("لم يتم العثور على المنتج.", true);
     }
 
     $("new-product-title").value = product.title || "";
     $("new-product-price").value = product.price || "";
-    $("new-product-description").value = product.description || "";
+    $("new-product-description").value =
+      product.description || "";
   }
 
   adminProductFormBox.hidden = false;
@@ -363,143 +272,137 @@ function openProductForm(productId = null) {
   });
 }
 
-if (adminAddProductBtn) {
-  adminAddProductBtn.addEventListener("click", () => {
-    if (adminProductFormBox.hidden) {
-      openProductForm();
-    } else {
-      adminProductFormBox.hidden = true;
-    }
-  });
-}
+adminAddProductBtn.addEventListener("click", () => {
+  if (adminProductFormBox.hidden) {
+    openProductForm();
+  } else {
+    adminProductFormBox.hidden = true;
+  }
+});
 
-function cancelProductForm() {
-  if (adminProductFormBox) adminProductFormBox.hidden = true;
+$("cancel-product-form").addEventListener("click", () => {
+  adminProductFormBox.hidden = true;
   editingProductId = null;
-}
+});
 
-if ($("cancel-product-form")) {
-  $("cancel-product-form").addEventListener("click", cancelProductForm);
-}
+$("cancel-product-form-secondary").addEventListener("click", () => {
+  adminProductFormBox.hidden = true;
+  editingProductId = null;
+});
 
-if ($("cancel-product-form-secondary")) {
-  $("cancel-product-form-secondary").addEventListener(
-    "click",
-    cancelProductForm
-  );
-}
-
+// قراءة صورة المنتج
 function readImage(file) {
   return new Promise((resolve, reject) => {
-    if (!file) {
-      resolve(null);
-      return;
-    }
+    if (!file) return resolve(null);
 
     if (!file.type.startsWith("image/")) {
-      reject(new Error("اختار ملف صورة صحيح."));
-      return;
+      return reject(new Error("اختار ملف صورة صحيح."));
     }
 
     if (file.size > 1_500_000) {
-      reject(
+      return reject(
         new Error("حجم الصورة كبير. اختار صورة أقل من 1.5 ميجابايت.")
       );
-      return;
     }
 
     const reader = new FileReader();
 
     reader.onload = () => resolve(reader.result);
     reader.onerror = () => reject(new Error("تعذر قراءة الصورة."));
-
     reader.readAsDataURL(file);
   });
 }
 
-// ===============================
-// Save / Edit Product
-// ===============================
+// حفظ المنتج في Firebase
+$("save-product-btn").addEventListener("click", async () => {
+  if (!isAdmin()) {
+    return toast("غير مسموح لك بإدارة المنتجات.", true);
+  }
 
-if ($("save-product-btn")) {
-  $("save-product-btn").addEventListener("click", async () => {
-    if (!isAdmin()) {
-      toast("غير مسموح لك بإدارة المنتجات.", true);
-      return;
+  const title = $("new-product-title").value.trim();
+  const price = Number($("new-product-price").value);
+  const description =
+    $("new-product-description").value.trim();
+
+  const file = $("new-product-img-file").files?.[0] || null;
+
+  const existing = editingProductId
+    ? productDataById.get(editingProductId)
+    : null;
+
+  if (!title || !Number.isFinite(price) || price <= 0) {
+    setFormMessage(
+      "اكتب اسم المنتج وسعراً صحيحاً أكبر من صفر.",
+      true
+    );
+    return;
+  }
+
+  if (!existing && !file) {
+    setFormMessage("اختار صورة للمنتج قبل الحفظ.", true);
+    return;
+  }
+
+  const saveButton = $("save-product-btn");
+  saveButton.disabled = true;
+  saveButton.innerHTML =
+    '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ';
+
+  try {
+    const image = await readImage(file);
+
+    const product = {
+      title,
+      price: price.toFixed(2).replace(/\.00$/, ""),
+      description,
+      image: image || existing?.image || "",
+      updatedAt: Date.now(),
+      updatedBy: currentUser.uid
+    };
+
+    if (editingProductId) {
+      await update(
+        ref(db, `products/${editingProductId}`),
+        product
+      );
+
+      toast("تم تعديل المنتج بنجاح.");
+    } else {
+      await push(ref(db, "products"), {
+        ...product,
+        createdAt: Date.now(),
+        createdBy: currentUser.uid
+      });
+
+      toast("تمت إضافة المنتج بنجاح.");
     }
 
-    const title = $("new-product-title").value.trim();
-    const price = Number($("new-product-price").value);
-    const description = $("new-product-description").value.trim();
-    const file = $("new-product-img-file").files?.[0] || null;
-
-    const existing = editingProductId
-      ? productDataById.get(editingProductId)
-      : null;
-
-    if (!title || !Number.isFinite(price) || price <= 0) {
-      setFormMessage("اكتب اسم المنتج وسعراً صحيحاً أكبر من صفر.", true);
-      return;
-    }
-
-    if (!existing && !file) {
-      setFormMessage("اختار صورة للمنتج قبل الحفظ.", true);
-      return;
-    }
-
-    const saveButton = $("save-product-btn");
-    saveButton.disabled = true;
+    adminProductFormBox.hidden = true;
+    editingProductId = null;
+  } catch (error) {
+    setFormMessage(
+      error.message || "حدث خطأ أثناء الحفظ.",
+      true
+    );
+  } finally {
+    saveButton.disabled = false;
     saveButton.innerHTML =
-      '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ';
+      '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ المنتج';
+  }
+});
 
-    try {
-      const image = await readImage(file);
-
-      const product = {
-        title,
-        price: price.toFixed(2).replace(/\.00$/, ""),
-        description,
-        image: image || existing?.image || "",
-        updatedAt: Date.now(),
-        updatedBy: currentUser.uid
-      };
-
-      if (editingProductId) {
-        await update(
-          ref(db, `products/${editingProductId}`),
-          product
-        );
-
-        toast("تم تعديل المنتج بنجاح.");
-      } else {
-        await push(ref(db, "products"), {
-          ...product,
-          createdAt: Date.now(),
-          createdBy: currentUser.uid
-        });
-
-        toast("تمت إضافة المنتج بنجاح.");
-      }
-
-      adminProductFormBox.hidden = true;
-      editingProductId = null;
-
-    } catch (error) {
-      console.error("Save product error:", error);
-      setFormMessage(error.message || "حدث خطأ أثناء الحفظ.", true);
-
-    } finally {
-      saveButton.disabled = false;
-      saveButton.innerHTML =
-        '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ المنتج';
-    }
-  });
+// منع عرض النصوص المدخلة كـ HTML
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[char]));
 }
 
-// ===============================
-// Render Products
-// ===============================
-
+// عرض بطاقة المنتج
 function renderProduct(id, data) {
   if (!data || !productsGridContainer) return;
 
@@ -508,58 +411,35 @@ function renderProduct(id, data) {
   const old = $(`product-${id}`);
   if (old) old.remove();
 
+  productsGridContainer.querySelector(".empty-state")?.remove();
+
   const card = document.createElement("article");
   card.className = "product-card";
   card.id = `product-${id}`;
 
   const imageMarkup = data.image
-    ? `<img
-        class="product-image"
-        src="${escapeHtml(data.image)}"
-        alt="${escapeHtml(data.title || "منتج")}"
-        loading="lazy"
-        onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{className:'product-image-placeholder',innerHTML:'<i class=&quot;fa-solid fa-cube&quot;></i>'}))"
-      >`
-    : `<div class="product-image-placeholder">
-         <i class="fa-solid fa-cube"></i>
-       </div>`;
+    ? `<img class="product-image" src="${escapeHtml(data.image)}" alt="${escapeHtml(data.title || "منتج")}" loading="lazy">`
+    : `<div class="product-image-placeholder"><i class="fa-solid fa-cube"></i></div>`;
 
   card.innerHTML = `
-    <div class="product-image-wrap">
-      ${imageMarkup}
-    </div>
-
+    <div class="product-image-wrap">${imageMarkup}</div>
     <div class="product-body">
       <span class="product-category">KING SELECTION</span>
-
       <h3>${escapeHtml(data.title || "منتج")}</h3>
-
-      <p class="product-description">
-        ${escapeHtml(
-          data.description ||
-          "منتج مميز من King Store. تواصل معنا لو محتاج تفاصيل إضافية."
-        )}
-      </p>
-
+      <p class="product-description">${escapeHtml(data.description || "منتج مميز من King Store. تواصل معنا لو محتاج تفاصيل إضافية.")}</p>
       <div class="product-bottom">
-        <div class="product-price">
-          ${escapeHtml(data.price)} <small>جنيه</small>
-        </div>
-
+        <div class="product-price">${escapeHtml(data.price)} <small>جنيه</small></div>
         <button class="btn btn-primary buy-btn" data-buy="${escapeHtml(id)}">
-          <i class="fa-solid fa-bag-shopping"></i>
-          شراء الآن
+          <i class="fa-solid fa-bag-shopping"></i> شراء الآن
         </button>
       </div>
     </div>
-
     ${
       isAdmin()
         ? `<div class="admin-product-actions">
             <button class="btn btn-small btn-edit" data-edit="${escapeHtml(id)}">
               <i class="fa-solid fa-pen"></i> تعديل
             </button>
-
             <button class="btn btn-small btn-delete" data-delete="${escapeHtml(id)}">
               <i class="fa-solid fa-trash"></i> حذف
             </button>
@@ -572,182 +452,119 @@ function renderProduct(id, data) {
 }
 
 function showEmptyProducts() {
-  if (
-    productsGridContainer &&
-    productsGridContainer.children.length === 0
-  ) {
+  if (productsGridContainer.children.length === 0) {
     productsGridContainer.innerHTML = `
       <div class="empty-state">
         <i class="fa-solid fa-box-open"></i>
         <strong>لسه مفيش منتجات</strong>
         <span>ارجع تاني قريب، المنتجات هتظهر هنا.</span>
-      </div>
-    `;
+      </div>`;
   }
 }
 
-// ===============================
-// Firebase Product Listeners
-// ===============================
-
+// تحميل المنتجات من Firebase
 const productsRef = ref(db, "products");
 
-function attachProductListeners() {
-  productListeners.forEach((unsubscribe) => unsubscribe());
-  productListeners = [];
+onChildAdded(productsRef, (snapshot) => {
+  const empty = productsGridContainer.querySelector(".empty-state");
+  if (empty) empty.remove();
 
-  productDataById.clear();
+  renderProduct(snapshot.key, snapshot.val());
+});
 
-  if (!productsGridContainer) return;
+onChildRemoved(productsRef, (snapshot) => {
+  $(`product-${snapshot.key}`)?.remove();
+  productDataById.delete(snapshot.key);
+  showEmptyProducts();
+});
 
-  productsGridContainer.innerHTML = `
-    <div class="empty-state">
-      <i class="fa-solid fa-cube"></i>
-      <strong>جاري تحميل المنتجات...</strong>
-      <span>لحظات ونجهز لك المتجر.</span>
-    </div>
-  `;
+onChildChanged(productsRef, (snapshot) => {
+  renderProduct(snapshot.key, snapshot.val());
+});
 
-  productListeners.push(
-    onChildAdded(
-      productsRef,
-      (snapshot) => {
-        productsGridContainer.querySelector(".empty-state")?.remove();
-        renderProduct(snapshot.key, snapshot.val());
-      },
-      (error) => {
-        console.error("Products read error:", error);
-        toast("تعذر تحميل المنتجات: " + error.message, true);
-      }
-    )
-  );
+window.setTimeout(showEmptyProducts, 3500);
 
-  productListeners.push(
-    onChildRemoved(productsRef, (snapshot) => {
-      $(`product-${snapshot.key}`)?.remove();
-      productDataById.delete(snapshot.key);
-      showEmptyProducts();
-    })
-  );
+// أزرار الشراء والتعديل والحذف
+productsGridContainer.addEventListener("click", async (event) => {
+  const buyButton = event.target.closest("[data-buy]");
+  const editButton = event.target.closest("[data-edit]");
+  const deleteButton = event.target.closest("[data-delete]");
 
-  productListeners.push(
-    onChildChanged(productsRef, (snapshot) => {
-      renderProduct(snapshot.key, snapshot.val());
-    })
-  );
+  if (buyButton) {
+    const product = productDataById.get(buyButton.dataset.buy);
+    if (product) openPurchaseModal(buyButton.dataset.buy, product);
+  }
 
-  window.setTimeout(showEmptyProducts, 3500);
-}
+  if (editButton) {
+    openProductForm(editButton.dataset.edit);
+  }
 
-// ===============================
-// Product Buttons
-// ===============================
-
-if (productsGridContainer) {
-  productsGridContainer.addEventListener("click", async (event) => {
-    const buyButton = event.target.closest("[data-buy]");
-    const editButton = event.target.closest("[data-edit]");
-    const deleteButton = event.target.closest("[data-delete]");
-
-    if (buyButton) {
-      const product = productDataById.get(buyButton.dataset.buy);
-
-      if (product) {
-        openPurchaseModal(buyButton.dataset.buy, product);
-      }
+  if (deleteButton) {
+    if (!isAdmin()) {
+      return toast("هذه الخاصية للمشرف فقط.", true);
     }
 
-    if (editButton) {
-      openProductForm(editButton.dataset.edit);
-    }
+    const id = deleteButton.dataset.delete;
 
-    if (deleteButton) {
-      if (!isAdmin()) {
-        toast("هذه الخاصية للمشرف فقط.", true);
-        return;
-      }
-
-      const id = deleteButton.dataset.delete;
-
-      if (window.confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
-        try {
-          await remove(ref(db, `products/${id}`));
-          toast("تم حذف المنتج.");
-        } catch (error) {
-          console.error("Delete product error:", error);
-          toast("تعذر حذف المنتج. راجع صلاحيات قاعدة البيانات.", true);
-        }
+    if (window.confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
+      try {
+        await remove(ref(db, `products/${id}`));
+        toast("تم حذف المنتج.");
+      } catch {
+        toast("تعذر حذف المنتج. راجع صلاحيات قاعدة البيانات.", true);
       }
     }
-  });
-}
+  }
+});
 
-// ===============================
-// Purchase Modal
-// ===============================
-
+// نافذة الشراء
 function openPurchaseModal(id, product) {
   currentPurchase = { id, ...product };
 
-  $("purchase-product-name").textContent = product.title || "منتج";
-  $("purchase-product-price").textContent = `${product.price} جنيه`;
+  $("purchase-product-name").textContent =
+    product.title || "منتج";
 
-  const image = $("purchase-product-image");
+  $("purchase-product-price").textContent =
+    `${product.price} جنيه`;
 
-  if (image) {
-    if (product.image) {
-      image.src = product.image;
-      image.style.visibility = "visible";
-    } else {
-      image.removeAttribute("src");
-      image.style.visibility = "hidden";
-    }
+  $("purchase-product-image").src = product.image || "";
 
-    image.onerror = () => {
-      image.style.visibility = "hidden";
-    };
-  }
+  $("purchase-product-image").style.visibility =
+    product.image ? "visible" : "hidden";
 
-  purchaseModal?.classList.add("active");
+  purchaseModal.classList.add("active");
 }
 
 function closePurchaseModal() {
-  purchaseModal?.classList.remove("active");
+  purchaseModal.classList.remove("active");
   currentPurchase = null;
 }
 
-if ($("close-purchase-modal")) {
-  $("close-purchase-modal").addEventListener(
-    "click",
-    closePurchaseModal
-  );
-}
+$("close-purchase-modal").addEventListener(
+  "click",
+  closePurchaseModal
+);
 
-if (purchaseModal) {
-  purchaseModal.addEventListener("click", (event) => {
-    if (event.target === purchaseModal) {
-      closePurchaseModal();
-    }
-  });
-}
+purchaseModal.addEventListener("click", (event) => {
+  if (event.target === purchaseModal) closePurchaseModal();
+});
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closePurchaseModal();
-    settingsPopupMenu?.classList.remove("active");
+    settingsPopupMenu.classList.remove("active");
   }
 });
 
-if ($("copy-transfer-number")) {
-  $("copy-transfer-number").addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(TRANSFER_NUMBER);
-      toast("تم نسخ رقم التحويل.");
-    } catch {
-      toast(`رقم التحويل: ${TRANSFER_NUMBER}`);
-    }
-  });
-}
+// نسخ رقم التحويل
+$("copy-transfer-number").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(TRANSFER_NUMBER);
+    toast("تم نسخ رقم التحويل.");
+  } catch {
+    toast(`رقم التحويل: ${TRANSFER_NUMBER}`);
+  }
+});
 
 function orderMessage() {
   if (!currentPurchase) return "";
@@ -760,21 +577,138 @@ function orderMessage() {
 سأرفق صورة التحويل في هذه المحادثة.`;
 }
 
-if ($("send-transfer-proof-btn")) {
-  $("send-transfer-proof-btn").addEventListener("click", () => {
-    if (!currentPurchase) return;
+// فتح واتساب لإرسال تفاصيل الطلب
+$("send-transfer-proof-btn").addEventListener("click", () => {
+  if (!currentPurchase) return;
 
-    const url =
-      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderMessage())}`;
+  const url =
+    `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderMessage())}`;
 
-    window.open(url, "_blank", "noopener,noreferrer");
-  });
+  window.open(url, "_blank", "noopener,noreferrer");
+});
+
+// نسخ تفاصيل الطلب
+$("copy-order-details-btn").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(orderMessage());
+    toast("تم نسخ تفاصيل الطلب. تقدر تلصقها في واتساب.");
+  } catch {
+    toast("تعذر النسخ تلقائياً. استخدم زر واتساب لإرسال التفاصيل.", true);
+  }
+});
+
+// رسائل المتجر: القراءة للجميع والإرسال للمشرف فقط
+const messagesRef = ref(db, "messages");
+
+onChildAdded(messagesRef, (snapshot) => {
+  renderStoreMessage(snapshot.key, snapshot.val());
+});
+
+onChildRemoved(messagesRef, (snapshot) => {
+  $(`store-message-${snapshot.key}`)?.remove();
+
+  if (!chatMessagesArea.querySelector(".chat-message")) {
+    chatMessagesArea.innerHTML =
+      '<div class="empty-chat">لا توجد رسائل حتى الآن.</div>';
+  }
+});
+
+function renderStoreMessage(id, data) {
+  if (!chatMessagesArea || !data) return;
+
+  chatMessagesArea.querySelector(".empty-chat")?.remove();
+
+  const message = document.createElement("article");
+  message.className = "chat-message";
+  message.id = `store-message-${id}`;
+
+  const date = data.timestamp
+    ? new Date(data.timestamp).toLocaleString("ar-EG", {
+        dateStyle: "short",
+        timeStyle: "short"
+      })
+    : "";
+
+  message.innerHTML = `
+    <div class="chat-message-top">
+      <strong><i class="fa-solid fa-crown"></i> ${escapeHtml(data.username || "King Store")}</strong>
+      <time>${escapeHtml(date)}</time>
+    </div>
+    <p>${escapeHtml(data.text || "")}</p>
+    ${
+      isAdmin()
+        ? `<button class="chat-delete-btn" data-delete-message="${escapeHtml(id)}">
+            <i class="fa-solid fa-trash"></i> حذف الرسالة
+          </button>`
+        : ""
+    }
+  `;
+
+  chatMessagesArea.appendChild(message);
+  chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
 }
 
-if ($("copy-order-details-btn")) {
-  $("copy-order-details-btn").addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(orderMessage());
-      toast("تم نسخ تفاصيل الطلب. تقدر تلصقها في واتساب.");
-    } catch {
-      toast("تعذر النسخ تلقائياً. استخدم زر واتساب لإرسال ا
+// فتح وإغلاق لوحة الرسائل
+$("chat-float-btn").addEventListener("click", () => {
+  chatPanel.classList.toggle("active");
+  chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+});
+
+$("chat-close-btn").addEventListener("click", () => {
+  chatPanel.classList.remove("active");
+});
+
+// إرسال رسالة من المشرف
+async function sendStoreMessage() {
+  if (!isAdmin()) {
+    return toast("إرسال الرسائل متاح للمشرف فقط.", true);
+  }
+
+  const text = chatInputField.value.trim();
+  if (!text) return;
+
+  chatSendBtn.disabled = true;
+
+  try {
+    await push(messagesRef, {
+      uid: currentUser.uid,
+      email: currentUser.email,
+      username: "King Store",
+      text,
+      timestamp: Date.now(),
+      isAdmin: true
+    });
+
+    chatInputField.value = "";
+    toast("تم إرسال رسالة المتجر.");
+  } catch {
+    toast("تعذر إرسال الرسالة. راجع قواعد Firebase.", true);
+  } finally {
+    chatSendBtn.disabled = false;
+  }
+}
+
+chatSendBtn.addEventListener("click", sendStoreMessage);
+
+chatInputField.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") sendStoreMessage();
+});
+
+// حذف رسالة بواسطة المشرف
+chatMessagesArea.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-delete-message]");
+
+  if (!button || !isAdmin()) return;
+
+  if (!window.confirm("هل تريد حذف رسالة المتجر؟")) return;
+
+  try {
+    await remove(
+      ref(db, `messages/${button.dataset.deleteMessage}`)
+    );
+
+    toast("تم حذف الرسالة.");
+  } catch {
+    toast("تعذر حذف الرسالة. راجع قواعد Firebase.", true);
+  }
+});
