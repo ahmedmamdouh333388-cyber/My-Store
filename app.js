@@ -1,7 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
   getAuth,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged
@@ -130,29 +131,21 @@ $("confirm-yes-btn").addEventListener("click", () => {
   confirmCallback = null;
 });
 
-// إصلاح مشكلة تسجيل الدخول عبر PopUp مباشر ومضمون
+// حل نهائي لتسجيل الدخول عبر Redirect ليتخطى حظر المتصفحات والموبايل
 async function handleGoogleLogin() {
-  authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
-  const btn = $("google-login-btn");
-  btn.disabled = true;
-
+  authErrorMsg.textContent = "جاري التحويل لـ Google...";
   try {
-    const result = await signInWithPopup(auth, provider);
-    currentUser = result.user;
-    authErrorMsg.textContent = "";
+    await signInWithRedirect(auth, provider);
   } catch (error) {
     console.error("Login Error:", error);
-    if (error.code === 'auth/popup-blocked') {
-      authErrorMsg.textContent = "تم حظر النافذة المنبثقة من المتصفح. يرجى السماح بها.";
-    } else if (error.code === 'auth/popup-closed-by-user') {
-      authErrorMsg.textContent = "تم إغلاق نافذة تسجيل الدخول.";
-    } else {
-      authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
-    }
-  } finally {
-    btn.disabled = false;
+    authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
   }
 }
+
+getRedirectResult(auth).catch((error) => {
+  console.error("Redirect Error:", error);
+  authErrorMsg.textContent = `خطأ في المصادقة: ${error.message}`;
+});
 
 $("google-login-btn").addEventListener("click", handleGoogleLogin);
 
@@ -233,7 +226,7 @@ onAuthStateChanged(auth, (user) => {
     sessionStorage.removeItem("king_splash_shown");
   }
 });
-                            const chatPermissionRef = ref(db, "settings/chatAllowedForUsers");
+  const chatPermissionRef = ref(db, "settings/chatAllowedForUsers");
 onValue(chatPermissionRef, (snapshot) => {
   if (snapshot.exists()) {
     chatAllowedForUsers = snapshot.val();
@@ -711,7 +704,7 @@ async function sendStoreMessage() {
 }
 
 chatSendBtn.addEventListener("click", sendStoreMessage);
-chatInputField.append("keydown", (e) => { if (e.key === "Enter") sendStoreMessage(); });
+chatInputField.addEventListener("keydown", (e) => { if (e.key === "Enter") sendStoreMessage(); });
 chatLinkField.addEventListener("keydown", (e) => { if (e.key === "Enter") sendStoreMessage(); });
 
 chatMessagesArea.addEventListener("click", async (event) => {
@@ -727,4 +720,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   });
 });
-                                      
+  
