@@ -14,7 +14,10 @@ import {
   onChildRemoved,
   onChildChanged,
   update,
-  remove
+  remove,
+  onValue,
+  onDisconnect,
+  set
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -58,6 +61,7 @@ const chatLinkField = $("chat-link-field");
 const chatSendBtn = $("chat-send-btn");
 const adminChatCompose = $("admin-chat-compose");
 const userChatReadonly = $("user-chat-readonly");
+const onlineCountEl = $("online-count");
 
 let currentUser = null;
 let currentPurchase = null;
@@ -97,7 +101,6 @@ function openSettings() {
   settingsPopupMenu.classList.toggle("active");
 }
 
-// دالة فتح نافذة التأكيد المخصصة الشيك
 function showCustomConfirm(title, text, onYes) {
   $("confirm-title").textContent = title;
   $("confirm-text").textContent = text;
@@ -124,10 +127,17 @@ async function handleGoogleLogin() {
     authErrorMsg.textContent = "";
   } catch (error) {
     console.error("Login Error:", error);
-    authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
+    if (error.code === 'auth/popup-blocked') {
+      authErrorMsg.textContent = "تم حظر النافذة المنبثقة. يرجى السماح بها من المتصفح.";
+    } else if (error.code === 'auth/popup-closed-by-user') {
+      authErrorMsg.textContent = "تم إغلاق نافذة تسجيل الدخول.";
+    } else {
+      authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
+    }
   }
 }
 
+// تفعيل زر تسجيل الدخول بقوة وثبات
 $("google-login-btn").addEventListener("click", handleGoogleLogin);
 
 function applyAdminPrivileges() {
@@ -186,6 +196,28 @@ onAuthStateChanged(auth, (user) => {
     applyAdminPrivileges();
 
     sessionStorage.removeItem("king_splash_shown");
+  }
+});
+
+// نظام عداد المتصلين بالوقت الحقيقي
+const connectedRef = ref(db, ".info/connected");
+const onlineUsersRef = ref(db, "online_users");
+
+onValue(connectedRef, (snap) => {
+  if (snap.val() === true) {
+    const userPresenceRef = push(onlineUsersRef);
+    onDisconnect(userPresenceRef).remove();
+    set(userPresenceRef, {
+      onlineAt: Date.now(),
+      email: currentUser ? currentUser.email : "زائر"
+    });
+  }
+});
+
+onValue(onlineUsersRef, (snapshot) => {
+  const count = snapshot.exists() ? snapshot.size : 1;
+  if (onlineCountEl) {
+    onlineCountEl.textContent = count;
   }
 });
 
@@ -282,7 +314,7 @@ $("cancel-product-form-secondary").addEventListener("click", () => {
   editingProductId = null;
 });
 
-// رفع الحد الأقصى للصورة ليصبح 5 ميجابايت
+// رفع الحد الأقصى للصورة ليكون 5 ميجابايت
 function readImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
@@ -461,7 +493,6 @@ productsGridContainer.addEventListener("click", async (event) => {
     if (!isAdmin()) return toast("هذه الخاصية للمشرف فقط.", true);
     const id = deleteButton.dataset.delete;
     
-    // استخدام نافذة التأكيد المخصصة الشيك بدل نافذة المتصفح المزعجة
     showCustomConfirm("حذف المنتج", "هل أنت متأكد من رغبتك في حذف هذا المنتج نهائياً؟", async () => {
       try {
         await remove(ref(db, `products/${id}`));
@@ -608,28 +639,4 @@ async function sendStoreMessage() {
       text,
       link: link || "",
       timestamp: Date.now(),
-      isAdmin: true
-    });
-
-    chatInputField.value = "";
-    chatLinkField.value = "";
-    toast("تم إرسال رسالة المتجر.");
-  } catch {
-    toast("تعذر إرسال الرسالة.", true);
-  } finally {
-    chatSendBtn.disabled = false;
-  }
-}
-
-chatSendBtn.addEventListener("click", sendStoreMessage);
-chatInputField.addEventListener("keydown", (e) => { if (e.key === "Enter") sendStoreMessage(); });
-chatLinkField.addEventListener("keydown", (e) => { if (e.key === "Enter") sendStoreMessage(); });
-
-chatMessagesArea.addEventListener("click", async (event) => {
-  const button = event.target.closest("[data-delete-message]");
-  if (!button || !isAdmin()) return;
-
-  // استخدام نافذة التأكيد المخصصة لحذف الرسائل أيضاً
-  showCustomConfirm("حذف الرسالة", "هل أنت متأكد من رغبتك في حذف هذه الرسالة من المتجر؟", async () => {
-    try {
-      await remove(ref(db, `messages/${button.dataset.deleteM
+      isAdmin
