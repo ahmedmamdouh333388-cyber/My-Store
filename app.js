@@ -1,8 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
   getAuth,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged
@@ -120,22 +119,29 @@ $("confirm-yes-btn").addEventListener("click", () => {
   confirmCallback = null;
 });
 
-// نظام تسجيل الدخول المضمون عبر Redirect لتجاوز أي تجميد نهائياً
+// دالة تسجيل دخول ذكية وآمنة ضد التجميد تماماً
 async function handleGoogleLogin() {
-  authErrorMsg.textContent = "جاري تحويلك لتسجيل الدخول...";
+  authErrorMsg.textContent = "جاري الاتصال بـ Google...";
+  const btn = $("google-login-btn");
+  btn.disabled = true;
+
   try {
-    await signInWithRedirect(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    currentUser = result.user;
+    authErrorMsg.textContent = "";
   } catch (error) {
     console.error("Login Error:", error);
-    authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
+    if (error.code === 'auth/popup-blocked') {
+      authErrorMsg.textContent = "تم حظر النافذة المنبثقة من المتصفح. يرجى السماح بها.";
+    } else if (error.code === 'auth/popup-closed-by-user') {
+      authErrorMsg.textContent = "تم إغلاق نافذة تسجيل الدخول.";
+    } else {
+      authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
+    }
+  } finally {
+    btn.disabled = false;
   }
 }
-
-// فحص نتيجة العودة من تسجيل الدخول تلقائياً
-getRedirectResult(auth).catch((error) => {
-  console.error("Redirect Error:", error);
-  authErrorMsg.textContent = `خطأ في المصادقة: ${error.message}`;
-});
 
 $("google-login-btn").addEventListener("click", handleGoogleLogin);
 
@@ -198,7 +204,7 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// نظام عداد المتصلين
+// نظام عداد المتصلين الحي
 const connectedRef = ref(db, ".info/connected");
 const onlineUsersRef = ref(db, "online_users");
 
@@ -313,6 +319,7 @@ $("cancel-product-form-secondary").addEventListener("click", () => {
   editingProductId = null;
 });
 
+// رفع الحد الأقصى للصورة ليكون 5 ميجابايت بدقة عالية
 function readImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
@@ -633,15 +640,3 @@ async function sendStoreMessage() {
     await push(messagesRef, {
       uid: currentUser.uid,
       email: currentUser.email,
-      username: "King Store",
-      text,
-      link: link || "",
-      timestamp: Date.now(),
-      isAdmin: true
-    });
-
-    chatInputField.value = "";
-    chatLinkField.value = "";
-    toast("تم إرسال رسالة المتجر.");
-  } catch {
-    toast("تعذر إرسال الرسالة.", true);
