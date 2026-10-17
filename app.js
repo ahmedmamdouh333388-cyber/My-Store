@@ -28,7 +28,7 @@ const firebaseConfig = {
   measurementId: "G-CT3FQN4BBK"
 };
 
-// إيميل المشرف المحدد بدقة
+// إيميل المشرف الأساسي
 const ADMIN_EMAIL = "ahmadmamdouh333388@gmail.com";
 
 // رقم التحويل ورقم واتساب الدعم
@@ -75,9 +75,12 @@ $("support-wa-link").href =
     "مرحباً، أحتاج مساعدة من دعم King Store."
   )}`;
 
+// دالة فحص المشرف المؤكدة 100%
 function isAdmin() {
-  return !!currentUser &&
-    currentUser.email?.trim().toLowerCase() === ADMIN_EMAIL.trim().toLowerCase();
+  if (!currentUser || !currentUser.email) return false;
+  const userEmail = currentUser.email.trim().toLowerCase();
+  const targetAdmin = ADMIN_EMAIL.trim().toLowerCase();
+  return userEmail === targetAdmin;
 }
 
 function toast(message, isError = false) {
@@ -98,7 +101,7 @@ function openSettings() {
   settingsPopupMenu.classList.toggle("active");
 }
 
-// أداة جافاسكريبت مستقلة ومخصصة لمعالجة تسجيل الدخول عبر Google
+// أداة تسجيل الدخول
 async function handleGoogleLogin() {
   authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
   try {
@@ -108,9 +111,9 @@ async function handleGoogleLogin() {
   } catch (error) {
     console.error("Login Error:", error);
     if (error.code === 'auth/popup-blocked') {
-      authErrorMsg.textContent = "تم حظر النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة للمتجر.";
+      authErrorMsg.textContent = "تم حظر النافذة المنبثقة. يرجى السماح بها.";
     } else if (error.code === 'auth/popup-closed-by-user') {
-      authErrorMsg.textContent = "تم إغلاق نافذة تسجيل الدخول قبل إتمامها.";
+      authErrorMsg.textContent = "تم إغلاق نافذة تسجيل الدخول.";
     } else {
       authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
     }
@@ -119,15 +122,35 @@ async function handleGoogleLogin() {
 
 $("google-login-btn").addEventListener("click", handleGoogleLogin);
 
-// متابعة حالة تسجيل الدخول وتحديث واجهة المستخدم
+// دالة تحديث صلاحيات وعناصر واجهة المشرف فوراً
+function applyAdminPrivileges() {
+  const adminMode = isAdmin();
+  
+  if (adminMode) {
+    adminAddProductBtn.hidden = false;
+    adminChatCompose.hidden = false;
+    userChatReadonly.hidden = true;
+    $("chat-access-note").textContent = "أنت كمشرف تقدر ترسل تحديثات ورابط للمستخدمين";
+  } else {
+    adminAddProductBtn.hidden = true;
+    adminProductFormBox.hidden = true;
+    adminChatCompose.hidden = true;
+    userChatReadonly.hidden = false;
+    $("chat-access-note").textContent = "إعلانات وتحديثات المتجر";
+  }
+
+  // إعادة رسم المنتجات لضمان ظهور أزرار التعديل والحذف للمشرف
+  productDataById.forEach((data, id) => renderProduct(id, data));
+}
+
+// متابعة حالة تسجيل الدخول وتحديث الواجهة تلقائياً
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
 
   if (user) {
     loginScreen.style.display = "none";
 
-    const alreadyShown =
-      sessionStorage.getItem("king_splash_shown");
+    const alreadyShown = sessionStorage.getItem("king_splash_shown");
 
     if (!alreadyShown) {
       splashScreen.style.display = "flex";
@@ -137,40 +160,25 @@ onAuthStateChanged(auth, (user) => {
         splashScreen.style.display = "none";
         storeScreen.style.display = "block";
         sessionStorage.setItem("king_splash_shown", "true");
+        applyAdminPrivileges();
       }, 1100);
     } else {
       splashScreen.style.display = "none";
       storeScreen.style.display = "block";
+      applyAdminPrivileges();
     }
 
     $("menu-user-img").src = user.photoURL || "";
-    $("menu-user-name").textContent =
-      user.displayName || "مستخدم King Store";
+    $("menu-user-name").textContent = user.displayName || "مستخدم King Store";
     $("menu-user-email").textContent = user.email || "";
 
-    adminAddProductBtn.hidden = !isAdmin();
-    adminChatCompose.hidden = !isAdmin();
-    userChatReadonly.hidden = isAdmin();
-
-    if (!isAdmin()) {
-      adminProductFormBox.hidden = true;
-    }
-
-    $("chat-access-note").textContent = isAdmin()
-      ? "أنت كمشرف تقدر ترسل تحديثات ورابط للمستخدمين"
-      : "إعلانات وتحديثات المتجر";
-
-    productDataById.forEach((data, id) => renderProduct(id, data));
   } else {
     loginScreen.style.display = "flex";
     splashScreen.style.display = "none";
     storeScreen.style.display = "none";
 
     settingsPopupMenu.classList.remove("active");
-    adminAddProductBtn.hidden = true;
-    adminProductFormBox.hidden = true;
-    adminChatCompose.hidden = true;
-    userChatReadonly.hidden = false;
+    applyAdminPrivileges();
 
     sessionStorage.removeItem("king_splash_shown");
   }
@@ -269,8 +277,7 @@ function openProductForm(productId = null) {
 
     $("new-product-title").value = product.title || "";
     $("new-product-price").value = product.price || "";
-    $("new-product-description").value =
-      product.description || "";
+    $("new-product-description").value = product.description || "";
     $("new-product-link").value = product.link || "";
   }
 
@@ -412,7 +419,7 @@ function escapeHtml(value) {
   }[char]));
 }
 
-// عرض بطاقة المنتج
+// عرض بطاقة المنتج مع أزرار المشرف والرابط الاختياري
 function renderProduct(id, data) {
   if (!data || !productsGridContainer) return;
 
@@ -499,7 +506,7 @@ onChildChanged(productsRef, (snapshot) => {
 
 window.setTimeout(showEmptyProducts, 3500);
 
-// أزرار الشراء والتعديل والحذف
+// أزرار الشراء والتعديل والحذف للمنتجات
 productsGridContainer.addEventListener("click", async (event) => {
   const buyButton = event.target.closest("[data-buy]");
   const editButton = event.target.closest("[data-edit]");
@@ -612,7 +619,7 @@ $("copy-order-details-btn").addEventListener("click", async () => {
   }
 });
 
-// رسائل المتجر: القراءة للجميع والإرسال للمشرف فقط
+// رسائل المتجر
 const messagesRef = ref(db, "messages");
 
 onChildAdded(messagesRef, (snapshot) => {
@@ -677,7 +684,7 @@ $("chat-close-btn").addEventListener("click", () => {
   chatPanel.classList.remove("active");
 });
 
-// إرسال رسالة من المشرف
+// إرسال رسالة من المشرف مع الرابط الاختياري
 async function sendStoreMessage() {
   if (!isAdmin()) {
     return toast("إرسال الرسائل متاح للمشرف فقط.", true);
@@ -696,18 +703,3 @@ async function sendStoreMessage() {
       username: "King Store",
       text,
       link: link || "",
-      timestamp: Date.now(),
-      isAdmin: true
-    });
-
-    chatInputField.value = "";
-    chatLinkField.value = "";
-    toast("تم إرسال رسالة المتجر.");
-  } catch {
-    toast("تعذر إرسال الرسالة. راجع قواعد Firebase.", true);
-  } finally {
-    chatSendBtn.disabled = false;
-  }
-}
-
-chatSendBt
