@@ -41,7 +41,28 @@
       </a>
       
       <div class="top-actions">
-        <!-- عداد الزوار الحقيقيين وزر المشرف -->
+        <!-- مشغل الموسيقى (♪) -->
+        <div class="music-dropdown-wrapper">
+          <button id="music-trigger-btn" class="icon-btn" title="مشغل الموسيقى" aria-label="مشغل الموسيقى">
+            <i class="fa-solid fa-music"></i>
+          </button>
+          <div id="music-popup-menu" class="settings-dropdown glass-card">
+            <div class="menu-label">مشغل الموسيقى 🎵</div>
+            <audio id="bg-audio" loop></audio>
+            <div class="music-controls-row">
+              <button id="music-play-pause-btn" class="btn btn-primary btn-small full-width">
+                <i class="fa-solid fa-play"></i> تشغيل الصوت
+              </button>
+            </div>
+            <div id="admin-music-section" class="admin-only" hidden style="margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px;">
+              <div class="menu-label">تعديل رابط الأغنية</div>
+              <input id="music-url-input" type="url" placeholder="رابط الأغنية المباشر..." class="admin-inline-input">
+              <button id="save-music-url-btn" class="btn btn-small btn-primary full-width" style="margin-top: 5px;">حفظ الرابط الجديد</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- عداد الزوار الحقيقي وزر المشرف (عين) -->
         <div class="live-visitors-wrapper">
           <div class="visitors-pill glass-card">
             <i class="fa-solid fa-users"></i>
@@ -70,17 +91,21 @@
             <button class="color-dot gold" data-theme="theme-gold" aria-label="ذهبي"></button>
           </div>
 
-          <!-- قسم إعدادات المشرف الإضافية -->
+          <!-- إعدادات المشرف وإدارة الحذف وفك الحظر -->
           <div id="admin-settings-section" class="admin-only" hidden>
-            <div class="menu-label">إدارة المشرفين والحظر</div>
+            <div class="menu-label">إدارة المشرفين</div>
             <div class="admin-setting-group">
               <input id="new-admin-email" type="email" placeholder="إيميل المشرف الجديد..." class="admin-inline-input">
               <button id="add-admin-btn" class="btn btn-small btn-primary full-width">إضافة مشرف</button>
             </div>
-            <div class="admin-setting-group" style="margin-top: 10px;">
+            <div id="admins-list-container" class="admin-sub-list"></div>
+
+            <div class="menu-label" style="margin-top: 15px;">إدارة الحظر</div>
+            <div class="admin-setting-group">
               <input id="ban-user-email" type="email" placeholder="إيميل المستخدم للحظر..." class="admin-inline-input">
               <button id="ban-user-btn" class="btn btn-small btn-delete full-width">حظر المستخدم</button>
             </div>
+            <div id="banned-list-container" class="admin-sub-list"></div>
           </div>
 
           <a id="support-wa-link" href="#" target="_blank" rel="noopener" class="menu-row"><i class="fa-brands fa-whatsapp"></i><span>الدعم الفني</span><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
@@ -141,7 +166,6 @@
     <footer><a href="#" class="footer-brand"><i class="fa-solid fa-crown"></i> King Store</a><span>تسوق بذكاء. اختار بثقة.</span><span>© <span id="current-year"></span> King Store</span></footer>
   </div>
 
-  <!-- نافذة عرض المتصلين للمشرف -->
   <div id="online-users-modal" class="modal-backdrop" role="dialog" aria-modal="true">
     <div class="modal-card glass-card">
       <button id="close-online-modal" class="modal-close icon-btn" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
@@ -176,14 +200,12 @@
     <div class="chat-panel-header">
       <div><span class="eyebrow">KING STORE</span><strong>رسائل المتجر</strong><small id="chat-access-note">إعلانات وتحديثات المتجر</small></div>
       <div style="display: flex; gap: 6px; align-items: center;">
-        <!-- زر تحكم المشرف في كتابة المستخدمين -->
         <button id="toggle-chat-lock-btn" class="icon-btn admin-only" hidden title="قفل/فتح الكتابة للجميع" aria-label="تحكم الكتابة"><i class="fa-solid fa-lock-open"></i></button>
         <button id="chat-close-btn" class="icon-btn" aria-label="إغلاق الرسائل"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
     <div id="chat-messages-area" class="chat-messages-area"><div class="empty-chat">جاري تحميل الرسائل...</div></div>
     
-    <!-- خانة الكتابة للمشرف أو للمستخدمين لو مسموح -->
     <div id="chat-compose-box" class="admin-chat-compose">
       <input id="chat-input-field" type="text" maxlength="500" placeholder="اكتب رسالتك هنا...">
       <input id="chat-link-field" type="url" placeholder="رابط اختياري (https://...)">
@@ -195,5 +217,5 @@
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
   <script type="module" src="app.js"></script>
 </body>
-                                                                                                                     </html>
+              </html>
       
