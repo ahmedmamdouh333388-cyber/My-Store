@@ -36,6 +36,31 @@ button:focus, a:focus, input:focus, textarea:focus, *:focus-visible {
 }
 [hidden] { display: none !important; }
 
+/* تنسيق زر دائرة الموسيقى */
+.music-circle-btn {
+  border-radius: 50% !important;
+  border: 1px solid color-mix(in srgb, var(--primary) 50%, var(--line));
+  background: linear-gradient(135deg, rgba(17,24,39,0.9), rgba(26,35,52,0.9));
+  color: var(--primary);
+  position: relative;
+  transition: transform 0.3s, border-color 0.3s, background 0.3s;
+}
+.music-circle-btn:hover {
+  border-color: var(--primary);
+  color: #fff;
+  transform: scale(1.08);
+}
+.music-circle-btn.playing {
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: #fff;
+  box-shadow: 0 0 15px color-mix(in srgb, var(--primary) 60%, transparent);
+  animation: music-spin 3s linear infinite;
+}
+@keyframes music-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .ambient {
   position: fixed;
   width: 420px;
@@ -234,7 +259,7 @@ button:focus, a:focus, input:focus, textarea:focus, *:focus-visible {
 .color-dot.mint { background: #3ddbb5; }
 .color-dot.gold { background: #f5c45e; }
 .logout-row { color: var(--danger); border-bottom: 0; }
-    .online-users-list { 
+  .online-users-list { 
   max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; 
   gap: 10px; margin-top: 15px; text-align: right; 
 }
@@ -416,5 +441,5 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .modal-card { padding: 25px 18px; }
   .chat-float-btn { bottom: 17px; left: 17px; }
   .chat-panel { bottom: 85px; left: 15px; }
-    }
-                                                                          
+                  }
+                  
