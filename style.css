@@ -64,7 +64,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   text-align: center;
 }
 .glass-card {
-  background: rgba(17,24,39,.92);
+  background: rgba(17,24,39,.95);
   border: 1px solid var(--line);
   border-radius: 24px;
   box-shadow: var(--shadow);
@@ -179,16 +179,28 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .status-pill { font-size: 11px; color: #7be3b0; }
 .status-pill i { font-size: 7px; margin-left: 4px; }
 
+/* تنسيق قوائم الإعدادات والموسيقى المنسدلة بدقة */
 .settings-dropdown {
   display: none;
   position: absolute;
-  top: 56px;
+  top: 54px;
   left: 0;
-  width: min(320px, calc(100vw - 35px));
-  padding: 15px;
-  z-index: 50;
+  width: min(300px, calc(100vw - 35px));
+  padding: 16px;
+  z-index: 100;
 }
 .settings-dropdown.active { display: block; }
+
+#music-popup-menu {
+  right: 0;
+  left: auto;
+  text-align: right;
+}
+
+.music-controls-row {
+  margin-top: 10px;
+}
+
 .user-info-box { display: flex; gap: 11px; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
 .user-avatar-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #29354b; }
 .user-meta { min-width: 0; }
@@ -389,5 +401,4 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .modal-card { padding: 25px 18px; }
   .chat-float-btn { bottom: 17px; left: 17px; }
   .chat-panel { bottom: 85px; left: 15px; }
-          }
-                     
+}
