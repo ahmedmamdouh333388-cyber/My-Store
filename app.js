@@ -85,6 +85,28 @@ const bannedUserEmailInput = $("banned-user-email");
 const banUserBtn = $("ban-user-btn");
 const bannedListContainer = $("banned-list-container");
 
+// تشغيل/إيقاف الصوت يدعماً للزر الدائري
+const storeBgAudio = $("store-bg-audio");
+const musicToggleBtn = $("music-toggle-btn");
+
+musicToggleBtn.addEventListener("click", () => {
+  if (storeBgAudio.paused) {
+    storeBgAudio.play().then(() => {
+      musicToggleBtn.classList.add("playing");
+      musicToggleBtn.title = "إيقاف الصوت";
+      toast("تم تشغيل الموسيقى 🎵");
+    }).catch((err) => {
+      console.error("Audio playback error:", err);
+      toast("تعذر تشغيل الملف الصوتي.", true);
+    });
+  } else {
+    storeBgAudio.pause();
+    musicToggleBtn.classList.remove("playing");
+    musicToggleBtn.title = "تشغيل الصوت";
+    toast("تم إيقاف الموسيقى.");
+  }
+});
+
 let currentUser = null;
 let currentPurchase = null;
 let editingProductId = null;
@@ -229,7 +251,6 @@ onValue(ref(db, "banned_users"), (snapshot) => {
 function renderAdminItem(id, email) {
   const row = document.createElement("div");
   row.className = "admin-subitem";
-  // زر حذف المشرف من القائمة المنسدلة يعمل هنا بكفاءة
   row.innerHTML = `<span>${email}</span>${email.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase() ? `<button data-remove-admin="${id}"><i class="fa-solid fa-trash"></i></button>` : '<small>الرئيسي</small>'}`;
   adminsListContainer.appendChild(row);
 }
@@ -362,7 +383,6 @@ function renderOnlineUsersModalList() {
     row.className = "online-user-row";
     
     let actionsMarkup = "";
-    // إظهار أزرار الإشراف والحظر لكل المتصلين ما عدا المؤسس الحقيقي MASTER_ADMIN_EMAIL
     if (isAdmin() && cleanEmail.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase()) {
       actionsMarkup = `
         <div class="online-user-actions">
@@ -472,7 +492,7 @@ document.querySelectorAll("[data-theme]").forEach((button) => {
 const savedTheme = localStorage.getItem("king_store_theme");
 if (savedTheme && /^theme-(blue|violet|mint|gold)$/.test(savedTheme)) {
   document.body.className = savedTheme;
-}
+  }
 function updateChatUIState() {
   const adminMode = isAdmin();
   
@@ -918,7 +938,7 @@ async function sendStoreMessage() {
     return toast("عذراً، الكتابة مغلقة من قبل المشرف حالياً.", true);
   }
 
-  chatSendBtn.disabled = true;
+  chatSendBtn.disabled, true;
 
   try {
     await push(messagesRef, {
@@ -958,3 +978,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   });
 });
+      
