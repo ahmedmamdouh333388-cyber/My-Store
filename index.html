@@ -16,11 +16,14 @@
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
 
+  <!-- عنصر الصوت المخفي لملف الدرايف -->
   <audio id="store-bg-audio" preload="none" src="https://docs.google.com/uc?export=download&id=1Jp2w2PrAJggDVmTqggXz2kYvU0qKXSrQ"></audio>
 
   <section id="login-screen" class="screen-overlay">
     <div class="login-card glass-card">
-      <div class="login-avatar-circle"><i class="fa-solid fa-crown"></i></div>
+      <div class="login-avatar-circle">
+        <i class="fa-solid fa-crown"></i>
+      </div>
       <p class="eyebrow">WELCOME TO THE NEXT LEVEL</p>
       <h1>King <span>Store</span></h1>
       <p class="muted">تجربة شراء مختلفة، أسرع وأسهل.</p>
@@ -31,7 +34,9 @@
   </section>
 
   <section id="splash-screen" class="screen-overlay splash-screen">
-    <div class="login-avatar-circle pulse-mark"><i class="fa-solid fa-crown"></i></div>
+    <div class="login-avatar-circle pulse-mark">
+      <i class="fa-solid fa-crown"></i>
+    </div>
     <h2>King <span>Store</span></h2>
     <p class="muted">بنجهز تجربتك...</p>
   </section>
@@ -43,20 +48,10 @@
         <span><strong>King <em>Store</em></strong><small>SMART SHOPPING EXPERIENCE</small></span>
       </a>
       <div class="top-actions">
-        
-        <div class="music-dropdown-wrapper" style="position: relative; display: inline-block;">
-          <button id="music-toggle-btn" class="icon-btn music-circle-btn" aria-label="تشغيل/إيقاف الموسيقى" title="إعدادات الصوت">
-            <i class="fa-solid fa-music"></i>
-          </button>
-          <div id="music-popup-menu" class="settings-dropdown glass-card">
-            <div class="menu-label">مشغل الموسيقى</div>
-            <div class="user-info-box" style="justify-content: space-between;">
-              <span id="music-status-label" style="font-size: 12px; color: var(--muted);">الموسيقى متوقفة</span>
-              <button id="music-action-btn" class="btn btn-small btn-primary"><i class="fa-solid fa-play"></i> تشغيل</button>
-            </div>
-            <button id="music-mute-toggle" class="menu-row"><i class="fa-solid fa-volume-high"></i><span>كتم الصوت / Mute</span></button>
-          </div>
-        </div>
+        <!-- زر الدائرة الموسيقية -->
+        <button id="music-toggle-btn" class="icon-btn music-circle-btn" aria-label="تشغيل/إيقاف الموسيقى" title="تشغيل الصوت">
+          <i class="fa-solid fa-music"></i>
+        </button>
 
         <div id="online-users-pill" class="tech-pulse-pill" title="الزوار المتصلين الآن">
           <span class="pulse-dot"></span>
@@ -82,7 +77,7 @@
             </div>
             <div id="admins-list-container" class="admin-sublist"></div>
 
-            <div class="menu-label">إدارة الحظر</div>
+            <div class="menu-label">إدارة الحظر (المنع من الموقع)</div>
             <div class="admin-input-group">
               <input type="email" id="banned-user-email" placeholder="أدخل البريد للحظر...">
               <button id="ban-user-btn" class="btn btn-small btn-danger-custom">حظر</button>
@@ -135,7 +130,7 @@
             <label>السعر بالجنيه المصري<input id="new-product-price" type="number" min="1" step="0.01" placeholder="مثال: 250"></label>
             <label class="full-field">وصف مختصر<textarea id="new-product-description" rows="3" maxlength="500" placeholder="اكتب تفاصيل المنتج..."></textarea></label>
             <label class="full-field">رابط المنتج (اختياري)<input id="new-product-link" type="url" placeholder="https://example.com"></label>
-            <label class="full-field">صورة المنتج<input id="new-product-img-file" type="file" accept="image/*"></label>
+            <label class="full-field">صورة المنتج (حتى 5 ميجابايت)<input id="new-product-img-file" type="file" accept="image/*"></label>
           </div>
           <div class="form-actions"><button id="save-product-btn" class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ المنتج</button><button id="cancel-product-form-secondary" class="btn btn-quiet">إلغاء</button></div>
           <p id="product-form-message" class="muted form-message"></p>
@@ -166,23 +161,24 @@
     </div>
   </div>
 
-  <div id="purchase-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+  <div id="purchase-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="purchase-title">
     <div class="modal-card glass-card">
       <button id="close-purchase-modal" class="modal-close icon-btn" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
       <div class="modal-icon"><i class="fa-solid fa-bag-shopping"></i></div>
       <span class="eyebrow">SECURE ORDER</span>
-      <h2>إتمام طلبك</h2>
+      <h2 id="purchase-title">إتمام طلبك</h2>
       <p class="muted">حوّل قيمة المنتج إلى الرقم التالي، ثم أرسل صورة التحويل على واتساب.</p>
       <div class="order-summary"><img id="purchase-product-image" src="" alt=""><div><strong id="purchase-product-name">اسم المنتج</strong><small>قيمة الطلب</small><b id="purchase-product-price">0 جنيه</b></div></div>
       <div class="transfer-box"><span>رقم التحويل</span><strong id="transfer-number">01214563781</strong><button id="copy-transfer-number" class="icon-btn" aria-label="نسخ رقم التحويل"><i class="fa-regular fa-copy"></i></button></div>
-      <p class="notice"><i class="fa-solid fa-circle-info"></i> تأكد من تحويل المبلغ الصحيح.</p>
+      <p class="notice"><i class="fa-solid fa-circle-info"></i> تأكد من تحويل المبلغ الصحيح. الطلب لا يُعتبر مؤكداً إلا بعد مراجعة إثبات الدفع.</p>
       <button id="send-transfer-proof-btn" class="btn btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> إرسال صورة التحويل على واتساب</button>
       <button id="copy-order-details-btn" class="btn btn-quiet full-width"><i class="fa-regular fa-copy"></i> نسخ تفاصيل الطلب</button>
+      <small class="muted modal-footnote">واتساب لا يسمح للموقع بإرفاق الصورة تلقائياً؛ افتح المحادثة وأرفق الصورة بنفسك.</small>
     </div>
   </div>
 
   <div id="custom-confirm-modal" class="modal-backdrop" role="dialog" aria-modal="true">
-    <div class="modal-card glass-card confirm-modal-card">
+    <div class="modal-card glass-card confirm-confirm-card">
       <div class="modal-icon warning-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
       <h3 id="confirm-title">تأكيد الحذف</h3>
       <p id="confirm-text" class="muted">هل أنت متأكد من رغبتك في حذف هذا العنصر؟</p>
@@ -196,24 +192,33 @@
   <button id="chat-float-btn" class="chat-float-btn" aria-label="رسائل المتجر"><i class="fa-solid fa-message"></i></button>
   <section id="chat-panel" class="chat-panel glass-card" aria-label="رسائل King Store">
     <div class="chat-panel-header">
-      <div><span class="eyebrow">KING STORE</span><strong>رسائل المتجر</strong><small id="chat-access-note">إعلانات وتحديثات المتجر</small></div>
+      <div>
+        <span class="eyebrow">KING STORE</span>
+        <strong>رسائل المتجر</strong>
+        <small id="chat-access-note">إعلانات وتحديثات المتجر</small>
+      </div>
       <button id="chat-close-btn" class="icon-btn" aria-label="إغلاق الرسائل"><i class="fa-solid fa-xmark"></i></button>
     </div>
+
     <div id="admin-chat-toggle-box" class="admin-chat-toggle-box admin-only" hidden>
       <span>السماح للمستخدمين بالكتابة:</span>
-      <label class="switch-toggle"><input type="checkbox" id="toggle-chat-permission-checkbox"><span class="switch-slider"></span></label>
+      <label class="switch-toggle" aria-label="تبديل إذن الكتابة">
+        <input type="checkbox" id="toggle-chat-permission-checkbox">
+        <span class="switch-slider"></span>
+      </label>
     </div>
+
     <div id="chat-messages-area" class="chat-messages-area"><div class="empty-chat">جاري تحميل الرسائل...</div></div>
+
     <div id="chat-compose-box" class="admin-chat-compose">
       <input id="chat-input-field" type="text" maxlength="500" placeholder="اكتب رسالتك هنا...">
-      <input id="chat-link-field" type="url" class="admin-only" placeholder="رابط اختياري (https://...)" hidden>
+      <input id="chat-link-field" type="url" class="admin-only" placeholder="رابط اختياري يظهر تحت الرسالة (https://...)" hidden>
       <button id="chat-send-btn" class="btn btn-primary" aria-label="إرسال"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
     <div id="user-chat-readonly" class="chat-readonly" hidden>الكتابة مغلقة من قبل المشرف حالياً.</div>
   </section>
 
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
-  <script type="module" src="script.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
-                </html>
-                                                                                                                                                       
+                                                                                                                                                                                                                </html>
