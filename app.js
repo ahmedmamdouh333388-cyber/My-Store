@@ -192,6 +192,7 @@ async function handleGoogleLogin() {
 }
 
 $("google-login-btn").addEventListener("click", handleGoogleLogin);
+
 onValue(ref(db, "admins"), (snapshot) => {
   dynamicAdmins = new Set([MASTER_ADMIN_EMAIL]);
   adminsListContainer.innerHTML = "";
@@ -325,7 +326,7 @@ onValue(connectedRef, (snap) => {
     onDisconnect(userPresenceRef).remove();
     set(userPresenceRef, {
       onlineAt: Date.now(),
-      email: currentUser.email || "زائر"
+      email: currentUser.email || currentUser.displayName || "مستخدم مسجل"
     });
   }
 });
@@ -348,17 +349,68 @@ onValue(onlineUsersRef, (snapshot) => {
 function renderOnlineUsersModalList() {
   if (!onlineUsersList) return;
   onlineUsersList.innerHTML = "";
+  
   if (activeOnlineUsersMap.size === 0) {
     onlineUsersList.innerHTML = '<div class="empty-chat">لا يوجد مستخدمون متصلون حالياً.</div>';
     return;
   }
+
   activeOnlineUsersMap.forEach((email) => {
+    const cleanEmail = email || "مستخدم مسجل";
     const row = document.createElement("div");
     row.className = "online-user-row";
-    row.innerHTML = `<span><i class="fa-solid fa-circle" style="color:#22c55e;font-size:8px;margin-left:6px;"></i> ${escapeHtml(email)}</span>`;
+    
+    let actionsMarkup = "";
+    if (isAdmin() && cleanEmail.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase()) {
+      actionsMarkup = `
+        <div class="online-user-actions">
+          <button class="btn-inline-action btn-inline-admin" data-make-admin="${escapeHtml(cleanEmail)}">إشراف</button>
+          <button class="btn-inline-action btn-inline-ban" data-ban-direct="${escapeHtml(cleanEmail)}">حظر</button>
+        </div>
+      `;
+    }
+
+    row.innerHTML = `
+      <div class="online-user-info">
+        <i class="fa-solid fa-circle" style="color:#22c55e;font-size:7px;"></i>
+        <span>${escapeHtml(cleanEmail)}</span>
+      </div>
+      ${actionsMarkup}
+    `;
     onlineUsersList.appendChild(row);
   });
 }
+
+onlineUsersModal.addEventListener("click", async (e) => {
+  if (!isAdmin()) return;
+  
+  const banBtn = e.target.closest("[data-ban-direct]");
+  const adminBtn = e.target.closest("[data-make-admin]");
+
+  if (banBtn) {
+    const emailToBan = banBtn.dataset.banDirect.trim().toLowerCase();
+    showCustomConfirm("حظر مستخدم", `هل أنت متأكد من حظر المستخدم (${emailToBan})؟`, async () => {
+      try {
+        await push(ref(db, "banned_users"), { email: emailToBan });
+        toast("تم حظر المستخدم بنجاح.");
+      } catch {
+        toast("تعذر حظر المستخدم.", true);
+      }
+    });
+  }
+
+  if (adminBtn) {
+    const emailToAdmin = adminBtn.dataset.makeAdmin.trim().toLowerCase();
+    showCustomConfirm("تعيين مشرف", `هل أنت متأكد من ترقية (${emailToAdmin}) إلى مشرف؟`, async () => {
+      try {
+        await push(ref(db, "admins"), { email: emailToAdmin });
+        toast("تمت إضافة المشرف بنجاح.");
+      } catch {
+        toast("تعذر تعيين المشرف.", true);
+      }
+    });
+  }
+});
 
 adminViewOnlineBtn.addEventListener("click", () => {
   if (!isAdmin()) return;
@@ -418,8 +470,8 @@ document.querySelectorAll("[data-theme]").forEach((button) => {
 const savedTheme = localStorage.getItem("king_store_theme");
 if (savedTheme && /^theme-(blue|violet|mint|gold)$/.test(savedTheme)) {
   document.body.className = savedTheme;
-}
-  function updateChatUIState() {
+  }
+function updateChatUIState() {
   const adminMode = isAdmin();
   
   if (adminMode) {
@@ -904,4 +956,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   });
 });
-  
+    
