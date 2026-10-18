@@ -30,9 +30,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
 a { color: inherit; text-decoration: none; }
 
+/* إلغاء الخط الأزرق المزعج عند الضغط نهائياً */
 button:focus, a:focus, input:focus, textarea:focus, *:focus-visible {
   outline: none !important;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 50%, transparent) !important;
+  box-shadow: none !important;
 }
 [hidden] { display: none !important; }
 
@@ -263,10 +264,58 @@ button:focus, a:focus, input:focus, textarea:focus, *:focus-visible {
 .color-dot.mint { background: #3ddbb5; }
 .color-dot.gold { background: #f5c45e; }
 .logout-row { color: var(--danger); border-bottom: 0; }
+.online-users-list { 
+  max-height: 320px; 
+  overflow-y: auto; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 10px; 
+  margin-top: 15px; 
+  text-align: right; 
+}
+.online-user-row { 
+  background: #0c1423; 
+  border: 1px solid var(--line); 
+  padding: 10px 14px; 
+  border-radius: 12px; 
+  font-size: 11px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  gap: 8px; 
+}
+.online-user-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  flex: 1;
+}
+.online-user-info span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+.online-user-actions {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.btn-inline-action {
+  border: 0;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .1s;
+}
+.btn-inline-action:active { transform: scale(0.95); }
+.btn-inline-ban { background: rgba(255, 100, 124, 0.15); color: var(--danger); border: 1px solid rgba(255, 100, 124, 0.3); }
+.btn-inline-admin { background: rgba(109, 124, 255, 0.15); color: var(--primary); border: 1px solid rgba(109, 124, 255, 0.3); }
 
-.online-users-list { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 15px; text-align: right; }
-.online-user-row { background: #0c1423; border: 1px solid var(--line); padding: 10px 14px; border-radius: 12px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
-  .hero-section {
+.hero-section {
   display: grid;
   grid-template-columns: 1.1fr .9fr;
   align-items: center;
@@ -435,4 +484,5 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .modal-card { padding: 25px 18px; }
   .chat-float-btn { bottom: 17px; left: 17px; }
   .chat-panel { bottom: 85px; left: 15px; }
-                    }
+  }
+            
