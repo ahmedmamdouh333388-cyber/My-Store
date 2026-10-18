@@ -492,8 +492,7 @@ document.querySelectorAll("[data-theme]").forEach((button) => {
 const savedTheme = localStorage.getItem("king_store_theme");
 if (savedTheme && /^theme-(blue|violet|mint|gold)$/.test(savedTheme)) {
   document.body.className = savedTheme;
-  }
-Function updateChatUIState() {
+                    }Function updateChatUIState() {
   const adminMode = isAdmin();
   
   if (adminMode) {
