@@ -1,7 +1,4 @@
-/* ==========================================
-   KING STORE — APP.JS
-   PART 1/3: Firebase, Auth, Presence
-========================================== */
+
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
@@ -576,14 +573,6 @@ onAuthStateChanged(auth, async (user) => {
 
   await startPresence(user);
 });
-
-/* نهاية الجزء الأول *//* ==========================================
-   King Store — JavaScript Part 2/3
-   Admin Settings • Products • Image Upload
-========================================== */
-
-/* ---------- صلاحيات الأدمن ---------- */
-
 function applyAdminPrivileges() {
   const admin = isAdmin();
 
@@ -1398,11 +1387,6 @@ if (productsGridContainer) {
   });
 }
 
-/* نهاية الجزء الثاني *//* ==========================================
-   King Store — JavaScript Part 3/3
-   Purchase • WhatsApp • Chat • Messages
-========================================== */
-
 /* ---------- نافذة شراء المنتج ---------- */
 
 const purchaseProductName =
@@ -2103,7 +2087,3 @@ window.addEventListener("pagehide", () => {
     }
   }
 });
-
-/* ==========================================
-   نهاية الجزء الثالث والأخير
-========================================== */
