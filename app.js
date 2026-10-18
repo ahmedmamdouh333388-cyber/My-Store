@@ -1,6 +1,33 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getDatabase, ref, push, onChildAdded, onChildRemoved, onChildChanged, update, remove, onValue, onDisconnect, set, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+Import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import {
+  getDatabase,
+  ref,
+  push,
+  onChildAdded,
+  onChildRemoved,
+  onChildChanged,
+  update,
+  remove,
+  onValue,
+  onDisconnect,
+  set,
+  get
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch((err) => {
+      console.log("SW registration failed: ", err);
+    });
+  });
+}
 
 const firebaseConfig = {
   apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
@@ -9,7 +36,8 @@ const firebaseConfig = {
   projectId: "my-store-75b70",
   storageBucket: "my-store-75b70.firebasestorage.app",
   messagingSenderId: "762773021655",
-  appId: "1:762773021655:web:ce1490aab54115d549e192"
+  appId: "1:762773021655:web:ce1490aab54115d549e192",
+  measurementId: "G-CT3FQN4BBK"
 };
 
 const MASTER_ADMIN_EMAIL = "ahmedmamdouh333388@gmail.com";
@@ -49,6 +77,7 @@ const onlineCountEl = $("online-count");
 const adminViewOnlineBtn = $("admin-view-online-btn");
 const onlineUsersModal = $("online-users-modal");
 const onlineUsersList = $("online-users-list");
+const adminSettingsSection = $("admin-settings-section");
 const newAdminEmailInput = $("new-admin-email");
 const addAdminBtn = $("add-admin-btn");
 const adminsListContainer = $("admins-list-container");
@@ -56,42 +85,26 @@ const bannedUserEmailInput = $("banned-user-email");
 const banUserBtn = $("ban-user-btn");
 const bannedListContainer = $("banned-list-container");
 
+// تشغيل/إيقاف الصوت يدعماً للزر الدائري
 const storeBgAudio = $("store-bg-audio");
 const musicToggleBtn = $("music-toggle-btn");
-const musicPopupMenu = $("music-popup-menu");
-const musicActionBtn = $("music-action-btn");
-const musicStatusLabel = $("music-status-label");
-const musicMuteToggle = $("music-mute-toggle");
 
-musicToggleBtn.addEventListener("click", (event) => {
-  event.stopPropagation();
-  settingsPopupMenu.classList.remove("active");
-  musicPopupMenu.classList.toggle("active");
-});
-
-musicPopupMenu.addEventListener("click", (event) => { event.stopPropagation(); });
-
-musicActionBtn.addEventListener("click", () => {
+musicToggleBtn.addEventListener("click", () => {
   if (storeBgAudio.paused) {
     storeBgAudio.play().then(() => {
       musicToggleBtn.classList.add("playing");
-      musicActionBtn.innerHTML = '<i class="fa-solid fa-pause"></i> إيقاف';
-      musicStatusLabel.textContent = "الموسيقى تعمل 🎵";
-      toast("تم تشغيل الموسيقى");
-    }).catch(() => toast("تعذر تشغيل الصوت.", true));
+      musicToggleBtn.title = "إيقاف الصوت";
+      toast("تم تشغيل الموسيقى 🎵");
+    }).catch((err) => {
+      console.error("Audio playback error:", err);
+      toast("تعذر تشغيل الملف الصوتي.", true);
+    });
   } else {
     storeBgAudio.pause();
     musicToggleBtn.classList.remove("playing");
-    musicActionBtn.innerHTML = '<i class="fa-solid fa-play"></i> تشغيل';
-    musicStatusLabel.textContent = "الموسيقى متوقفة";
+    musicToggleBtn.title = "تشغيل الصوت";
     toast("تم إيقاف الموسيقى.");
   }
-});
-
-musicMuteToggle.addEventListener("click", () => {
-  storeBgAudio.muted = !storeBgAudio.muted;
-  musicMuteToggle.innerHTML = storeBgAudio.muted ? '<i class="fa-solid fa-volume-xmark"></i><span>إلغاء الكتم</span>' : '<i class="fa-solid fa-volume-high"></i><span>كتم الصوت</span>';
-  toast(storeBgAudio.muted ? "تم كتم الصوت." : "تم إلغاء الكتم.");
 });
 
 let currentUser = null;
@@ -102,11 +115,16 @@ let chatAllowedForUsers = true;
 let dynamicAdmins = new Set([MASTER_ADMIN_EMAIL]);
 let bannedUsers = new Set();
 let activeOnlineUsersMap = new Map();
+
 const productDataById = new Map();
 
 $("current-year").textContent = new Date().getFullYear();
 $("transfer-number").textContent = TRANSFER_NUMBER;
-$("support-wa-link").href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("مرحباً، أحتاج مساعدة من دعم King Store.")}`;
+
+$("support-wa-link").href =
+  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    "مرحباً، أحتاج مساعدة من دعم King Store."
+  )}`;
 
 function isAdmin() {
   if (!currentUser || !currentUser.email) return false;
@@ -114,7 +132,10 @@ function isAdmin() {
   return email === MASTER_ADMIN_EMAIL.trim().toLowerCase() || dynamicAdmins.has(email);
 }
 
-function isBanned(email) { return email ? bannedUsers.has(email.trim().toLowerCase()) : false; }
+function isBanned(email) {
+  if (!email) return false;
+  return bannedUsers.has(email.trim().toLowerCase());
+}
 
 function toast(message, isError = false) {
   const item = document.createElement("div");
@@ -124,6 +145,16 @@ function toast(message, isError = false) {
   window.setTimeout(() => item.remove(), 3600);
 }
 
+function setFormMessage(message, isError = false) {
+  const el = $("product-form-message");
+  el.textContent = message;
+  el.style.color = isError ? "var(--danger)" : "var(--muted)";
+}
+
+function openSettings() {
+  settingsPopupMenu.classList.toggle("active");
+}
+
 function showCustomConfirm(title, text, onYes) {
   $("confirm-title").textContent = title;
   $("confirm-text").textContent = text;
@@ -131,18 +162,59 @@ function showCustomConfirm(title, text, onYes) {
   customConfirmModal.classList.add("active");
 }
 
-$("confirm-no-btn").addEventListener("click", () => { customConfirmModal.classList.remove("active"); confirmCallback = null; });
-$("confirm-yes-btn").addEventListener("click", () => { customConfirmModal.classList.remove("active"); if (confirmCallback) confirmCallback(); confirmCallback = null; });
+$("confirm-no-btn").addEventListener("click", () => {
+  customConfirmModal.classList.remove("active");
+  confirmCallback = null;
+});
 
-$("google-login-btn").addEventListener("click", async () => {
+$("confirm-yes-btn").addEventListener("click", () => {
+  customConfirmModal.classList.remove("active");
+  if (confirmCallback) confirmCallback();
+  confirmCallback = null;
+});
+
+async function handleGoogleLogin() {
   authErrorMsg.textContent = "";
+  const btn = $("google-login-btn");
+  btn.disabled = true;
+
   try {
     const result = await signInWithPopup(auth, provider);
+    const email = result.user.email;
+    
+    const bannedSnap = await get(ref(db, `banned_users`));
+    let isUserBanned = false;
+    if (bannedSnap.exists()) {
+      bannedSnap.forEach((child) => {
+        if (child.val().email && child.val().email.trim().toLowerCase() === email.trim().toLowerCase()) {
+          isUserBanned = true;
+        }
+      });
+    }
+
+    if (isUserBanned) {
+      await signOut(auth);
+      authErrorMsg.textContent = "عذراً، هذا الحساب محظور من دخول المتجر.";
+      return;
+    }
+
     currentUser = result.user;
   } catch (error) {
-    authErrorMsg.textContent = "تعذر تسجيل الدخول.";
+    console.error("Login Error:", error);
+    if (error.code === 'auth/popup-blocked') {
+      authErrorMsg.textContent = "تم حظر النافذة المنبثقة. يرجى السماح بها.";
+    } else if (error.code === 'auth/popup-closed-by-user') {
+      authErrorMsg.textContent = "تم إغلاق النافذة قبل اكتمال التسجيل.";
+    } else {
+      authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
+    }
+  } finally {
+    btn.disabled = false;
   }
-});
+}
+
+$("google-login-btn").addEventListener("click", handleGoogleLogin);
+
 onValue(ref(db, "admins"), (snapshot) => {
   dynamicAdmins = new Set([MASTER_ADMIN_EMAIL]);
   adminsListContainer.innerHTML = "";
@@ -151,10 +223,7 @@ onValue(ref(db, "admins"), (snapshot) => {
       const email = child.val().email;
       if (email) {
         dynamicAdmins.add(email.trim().toLowerCase());
-        const row = document.createElement("div");
-        row.className = "admin-subitem";
-        row.innerHTML = `<span>${email}</span>${email.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase() ? `<button data-remove-admin="${child.key}"><i class="fa-solid fa-trash"></i></button>` : '<small>الرئيسي</small>'}`;
-        adminsListContainer.appendChild(row);
+        renderAdminItem(child.key, email);
       }
     });
   }
@@ -169,197 +238,258 @@ onValue(ref(db, "banned_users"), (snapshot) => {
       const email = child.val().email;
       if (email) {
         bannedUsers.add(email.trim().toLowerCase());
-        const row = document.createElement("div");
-        row.className = "admin-subitem";
-        row.innerHTML = `<span>${email}</span><button data-unban="${child.key}"><i class="fa-solid fa-lock-open"></i></button>`;
-        bannedListContainer.appendChild(row);
+        renderBannedItem(child.key, email);
       }
     });
   }
-  if (currentUser && isBanned(currentUser.email)) signOut(auth);
+  if (currentUser && isBanned(currentUser.email)) {
+    signOut(auth);
+    toast("تم حظرك من الموقع.", true);
+  }
 });
+
+function renderAdminItem(id, email) {
+  const row = document.createElement("div");
+  row.className = "admin-subitem";
+  row.innerHTML = `<span>${email}</span>${email.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase() ? `<button data-remove-admin="${id}"><i class="fa-solid fa-trash"></i></button>` : '<small>الرئيسي</small>'}`;
+  adminsListContainer.appendChild(row);
+}
+
+function renderBannedItem(id, email) {
+  const row = document.createElement("div");
+  row.className = "admin-subitem";
+  row.innerHTML = `<span>${email}</span><button data-unban="${id}"><i class="fa-solid fa-lock-open"></i> رفع الحظر</button>`;
+  bannedListContainer.appendChild(row);
+}
 
 addAdminBtn.addEventListener("click", async () => {
   if (!isAdmin()) return;
   const email = newAdminEmailInput.value.trim().toLowerCase();
-  if (email) { await push(ref(db, "admins"), { email }); newAdminEmailInput.value = ""; toast("تمت إضافة المشرف."); }
+  if (!email || !email.includes("@")) return toast("أدخل بريداً صحيحاً.", true);
+  try {
+    await push(ref(db, "admins"), { email });
+    newAdminEmailInput.value = "";
+    toast("تمت إضافة المشرف بنجاح.");
+  } catch {
+    toast("تعذر إضافة المشرف.", true);
+  }
 });
 
 banUserBtn.addEventListener("click", async () => {
   if (!isAdmin()) return;
   const email = bannedUserEmailInput.value.trim().toLowerCase();
-  if (email && email !== MASTER_ADMIN_EMAIL.toLowerCase()) { await push(ref(db, "banned_users"), { email }); bannedUserEmailInput.value = ""; toast("تم الحظر."); }
+  if (!email || !email.includes("@")) return toast("أدخل بريداً صحيحاً للحظر.", true);
+  if (email === MASTER_ADMIN_EMAIL.toLowerCase()) return toast("لا يمكنك حظر المشرف الرئيسي!", true);
+  try {
+    await push(ref(db, "banned_users"), { email });
+    bannedUserEmailInput.value = "";
+    toast("تم حظر المستخدم بنجاح.");
+  } catch {
+    toast("تعذر حظر المستخدم.", true);
+  }
 });
 
 adminsListContainer.addEventListener("click", async (e) => {
   const btn = e.target.closest("[data-remove-admin]");
-  if (btn && isAdmin()) await remove(ref(db, `admins/${btn.dataset.removeAdmin}`));
+  if (!btn || !isAdmin()) return;
+  try {
+    await remove(ref(db, `admins/${btn.dataset.removeAdmin}`));
+    toast("تم إزالة المشرف بنجاح.");
+  } catch {
+    toast("تعذر إزالة المشرف.", true);
+  }
 });
 
 bannedListContainer.addEventListener("click", async (e) => {
   const btn = e.target.closest("[data-unban]");
-  if (btn && isAdmin()) await remove(ref(db, `banned_users/${btn.dataset.unban}`));
+  if (!btn || !isAdmin()) return;
+  try {
+    await remove(ref(db, `banned_users/${btn.dataset.unban}`));
+    toast("تم رفع الحظر عن المستخدم.");
+  } catch {
+    toast("تعذر رفع الحظر.", true);
+  }
 });
 
-onValue(ref(db, "settings/chatAllowedForUsers"), (snapshot) => {
-  chatAllowedForUsers = snapshot.exists() ? snapshot.val() : true;
+const chatPermissionRef = ref(db, "settings/chatAllowedForUsers");
+onValue(chatPermissionRef, (snapshot) => {
+  if (snapshot.exists()) {
+    chatAllowedForUsers = snapshot.val();
+  } else {
+    set(chatPermissionRef, true);
+    chatAllowedForUsers = true;
+  }
   updateChatUIState();
 });
 
 toggleChatPermissionCheckbox.addEventListener("change", async () => {
-  if (isAdmin()) await set(ref(db, "settings/chatAllowedForUsers"), toggleChatPermissionCheckbox.checked);
-});
-
-onValue(ref(db, ".info/connected"), (snap) => {
-  if (snap.val() === true && currentUser && !isBanned(currentUser.email)) {
-    const pRef = push(ref(db, "online_users"));
-    onDisconnect(pRef).remove();
-    set(pRef, { onlineAt: Date.now(), email: currentUser.email || "مستخدم" });
+  if (!isAdmin()) return;
+  const newState = toggleChatPermissionCheckbox.checked;
+  try {
+    await set(chatPermissionRef, newState);
+    toast(newState ? "تم السماح للمستخدمين بالكتابة." : "تم تعطيل الكتابة للمستخدمين.");
+  } catch (error) {
+    console.error("Permission error:", error);
+    toggleChatPermissionCheckbox.checked = !newState;
+    toast("تعذر تغيير الإذن.", true);
   }
 });
 
-onValue(ref(db, "online_users"), (snapshot) => {
-  activeOnlineUsersMap.clear();
-  let count = 0;
-  if (snapshot.exists()) {
-    snapshot.forEach((child) => { count++; activeOnlineUsersMap.set(child.key, child.val().email); });
-  }
-  if (onlineCountEl) onlineCountEl.textContent = Math.max(1, count);
-  
-  if (onlineUsersList) {
-    onlineUsersList.innerHTML = "";
-    activeOnlineUsersMap.forEach((email) => {
-      const row = document.createElement("div");
-      row.className = "online-user-row";
-      row.innerHTML = `<div class="online-user-info"><i class="fa-solid fa-circle" style="color:#22c55e;font-size:7px;"></i><span>${email}</span></div>`;
-      onlineUsersList.appendChild(row);
+const connectedRef = ref(db, ".info/connected");
+const onlineUsersRef = ref(db, "online_users");
+
+onValue(connectedRef, (snap) => {
+  if (snap.val() === true && currentUser) {
+    if (isBanned(currentUser.email)) {
+      signOut(auth);
+      return;
+    }
+    const userPresenceRef = push(onlineUsersRef);
+    onDisconnect(userPresenceRef).remove();
+    set(userPresenceRef, {
+      onlineAt: Date.now(),
+      email: currentUser.email || currentUser.displayName || "مستخدم مسجل"
     });
   }
 });
 
-adminViewOnlineBtn.addEventListener("click", () => { if (isAdmin()) onlineUsersModal.classList.add("active"); });
-$("close-online-modal").addEventListener("click", () => onlineUsersModal.classList.remove("active"));
-
-settingsTriggerBtn.addEventListener("click", (e) => { e.stopPropagation(); musicPopupMenu.classList.remove("active"); settingsPopupMenu.classList.toggle("active"); });
-document.addEventListener("click", () => { settingsPopupMenu.classList.remove("active"); musicPopupMenu.classList.remove("active"); });
-$("menu-logout-trigger").addEventListener("click", () => signOut(auth));
-
-document.querySelectorAll("[data-theme]").forEach((btn) => {
-  btn.addEventListener("click", () => { document.body.className = btn.dataset.theme; localStorage.setItem("king_store_theme", btn.dataset.theme); });
-});
-const savedTheme = localStorage.getItem("king_store_theme");
-if (savedTheme) document.body.className = savedTheme;
-
-function updateChatUIState() {
-  if (isAdmin()) {
-    adminChatToggleBox.hidden = false; chatComposeBox.hidden = false; userChatReadonly.hidden = true; chatLinkField.hidden = false;
-    $("chat-access-note").textContent = "لوحة تحكم المشرف"; toggleChatPermissionCheckbox.checked = chatAllowedForUsers;
-  } else {
-    adminChatToggleBox.hidden = true; chatLinkField.hidden = true; $("chat-access-note").textContent = "إعلانات المتجر";
-    chatComposeBox.hidden = !chatAllowedForUsers; userChatReadonly.hidden = chatAllowedForUsers;
+onValue(onlineUsersRef, (snapshot) => {
+  activeOnlineUsersMap.clear();
+  let count = 0;
+  if (snapshot.exists()) {
+    snapshot.forEach((child) => {
+      count++;
+      activeOnlineUsersMap.set(child.key, child.val().email);
+    });
   }
-}
-
-function applyAdminPrivileges() {
-  document.querySelectorAll(".admin-only").forEach(el => el.hidden = !isAdmin());
-  updateChatUIState();
-  productDataById.forEach((data, id) => renderProduct(id, data));
-}
-
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    if (isBanned(user.email)) { await signOut(auth); loginScreen.style.display = "flex"; storeScreen.style.display = "none"; return; }
-    currentUser = user; loginScreen.style.display = "none"; storeScreen.style.display = "block";
-    applyAdminPrivileges();
-    $("menu-user-img").src = user.photoURL || "";
-    $("menu-user-name").textContent = user.displayName || "مستخدم";
-    $("menu-user-email").textContent = user.email || "";
-  } else {
-    currentUser = null; loginScreen.style.display = "flex"; storeScreen.style.display = "none";
-    applyAdminPrivileges();
+  if (onlineCountEl) {
+    onlineCountEl.textContent = Math.max(1, count);
   }
+  renderOnlineUsersModalList();
 });
 
-adminAddProductBtn.addEventListener("click", () => { adminProductFormBox.hidden = !adminProductFormBox.hidden; });
-$("cancel-product-form").addEventListener("click", () => adminProductFormBox.hidden = true);
-$("cancel-product-form-secondary").addEventListener("click", () => adminProductFormBox.hidden = true);
+function renderOnlineUsersModalList() {
+  if (!onlineUsersList) return;
+  onlineUsersList.innerHTML = "";
+  
+  if (activeOnlineUsersMap.size === 0) {
+    onlineUsersList.innerHTML = '<div class="empty-chat">لا يوجد مستخدمون متصلون حالياً.</div>';
+    return;
+  }
 
-$("save-product-btn").addEventListener("click", async () => {
+  activeOnlineUsersMap.forEach((email) => {
+    const cleanEmail = email || "مستخدم مسجل";
+    const row = document.createElement("div");
+    row.className = "online-user-row";
+    
+    let actionsMarkup = "";
+    if (isAdmin() && cleanEmail.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase()) {
+      actionsMarkup = `
+        <div class="online-user-actions">
+          <button class="btn-inline-action btn-inline-admin" data-make-admin="${escapeHtml(cleanEmail)}">إشراف</button>
+          <button class="btn-inline-action btn-inline-ban" data-ban-direct="${escapeHtml(cleanEmail)}">حظر</button>
+        </div>
+      `;
+    }
+
+    row.innerHTML = `
+      <div class="online-user-info">
+        <i class="fa-solid fa-circle" style="color:#22c55e;font-size:7px;"></i>
+        <span>${escapeHtml(cleanEmail)}</span>
+      </div>
+      ${actionsMarkup}
+    `;
+    onlineUsersList.appendChild(row);
+  });
+}
+
+onlineUsersModal.addEventListener("click", async (e) => {
   if (!isAdmin()) return;
-  const title = $("new-product-title").value.trim();
-  const price = Number($("new-product-price").value);
-  const description = $("new-product-description").value.trim();
-  const link = $("new-product-link").value.trim();
-  const file = $("new-product-img-file").files?.[0];
   
-  if (!title || price <= 0) return;
-  const reader = new FileReader();
-  reader.onload = async () => {
-    await push(ref(db, "products"), { title, price, description, link, image: reader.result || "", createdAt: Date.now() });
-    adminProductFormBox.hidden = true;
-    toast("تم الحفظ.");
-  };
-  if (file) reader.readAsDataURL(file);
-  else reader.onload({ target: { result: "" } });
-});
+  const banBtn = e.target.closest("[data-ban-direct]");
+  const adminBtn = e.target.closest("[data-make-admin]");
 
-function renderProduct(id, data) {
-  productDataById.set(id, data);
-  $(`product-${id}`)?.remove();
-  productsGridContainer.querySelector(".empty-state")?.remove();
-  const card = document.createElement("article");
-  card.className = "product-card"; card.id = `product-${id}`;
-  card.innerHTML = `
-    <div class="product-image-wrap">${data.image ? `<img class="product-image" src="${data.image}">` : '<div class="product-image-placeholder"><i class="fa-solid fa-cube"></i></div>'}</div>
-    <div class="product-body">
-      <span class="product-category">KING SELECTION</span>
-      <h3>${data.title}</h3>
-      <p class="product-description">${data.description || ""}</p>
-      <div class="product-bottom"><div class="product-price">${data.price} <small>جنيه</small></div>
-      <button class="btn btn-primary buy-btn" data-buy="${id}"><i class="fa-solid fa-bag-shopping"></i> شراء</button></div>
-    </div>
-    ${isAdmin() ? `<div class="admin-product-actions"><button class="btn btn-small btn-delete" data-delete="${id}"><i class="fa-solid fa-trash"></i> حذف</button></div>` : ""}
-  `;
-  productsGridContainer.appendChild(card);
-}
-
-onChildAdded(ref(db, "products"), (s) => renderProduct(s.key, s.val()));
-onChildRemoved(ref(db, "products"), (s) => $(`product-${s.key}`)?.remove());
-
-productsGridContainer.addEventListener("click", async (e) => {
-  const buy = e.target.closest("[data-buy]");
-  const del = e.target.closest("[data-delete]");
-  if (buy) {
-    currentPurchase = productDataById.get(buy.dataset.buy);
-    $("purchase-product-name").textContent = currentPurchase.title;
-    $("purchase-product-price").textContent = currentPurchase.price + " جنيه";
-    $("purchase-product-image").src = currentPurchase.image || "";
-    purchaseModal.classList.add("active");
+  if (banBtn) {
+    const emailToBan = banBtn.dataset.banDirect.trim().toLowerCase();
+    showCustomConfirm("حظر مستخدم", `هل أنت متأكد من حظر المستخدم (${emailToBan})؟`, async () => {
+      try {
+        await push(ref(db, "banned_users"), { email: emailToBan });
+        toast("تم حظر المستخدم بنجاح.");
+      } catch {
+        toast("تعذر حظر المستخدم.", true);
+      }
+    });
   }
-  if (del && isAdmin()) await remove(ref(db, `products/${del.dataset.delete}`));
+
+  if (adminBtn) {
+    const emailToAdmin = adminBtn.dataset.makeAdmin.trim().toLowerCase();
+    showCustomConfirm("تعيين مشرف", `هل أنت متأكد من ترقية (${emailToAdmin}) إلى مشرف؟`, async () => {
+      try {
+        await push(ref(db, "admins"), { email: emailToAdmin });
+        toast("تمت إضافة المشرف بنجاح.");
+      } catch {
+        toast("تعذر تعيين المشرف.", true);
+      }
+    });
+  }
 });
 
-$("close-purchase-modal").addEventListener("click", () => purchaseModal.classList.remove("active"));
-$("send-transfer-proof-btn").addEventListener("click", () => {
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("أريد تأكيد طلب منتج: " + currentPurchase.title)}`, "_blank");
+adminViewOnlineBtn.addEventListener("click", () => {
+  if (!isAdmin()) return;
+  onlineUsersModal.classList.add("active");
 });
 
-onChildAdded(ref(db, "messages"), (s) => {
-  chatMessagesArea.querySelector(".empty-chat")?.remove();
-  const d = s.val();
-  const msg = document.createElement("article");
-  msg.className = "chat-message";
-  msg.innerHTML = `<div class="chat-message-top"><strong>${d.username}</strong></div><p>${d.text}</p>`;
-  chatMessagesArea.appendChild(msg);
+$("close-online-modal").addEventListener("click", () => {
+  onlineUsersModal.classList.remove("active");
 });
 
-$("chat-float-btn").addEventListener("click", () => chatPanel.classList.toggle("active"));
-$("chat-close-btn").addEventListener("click", () => chatPanel.classList.remove("active"));
-
-$("chat-send-btn").addEventListener("click", async () => {
-  const text = chatInputField.value.trim();
-  if (!text) return;
-  await push(ref(db, "messages"), { username: isAdmin() ? "المشرف" : "مستخدم", text, timestamp: Date.now() });
-  chatInputField.value = "";
+onlineUsersModal.addEventListener("click", (e) => {
+  if (e.target === onlineUsersModal) onlineUsersModal.classList.remove("active");
 });
-  
+
+settingsTriggerBtn.addEventListener("click", (event) => {
+  event.stopPropagation();
+  openSettings();
+});
+
+settingsPopupMenu.addEventListener("click", (event) => {
+  event.stopPropagation();
+});
+
+document.addEventListener("click", () => {
+  settingsPopupMenu.classList.remove("active");
+});
+
+$("menu-logout-trigger").addEventListener("click", async () => {
+  try {
+    settingsPopupMenu.classList.remove("active");
+    await signOut(auth);
+    toast("تم تسجيل الخروج.");
+  } catch {
+    toast("تعذر تسجيل الخروج.", true);
+  }
+});
+
+$("language-toggle").addEventListener("click", () => {
+  const root = $("html-root");
+  const english = root.lang !== "en";
+
+  root.lang = english ? "en" : "ar";
+  root.dir = english ? "ltr" : "rtl";
+
+  toast(english ? "تم تغيير اتجاه الصفحة." : "تم الرجوع للعرض العربي.");
+  settingsPopupMenu.classList.remove("active");
+});
+
+document.querySelectorAll("[data-theme]").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.body.className = button.dataset.theme;
+    localStorage.setItem("king_store_theme", button.dataset.theme);
+    settingsPopupMenu.classList.remove("active");
+  });
+});
+
+const savedTheme = localStorage.getItem("king_store_theme");
+if (savedTheme && /^theme-(blue|violet|mint|gold)$/.test(savedTheme)) {
+  document.body.className = savedTheme;
+  }
