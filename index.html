@@ -16,6 +16,9 @@
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
 
+  <!-- عنصر الصوت المخفي لملف الدرايف -->
+  <audio id="store-bg-audio" preload="none" src="https://docs.google.com/uc?export=download&id=1Jp2w2PrAJggDVmTqggXz2kYvU0qKXSrQ"></audio>
+
   <section id="login-screen" class="screen-overlay">
     <div class="login-card glass-card">
       <div class="login-avatar-circle">
@@ -45,6 +48,11 @@
         <span><strong>King <em>Store</em></strong><small>SMART SHOPPING EXPERIENCE</small></span>
       </a>
       <div class="top-actions">
+        <!-- زر الدائرة الموسيقية -->
+        <button id="music-toggle-btn" class="icon-btn music-circle-btn" aria-label="تشغيل/إيقاف الموسيقى" title="تشغيل الصوت">
+          <i class="fa-solid fa-music"></i>
+        </button>
+
         <div id="online-users-pill" class="tech-pulse-pill" title="الزوار المتصلين الآن">
           <span class="pulse-dot"></span>
           <i class="fa-solid fa-network-wired"></i>
@@ -170,7 +178,7 @@
   </div>
 
   <div id="custom-confirm-modal" class="modal-backdrop" role="dialog" aria-modal="true">
-    <div class="modal-card glass-card confirm-modal-card">
+    <div class="modal-card glass-card confirm-confirm-card">
       <div class="modal-icon warning-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
       <h3 id="confirm-title">تأكيد الحذف</h3>
       <p id="confirm-text" class="muted">هل أنت متأكد من رغبتك في حذف هذا العنصر؟</p>
@@ -213,5 +221,5 @@
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
   <script type="module" src="app.js"></script>
 </body>
-          </html>
-                                                                                                                           
+  </html>
+  
