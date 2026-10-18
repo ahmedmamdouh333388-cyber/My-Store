@@ -229,6 +229,7 @@ onValue(ref(db, "banned_users"), (snapshot) => {
 function renderAdminItem(id, email) {
   const row = document.createElement("div");
   row.className = "admin-subitem";
+  // زر حذف المشرف من القائمة المنسدلة يعمل هنا بكفاءة
   row.innerHTML = `<span>${email}</span>${email.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase() ? `<button data-remove-admin="${id}"><i class="fa-solid fa-trash"></i></button>` : '<small>الرئيسي</small>'}`;
   adminsListContainer.appendChild(row);
 }
@@ -272,7 +273,7 @@ adminsListContainer.addEventListener("click", async (e) => {
   if (!btn || !isAdmin()) return;
   try {
     await remove(ref(db, `admins/${btn.dataset.removeAdmin}`));
-    toast("تم إزالة المشرف.");
+    toast("تم إزالة المشرف بنجاح.");
   } catch {
     toast("تعذر إزالة المشرف.", true);
   }
@@ -361,6 +362,7 @@ function renderOnlineUsersModalList() {
     row.className = "online-user-row";
     
     let actionsMarkup = "";
+    // إظهار أزرار الإشراف والحظر لكل المتصلين ما عدا المؤسس الحقيقي MASTER_ADMIN_EMAIL
     if (isAdmin() && cleanEmail.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase()) {
       actionsMarkup = `
         <div class="online-user-actions">
@@ -470,7 +472,7 @@ document.querySelectorAll("[data-theme]").forEach((button) => {
 const savedTheme = localStorage.getItem("king_store_theme");
 if (savedTheme && /^theme-(blue|violet|mint|gold)$/.test(savedTheme)) {
   document.body.className = savedTheme;
-  }
+}
 function updateChatUIState() {
   const adminMode = isAdmin();
   
@@ -956,4 +958,3 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   });
 });
-    
