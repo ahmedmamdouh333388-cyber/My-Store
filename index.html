@@ -16,9 +16,6 @@
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
 
-  <!-- عنصر الصوت المخفي لملف الدرايف -->
-  <audio id="store-bg-audio" preload="none" src="https://docs.google.com/uc?export=download&id=1Jp2w2PrAJggDVmTqggXz2kYvU0qKXSrQ"></audio>
-
   <section id="login-screen" class="screen-overlay">
     <div class="login-card glass-card">
       <div class="login-avatar-circle">
@@ -48,8 +45,8 @@
         <span><strong>King <em>Store</em></strong><small>SMART SHOPPING EXPERIENCE</small></span>
       </a>
       <div class="top-actions">
-        <!-- زر الدائرة الموسيقية -->
-        <button id="music-toggle-btn" class="icon-btn music-circle-btn" aria-label="تشغيل/إيقاف الموسيقى" title="تشغيل الصوت">
+        <!-- زر الدائرة الموسيقية لفتح مشغل الصوت الداخلي -->
+        <button id="open-audio-modal-btn" class="icon-btn music-circle-btn" aria-label="مشغل الصوت" title="مشغل الصوت">
           <i class="fa-solid fa-music"></i>
         </button>
 
@@ -151,6 +148,25 @@
     <footer><a href="#" class="footer-brand"><i class="fa-solid fa-crown"></i> King Store</a><span>تسوق بذكاء. اختار بثقة.</span><span>© <span id="current-year"></span> King Store</span></footer>
   </div>
 
+  <!-- مودال المشغل الصوتي الداخلي -->
+  <div id="audio-player-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-card glass-card audio-modal-card">
+      <button id="close-audio-modal" class="modal-close icon-btn" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-icon"><i class="fa-solid fa-music"></i></div>
+      <span class="eyebrow">AUDIO PLAYER</span>
+      <h2>مشغل الصوت المباشر</h2>
+      <p class="muted">استمع للملف الصوتي مباشرة من داخل المتجر.</p>
+      
+      <div class="audio-player-box">
+        <audio id="in-site-audio" controls preload="none" style="width: 100%; margin-top: 10px;">
+          <source src="https://docs.google.com/uc?export=download&id=1Jp2w2PrAJggDVmTqggXz2kYvU0qKXSrQ" type="audio/mp4">
+          متصفحك لا يدعم مشغل الصوت.
+        </audio>
+      </div>
+      <small class="muted modal-footnote">حجم الملف كبير (120 ميجابايت)، قد تحتاج لثوانٍ معدودة ليبدأ البث بسلاسة.</small>
+    </div>
+  </div>
+
   <div id="online-users-modal" class="modal-backdrop" role="dialog" aria-modal="true">
     <div class="modal-card glass-card">
       <button id="close-online-modal" class="modal-close icon-btn" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
@@ -178,7 +194,7 @@
   </div>
 
   <div id="custom-confirm-modal" class="modal-backdrop" role="dialog" aria-modal="true">
-    <div class="modal-card glass-card confirm-confirm-card">
+    <div class="modal-card glass-card confirm-modal-card">
       <div class="modal-icon warning-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
       <h3 id="confirm-title">تأكيد الحذف</h3>
       <p id="confirm-text" class="muted">هل أنت متأكد من رغبتك في حذف هذا العنصر؟</p>
@@ -222,4 +238,4 @@
   <script type="module" src="app.js"></script>
 </body>
   </html>
-  
+                                                                                         
