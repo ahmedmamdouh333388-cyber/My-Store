@@ -17,8 +17,7 @@ import {
   onValue,
   update,
   remove,
-  onDisconnect,
-  get
+  onDisconnect
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -83,7 +82,6 @@ let dynamicAdmins = {};
 let bannedUsers = {};
 let isChatLocked = false;
 let currentMusicUrl = "";
-let userRegisteredName = "";
 
 const productDataById = new Map();
 
@@ -94,47 +92,6 @@ $("support-wa-link").href =
   `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
     "مرحباً، أحتاج مساعدة من دعم King Store."
   )}`;
-
-async function checkAndRegisterUserIdentity(user) {
-  const userRef = ref(db, `users/${user.uid}`);
-  try {
-    const snapshot = await get(userRef);
-    if (snapshot.exists() && snapshot.val().name) {
-      userRegisteredName = snapshot.val().name;
-      proceedWithLogin(user);
-    } else {
-      $("name-gate-modal").classList.add("active");
-    }
-  } catch (error) {
-    userRegisteredName = user.displayName || "مستخدم";
-    proceedWithLogin(user);
-  }
-}
-
-$("gate-confirm-name-btn").addEventListener("click", async () => {
-  const enteredName = $("gate-user-name-input").value.trim();
-  if (enteredName.length < 2) {
-    alert("الرجاء كتابة اسم صحيح!");
-    return;
-  }
-  if (!currentUser) return;
-
-  const userData = {
-    name: enteredName,
-    email: currentUser.email || "",
-    nameLocked: true,
-    uid: currentUser.uid
-  };
-
-  try {
-    await set(ref(db, `users/${currentUser.uid}`), userData);
-    userRegisteredName = enteredName;
-    $("name-gate-modal").classList.remove("active");
-    proceedWithLogin(currentUser);
-  } catch (error) {
-    alert("حدث خطأ أثناء حفظ الاسم.");
-  }
-});
 
 onValue(ref(db, "settings/admins"), (snapshot) => {
   dynamicAdmins = {};
@@ -160,7 +117,7 @@ onValue(ref(db, "settings/banned"), (snapshot) => {
   }
   renderBannedList();
 });
-    onValue(ref(db, "settings/chatLocked"), (snapshot) => {
+onValue(ref(db, "settings/chatLocked"), (snapshot) => {
   isChatLocked = snapshot.exists() ? snapshot.val() : false;
   updateChatLockUI();
 });
@@ -207,7 +164,6 @@ async function handleGoogleLogin() {
       return;
     }
     authErrorMsg.textContent = "";
-    checkAndRegisterUserIdentity(currentUser);
   } catch (error) {
     console.error("Login Error:", error);
     authErrorMsg.textContent = `تعذر تسجيل الدخول: ${error.message || error.code}`;
@@ -222,11 +178,6 @@ function applyAdminPrivileges() {
   const chatLinkField = $("chat-link-field");
   if (chatLinkField) {
     chatLinkField.hidden = !adminMode;
-  }
-
-  const adminEditNamesTrigger = $("admin-edit-names-trigger");
-  if (adminEditNamesTrigger) {
-    adminEditNamesTrigger.hidden = !adminMode;
   }
 
   if (adminMode) {
@@ -250,52 +201,6 @@ function applyAdminPrivileges() {
   productDataById.forEach((data, id) => renderProduct(id, data));
 }
 
-$("admin-edit-names-trigger").addEventListener("click", () => {
-  if (!isAdmin()) return;
-  settingsPopupMenu.classList.remove("active");
-  $("admin-name-modal").classList.add("active");
-});
-
-$("close-admin-name-modal").addEventListener("click", () => {
-  $("admin-name-modal").classList.remove("active");
-});
-
-$("admin-save-name-btn").addEventListener("click", async () => {
-  if (!isAdmin()) return;
-  const targetEmail = $("admin-target-email").value.trim().toLowerCase();
-  const newName = $("admin-new-name").value.trim();
-
-  if (!targetEmail || !newName) {
-    alert("الرجاء إدخال البريد الإلكتروني والاسم الجديد!");
-    return;
-  }
-
-  try {
-    const usersSnap = await get(ref(db, "users"));
-    let foundUid = null;
-    if (usersSnap.exists()) {
-      usersSnap.forEach((childSnap) => {
-        const val = childSnap.val();
-        if (val.email && val.email.trim().toLowerCase() === targetEmail) {
-          foundUid = childSnap.key;
-        }
-      });
-    }
-
-    if (foundUid) {
-      await update(ref(db, `users/${foundUid}`), { name: newName });
-      toast("تم تعديل اسم المستخدم بنجاح.");
-      $("admin-target-email").value = "";
-      $("admin-new-name").value = "";
-      $("admin-name-modal").classList.remove("active");
-    } else {
-      toast("لم يتم العثور على مستخدم بهذا البريد الإلكتروني.", true);
-    }
-  } catch (err) {
-    toast("فشل تعديل الاسم.", true);
-  }
-});
-
 function renderAdminsList() {
   const container = $("admins-list-container");
   if (!container) return;
@@ -318,8 +223,8 @@ function renderBannedList() {
     item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-ban="${key}"><i class="fa-solid fa-unlock"></i> إلغاء الحظر</button>`;
     container.appendChild(item);
   });
-      }
-      $("settings-popup-menu").addEventListener("click", async (e) => {
+  }
+$("settings-popup-menu").addEventListener("click", async (e) => {
   const delAdminBtn = e.target.closest("[data-del-admin]");
   const delBanBtn = e.target.closest("[data-del-ban]");
 
@@ -390,13 +295,10 @@ function setupPresence(user) {
   const myConnectionRef = ref(db, `presence/${user.uid}`);
   const connectedRef = ref(db, ".info/connected");
 
-  onValue(connectedRef, async (snap) => {
+  onValue(connectedRef, (snap) => {
     if (snap.val() === true) {
-      const userSnap = await get(ref(db, `users/${user.uid}`));
-      const finalName = userSnap.exists() && userSnap.val().name ? userSnap.val().name : (user.displayName || "مستخدم");
-
       const conData = {
-        name: finalName,
+        name: user.displayName || "مستخدم",
         email: user.email || "",
         photo: user.photoURL || "",
         timestamp: Date.now()
@@ -436,37 +338,7 @@ function renderOnlineUsersModalList(data) {
 
 adminViewOnlineBtn.addEventListener("click", () => { onlineUsersModal.classList.add("active"); });
 $("close-online-modal").addEventListener("click", () => { onlineUsersModal.classList.remove("active"); });
-                            function proceedWithLogin(user) {
-  loginScreen.style.display = "none";
-  setupPresence(user);
-
-  const alreadyShown = sessionStorage.getItem("king_splash_shown");
-  if (!alreadyShown) {
-    splashScreen.style.display = "flex";
-    storeScreen.style.display = "none";
-    window.setTimeout(() => {
-      splashScreen.style.display = "none";
-      storeScreen.style.display = "block";
-      sessionStorage.setItem("king_splash_shown", "true");
-      applyAdminPrivileges();
-    }, 1000);
-  } else {
-    splashScreen.style.display = "none";
-    storeScreen.style.display = "block";
-    applyAdminPrivileges();
-  }
-
-  get(ref(db, `users/${user.uid}`)).then((snapshot) => {
-    const displayName = snapshot.exists() && snapshot.val().name ? snapshot.val().name : (user.displayName || "مستخدم King Store");
-    userRegisteredName = displayName;
-    $("menu-user-name").textContent = displayName;
-  });
-
-  $("menu-user-img").src = user.photoURL || "";
-  $("menu-user-email").textContent = user.email || "";
-}
-
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (user) {
     const userEmail = user.email?.trim().toLowerCase();
@@ -476,7 +348,29 @@ onAuthStateChanged(auth, async (user) => {
       signOut(auth);
       return;
     }
-    checkAndRegisterUserIdentity(user);
+
+    loginScreen.style.display = "none";
+    setupPresence(user);
+
+    const alreadyShown = sessionStorage.getItem("king_splash_shown");
+    if (!alreadyShown) {
+      splashScreen.style.display = "flex";
+      storeScreen.style.display = "none";
+      window.setTimeout(() => {
+        splashScreen.style.display = "none";
+        storeScreen.style.display = "block";
+        sessionStorage.setItem("king_splash_shown", "true");
+        applyAdminPrivileges();
+      }, 1000);
+    } else {
+      splashScreen.style.display = "none";
+      storeScreen.style.display = "block";
+      applyAdminPrivileges();
+    }
+
+    $("menu-user-img").src = user.photoURL || "";
+    $("menu-user-name").textContent = user.displayName || "مستخدم King Store";
+    $("menu-user-email").textContent = user.email || "";
   } else {
     loginScreen.style.display = "flex";
     splashScreen.style.display = "none";
@@ -542,18 +436,10 @@ toggleChatLockBtn.addEventListener("click", async () => {
 
 $("language-toggle").addEventListener("click", () => {
   const root = $("html-root");
-  const isEnglish = root.lang !== "en";
-  root.lang = isEnglish ? "en" : "ar";
-  root.dir = "rtl";
-  
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    const key = el.getAttribute("data-i18n");
-    if (key === "storeTitle") el.innerHTML = isEnglish ? 'King <em>Store</em>' : 'كينج <em>ستور</em>';
-    if (key === "onlineNow") el.textContent = isEnglish ? 'Online Now' : 'متصل الآن';
-    if (key === "logout") el.textContent = isEnglish ? 'Logout' : 'تسجيل الخروج';
-  });
-
-  toast(isEnglish ? "Switched to English (RTL Fixed)" : "تم العودة للعربية.");
+  const english = root.lang !== "en";
+  root.lang = english ? "en" : "ar";
+  root.dir = english ? "ltr" : "rtl";
+  toast(english ? "تم تغيير اتجاه الصفحة." : "تم الرجوع للعرض العربي.");
   settingsPopupMenu.classList.remove("active");
 });
 
@@ -663,7 +549,8 @@ $("save-product-btn").addEventListener("click", async () => {
     saveButton.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ المنتج';
   }
 });
-    function escapeHtml(value) {
+
+function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[char]));
@@ -747,7 +634,7 @@ $("close-purchase-modal").addEventListener("click", closePurchaseModal);
 purchaseModal.addEventListener("click", (event) => { if (event.target === purchaseModal) closePurchaseModal(); });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") { closePurchaseModal(); settingsPopupMenu.classList.remove("active"); musicPopupMenu.classList.remove("active"); onlineUsersModal.classList.remove("active"); $("admin-name-modal").classList.remove("active"); $("name-gate-modal").classList.remove("active"); }
+  if (event.key === "Escape") { closePurchaseModal(); settingsPopupMenu.classList.remove("active"); musicPopupMenu.classList.remove("active"); onlineUsersModal.classList.remove("active"); }
 });
 
 $("copy-transfer-number").addEventListener("click", async () => {
@@ -756,7 +643,7 @@ $("copy-transfer-number").addEventListener("click", async () => {
 
 function orderMessage() {
   if (!currentPurchase) return "";
-  return `مرحباً King Store، أريد تأكيد طلب:\nالمنتج: ${currentPurchase.title}\nالسعر: ${currentPurchase.price} جنيه\nرقم التحويل: ${TRANSFER_NUMBER}\nاسم الحساب: ${userRegisteredName || currentUser?.displayName || "غير محدد"}\nسأرفق صورة التحويل في هذه المحادثة.`;
+  return `مرحباً King Store، أريد تأكيد طلب:\nالمنتج: ${currentPurchase.title}\nالسعر: ${currentPurchase.price} جنيه\nرقم التحويل: ${TRANSFER_NUMBER}\nاسم الحساب: ${currentUser?.displayName || "غير محدد"}\nسأرفق صورة التحويل في هذه المحادثة.`;
 }
 
 $("send-transfer-proof-btn").addEventListener("click", () => {
@@ -849,7 +736,7 @@ async function sendStoreMessage() {
     await push(messagesRef, {
       uid: currentUser.uid,
       email: currentUser.email,
-      username: isAdmin() ? "King Store (مشرف)" : (userRegisteredName || currentUser.displayName || "مستخدم"),
+      username: isAdmin() ? "King Store (مشرف)" : (currentUser.displayName || "مستخدم"),
       text,
       link: link || "",
       timestamp: Date.now(),
@@ -928,4 +815,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   }
 });
-                                                                   
+                   
