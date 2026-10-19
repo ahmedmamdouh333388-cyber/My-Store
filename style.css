@@ -185,8 +185,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .floating-chip i { color: var(--primary); margin-left: 5px; }
 .chip-top { top: 45px; right: 5px; }
 .chip-bottom { bottom: 48px; left: 0; }
-
-.products-section { padding: 28px 0 60px; }
+    .products-section { padding: 28px 0 60px; }
 .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 25px; }
 .section-heading h2 { margin: 5px 0; font-size: 30px; }
 .section-heading p { margin: 4px 0; font-size: 12px; }
@@ -273,6 +272,19 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
 .admin-chat-compose { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-top: 1px solid var(--line); }
 .admin-chat-compose input { margin: 0; min-width: 0; }
 .chat-readonly { padding: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; text-align: center; }
+
+/* تنسيقات التفاعلات الجديدة */
+.message-reactions-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; }
+.reaction-pill { display: inline-flex; align-items: center; gap: 4px; background: #1b263b; border: 1px solid var(--line); padding: 3px 8px; border-radius: 20px; font-size: 11px; cursor: pointer; color: var(--text); transition: transform .15s, border-color .15s; }
+.reaction-pill:hover { transform: scale(1.05); border-color: var(--primary); }
+.reaction-pill.active-by-me { background: color-mix(in srgb, var(--primary) 25%, #1b263b); border-color: var(--primary); }
+.add-reaction-btn { background: transparent; border: 1px dashed var(--line); color: var(--muted); width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 11px; cursor: pointer; transition: background .2s, color .2s; }
+.add-reaction-btn:hover { background: #202e48; color: var(--text); border-color: var(--primary); }
+.reactions-popup { display: none; position: absolute; background: #151e30; border: 1px solid var(--line); border-radius: 24px; padding: 4px 8px; gap: 8px; z-index: 40; box-shadow: var(--shadow); transform: translateY(-40px); }
+.reactions-popup.active { display: flex; align-items: center; }
+.reaction-option { background: transparent; border: 0; font-size: 16px; cursor: pointer; padding: 4px; transition: transform .15s; }
+.reaction-option:hover { transform: scale(1.3); }
+
 .toast-region { position: fixed; z-index: 150; top: 18px; left: 18px; display: flex; flex-direction: column; gap: 8px; }
 .toast { max-width: min(360px,calc(100vw - 36px)); background: #182337; border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; box-shadow: var(--shadow); font-size: 12px; animation: toast-in .2s ease-out; }
 .toast.error { border-color: #ff647c88; color: #ff9baa; }
@@ -309,5 +321,5 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .modal-card { padding: 25px 18px; }
   .chat-float-btn { bottom: 17px; left: 17px; }
   .chat-panel { bottom: 85px; left: 15px; }
-                                   }
-    
+                     }
+                 
