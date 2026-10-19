@@ -41,6 +41,7 @@
       </a>
       
       <div class="top-actions">
+        <!-- مشغل الموسيقى (♪) -->
         <div class="music-dropdown-wrapper">
           <button id="music-trigger-btn" class="icon-btn" title="مشغل الموسيقى" aria-label="مشغل الموسيقى">
             <i class="fa-solid fa-music"></i>
@@ -61,6 +62,7 @@
           </div>
         </div>
 
+        <!-- عداد الزوار الحقيقي وزر المشرف (عين) -->
         <div class="live-visitors-wrapper">
           <div class="visitors-pill glass-card">
             <i class="fa-solid fa-users"></i>
@@ -89,6 +91,7 @@
             <button class="color-dot gold" data-theme="theme-gold" aria-label="ذهبي"></button>
           </div>
 
+          <!-- إعدادات المشرف وإدارة الحذف وفك الحظر -->
           <div id="admin-settings-section" class="admin-only" hidden>
             <div class="menu-label">إدارة المشرفين</div>
             <div class="admin-setting-group">
@@ -193,14 +196,10 @@
   </div>
 
   <button id="chat-float-btn" class="chat-float-btn" aria-label="رسائل المتجر"><i class="fa-solid fa-message"></i></button>
-  
   <section id="chat-panel" class="chat-panel glass-card" aria-label="رسائل King Store">
     <div class="chat-panel-header">
       <div><span class="eyebrow">KING STORE</span><strong>رسائل المتجر</strong><small id="chat-access-note">إعلانات وتحديثات المتجر</small></div>
       <div style="display: flex; gap: 6px; align-items: center;">
-        <button id="open-ai-chat-btn" class="gemini-trigger-btn" title="مساعد Gemini الذكي" aria-label="مساعد Gemini الذكي">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-        </button>
         <button id="toggle-chat-lock-btn" class="icon-btn admin-only" hidden title="قفل/فتح الكتابة للجميع" aria-label="تحكم الكتابة"><i class="fa-solid fa-lock-open"></i></button>
         <button id="chat-close-btn" class="icon-btn" aria-label="إغلاق الرسائل"><i class="fa-solid fa-xmark"></i></button>
       </div>
@@ -215,27 +214,7 @@
     <div id="user-chat-locked-msg" class="chat-readonly" hidden>تم تعطيل الكتابة في الدردشة بواسطة المشرف حالياً.</div>
   </section>
 
-  <section id="ai-chat-panel" class="chat-panel glass-card" aria-label="مساعد Gemini الذكي" hidden>
-    <div class="chat-panel-header ai-header">
-      <div><span class="eyebrow ai-eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> GEMINI AI</span><strong>مساعد King Store الذكي</strong><small>اسأل عن المنتجات والسياسات</small></div>
-      <div style="display: flex; gap: 6px; align-items: center;">
-        <button id="back-to-general-chat-btn" class="icon-btn" title="الرجوع لرسائل المتجر" aria-label="الرجوع للقائمة"><i class="fa-solid fa-arrow-right"></i></button>
-        <button id="ai-chat-close-btn" class="icon-btn" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-    </div>
-    <div id="ai-messages-area" class="chat-messages-area">
-      <div class="chat-msg ai-msg">
-        <div class="msg-bubble">أهلاً بك في متجر <strong>King Store</strong>! أنا مساعدك الذكي المعاون، جاهز للإجابة عن أي استفسار يخص منتجاتنا، الأسعار، وطريقة الطلب. تفضل بالسؤال! ✨</div>
-      </div>
-    </div>
-    <div class="admin-chat-compose ai-compose">
-      <input id="ai-input-field" type="text" maxlength="500" placeholder="اسأل عن منتجات المتجر أو الخدمات...">
-      <button id="ai-send-btn" class="btn btn-primary ai-send" aria-label="إرسال"><i class="fa-solid fa-paper-plane"></i></button>
-    </div>
-  </section>
-
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
   <script type="module" src="app.js"></script>
 </body>
                 </html>
-  
