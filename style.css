@@ -21,7 +21,6 @@ html { scroll-behavior: smooth; }
 body {
   margin: 0; background: var(--bg); color: var(--text);
   font-family: "Cairo", sans-serif; min-height: 100vh; overflow-x: hidden;
-  direction: rtl;
 }
 button, input, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
@@ -142,7 +141,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .color-dot.gold { background: #f5c45e; }
 .color-dot.red { background: #ff4757; }
 .logout-row { color: var(--danger); border-bottom: 0; }
-   .admin-setting-group { margin-bottom: 6px; }
+  .admin-setting-group { margin-bottom: 6px; }
 .admin-inline-input {
   width: 100%; padding: 8px 10px; background: #0c1321;
   border: 1px solid var(--line); border-radius: 9px;
@@ -156,7 +155,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .online-user-item { display: flex; align-items: center; gap: 10px; background: #0c1423; padding: 10px; border-radius: 10px; border: 1px solid var(--line); }
 .online-user-item img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
 .online-user-item div strong { display: block; font-size: 12px; }
-.online-user-item div small { color: var(--muted); font-size: 10px; display: block; }
+.online-user-item div small { color: var(--muted); font-size: 10px; }
 
 .hero-section {
   display: grid; grid-template-columns: 1.1fr .9fr; align-items: center; gap: 40px; min-height: 490px; padding: 50px 0;
@@ -276,6 +275,7 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
 .admin-chat-compose input { margin: 0; min-width: 0; }
 .chat-readonly { padding: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; text-align: center; }
 
+/* تنسيقات التفاعلات */
 .message-reactions-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; }
 .reaction-pill { display: inline-flex; align-items: center; gap: 4px; background: #1b263b; border: 1px solid var(--line); padding: 3px 8px; border-radius: 20px; font-size: 11px; cursor: pointer; color: var(--text); transition: transform .15s, border-color .15s; }
 .reaction-pill:hover { transform: scale(1.05); border-color: var(--primary); }
@@ -323,5 +323,4 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .modal-card { padding: 25px 18px; }
   .chat-float-btn { bottom: 17px; left: 17px; }
   .chat-panel { bottom: 85px; left: 15px; }
-              }
-                  
+}
