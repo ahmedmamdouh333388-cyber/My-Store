@@ -117,8 +117,7 @@ onValue(ref(db, "settings/banned"), (snapshot) => {
   }
   renderBannedList();
 });
-
-onValue(ref(db, "settings/chatLocked"), (snapshot) => {
+  onValue(ref(db, "settings/chatLocked"), (snapshot) => {
   isChatLocked = snapshot.exists() ? snapshot.val() : false;
   updateChatLockUI();
 });
@@ -150,8 +149,9 @@ function setFormMessage(message, isError = false) {
   const el = $("product-form-message");
   el.textContent = message;
   el.style.color = isError ? "var(--danger)" : "var(--muted)";
-  }
-      async function handleGoogleLogin() {
+}
+
+async function handleGoogleLogin() {
   authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
   try {
     const result = await signInWithPopup(auth, provider);
@@ -223,9 +223,8 @@ function renderBannedList() {
     item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-ban="${key}"><i class="fa-solid fa-unlock"></i> إلغاء الحظر</button>`;
     container.appendChild(item);
   });
-}
-
-$("settings-popup-menu").addEventListener("click", async (e) => {
+    }
+      $("settings-popup-menu").addEventListener("click", async (e) => {
   const delAdminBtn = e.target.closest("[data-del-admin]");
   const delBanBtn = e.target.closest("[data-del-ban]");
 
@@ -453,7 +452,7 @@ document.querySelectorAll("[data-theme]").forEach((button) => {
 });
 
 const savedTheme = localStorage.getItem("king_store_theme");
-if (savedTheme && /^theme-(blue|violet|mint|gold)$/.test(savedTheme)) {
+if (savedTheme && /^theme-(blue|violet|mint|gold|red)$/.test(savedTheme)) {
   document.body.className = savedTheme;
 }
 
@@ -487,7 +486,8 @@ adminAddProductBtn.addEventListener("click", () => {
 
 $("cancel-product-form").addEventListener("click", () => { adminProductFormBox.hidden = true; editingProductId = null; });
 $("cancel-product-form-secondary").addEventListener("click", () => { adminProductFormBox.hidden = true; editingProductId = null; });
-                   function readImage(file) {
+
+function readImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
     if (!file.type.startsWith("image/")) return reject(new Error("اختار ملف صورة صحيح."));
@@ -611,8 +611,11 @@ productsGridContainer.addEventListener("click", async (event) => {
   if (deleteButton) {
     if (!isAdmin()) return toast("هذه الخاصية للمشرف فقط.", true);
     const id = deleteButton.dataset.delete;
-    if (window.confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
-      try { await remove(ref(db, `products/${id}`)); toast("تم حذف المنتج."); } catch { toast("تعذر حذف المنتج.", true); }
+    try { 
+      await remove(ref(db, `products/${id}`)); 
+      toast("تم حذف المنتج."); 
+    } catch { 
+      toast("تعذر حذف المنتج.", true); 
     }
   }
 });
@@ -801,10 +804,15 @@ chatMessagesArea.addEventListener("click", async (event) => {
   }
 
   if (deleteMsgBtn && isAdmin()) {
-    if (!window.confirm("هل تريد حذف هذه الرسالة؟")) return;
+    const msgId = deleteMsgBtn.dataset.deleteMessage;
     try {
-      await remove(ref(db, `messages/${deleteMsgBtn.dataset.deleteMessage}`));
-      toast("تم حذف الرسالة.");
-    } catch { toast("تعذر حذف الرسالة.", true); }
+      await remove(ref(db, `messages/${msgId}`));
+      $(`store-message-${msgId}`)?.remove();
+      toast("تم حذف الرسالة بنجاح.");
+    } catch (error) {
+      console.error("Delete Error:", error);
+      toast("تعذر حذف الرسالة.", true);
+    }
   }
 });
+  
