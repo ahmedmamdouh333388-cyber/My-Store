@@ -150,8 +150,8 @@ function setFormMessage(message, isError = false) {
   const el = $("product-form-message");
   el.textContent = message;
   el.style.color = isError ? "var(--danger)" : "var(--muted)";
-  }
-  async function handleGoogleLogin() {
+}
+async function handleGoogleLogin() {
   authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
   try {
     const result = await signInWithPopup(auth, provider);
@@ -334,7 +334,7 @@ function renderOnlineUsersModalList(data) {
 
 adminViewOnlineBtn.addEventListener("click", () => { onlineUsersModal.classList.add("active"); });
 $("close-online-modal").addEventListener("click", () => { onlineUsersModal.classList.remove("active"); });
-                                        OnAuthStateChanged(auth, (user) => {
+      onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (user) {
     const userEmail = user.email?.trim().toLowerCase();
@@ -481,7 +481,7 @@ adminAddProductBtn.addEventListener("click", () => {
 
 $("cancel-product-form").addEventListener("click", () => { adminProductFormBox.hidden = true; editingProductId = null; });
 $("cancel-product-form-secondary").addEventListener("click", () => { adminProductFormBox.hidden = true; editingProductId = null; });
-    function readImage(file) {
+  function readImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
     if (!file.type.startsWith("image/")) return reject(new Error("اختار ملف صورة صحيح."));
@@ -816,5 +816,4 @@ if (aiInputField) {
   aiInputField.addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendAiMessage();
   });
-                                                                                                                                    }
-      
+                                                                   }
