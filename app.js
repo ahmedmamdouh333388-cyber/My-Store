@@ -150,8 +150,8 @@ function setFormMessage(message, isError = false) {
   const el = $("product-form-message");
   el.textContent = message;
   el.style.color = isError ? "var(--danger)" : "var(--muted)";
-}
-async function handleGoogleLogin() {
+  }
+      async function handleGoogleLogin() {
   authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
   try {
     const result = await signInWithPopup(auth, provider);
@@ -334,7 +334,7 @@ function renderOnlineUsersModalList(data) {
 
 adminViewOnlineBtn.addEventListener("click", () => { onlineUsersModal.classList.add("active"); });
 $("close-online-modal").addEventListener("click", () => { onlineUsersModal.classList.remove("active"); });
-onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (user) {
     const userEmail = user.email?.trim().toLowerCase();
@@ -481,7 +481,7 @@ adminAddProductBtn.addEventListener("click", () => {
 
 $("cancel-product-form").addEventListener("click", () => { adminProductFormBox.hidden = true; editingProductId = null; });
 $("cancel-product-form-secondary").addEventListener("click", () => { adminProductFormBox.hidden = true; editingProductId = null; });
-function readImage(file) {
+    function readImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
     if (!file.type.startsWith("image/")) return reject(new Error("اختار ملف صورة صحيح."));
@@ -710,7 +710,7 @@ chatMessagesArea.addEventListener("click", async (event) => {
   } catch { toast("تعذر حذف الرسالة.", true); }
 });
 
-// --- منطق مساعد Gemini الذكي لمتجر King Store (مع تفعيل زر الـ AI بدقة) ---
+// --- منطق مساعد Gemini الذكي لمتجر King Store (تم إصلاح التداخل ومنع اختفاء القائمة تماماً) ---
 const chatPanelEl = $("chat-panel");
 const aiChatPanel = $("ai-chat-panel");
 const openAiChatBtn = $("open-ai-chat-btn");
@@ -721,9 +721,13 @@ const aiInputField = $("ai-input-field");
 const aiSendBtn = $("ai-send-btn");
 
 if (openAiChatBtn) {
-  openAiChatBtn.addEventListener("click", () => {
-    if (chatPanelEl) chatPanelEl.classList.remove("active");
+  openAiChatBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const generalContent = chatPanelEl.querySelectorAll(".chat-messages-area, .admin-chat-compose, .chat-readonly");
+    generalContent.forEach(el => el.hidden = true);
+    
     if (aiChatPanel) {
+      aiChatPanel.style.display = "flex";
       aiChatPanel.classList.add("active");
       if (aiMessagesArea) aiMessagesArea.scrollTop = aiMessagesArea.scrollHeight;
     }
@@ -731,18 +735,27 @@ if (openAiChatBtn) {
 }
 
 if (backToGeneralChatBtn) {
-  backToGeneralChatBtn.addEventListener("click", () => {
-    if (aiChatPanel) aiChatPanel.classList.remove("active");
-    if (chatPanelEl) {
-      chatPanelEl.classList.add("active");
-      if (chatMessagesArea) chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+  backToGeneralChatBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (aiChatPanel) {
+      aiChatPanel.classList.remove("active");
+      aiChatPanel.style.display = "none";
     }
+    const generalContent = chatPanelEl.querySelectorAll(".chat-messages-area, .admin-chat-compose, .chat-readonly");
+    generalContent.forEach(el => el.hidden = false);
   });
 }
 
 if (aiChatCloseBtn) {
-  aiChatCloseBtn.addEventListener("click", () => {
-    if (aiChatPanel) aiChatPanel.classList.remove("active");
+  aiChatCloseBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (aiChatPanel) {
+      aiChatPanel.classList.remove("active");
+      aiChatPanel.style.display = "none";
+    }
+    chatPanelEl.classList.remove("active");
+    const generalContent = chatPanelEl.querySelectorAll(".chat-messages-area, .admin-chat-compose, .chat-readonly");
+    generalContent.forEach(el => el.hidden = false);
   });
 }
 
@@ -821,4 +834,5 @@ if (aiInputField) {
   aiInputField.addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendAiMessage();
   });
-}
+                           }
+    
