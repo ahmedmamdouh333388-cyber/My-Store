@@ -334,7 +334,7 @@ function renderOnlineUsersModalList(data) {
 
 adminViewOnlineBtn.addEventListener("click", () => { onlineUsersModal.classList.add("active"); });
 $("close-online-modal").addEventListener("click", () => { onlineUsersModal.classList.remove("active"); });
-      onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (user) {
     const userEmail = user.email?.trim().toLowerCase();
@@ -481,7 +481,7 @@ adminAddProductBtn.addEventListener("click", () => {
 
 $("cancel-product-form").addEventListener("click", () => { adminProductFormBox.hidden = true; editingProductId = null; });
 $("cancel-product-form-secondary").addEventListener("click", () => { adminProductFormBox.hidden = true; editingProductId = null; });
-  function readImage(file) {
+function readImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
     if (!file.type.startsWith("image/")) return reject(new Error("اختار ملف صورة صحيح."));
@@ -710,7 +710,7 @@ chatMessagesArea.addEventListener("click", async (event) => {
   } catch { toast("تعذر حذف الرسالة.", true); }
 });
 
-// --- منطق مساعد Gemini الذكي لمتجر King Store ---
+// --- منطق مساعد Gemini الذكي لمتجر King Store (مع تفعيل زر الـ AI بدقة) ---
 const chatPanelEl = $("chat-panel");
 const aiChatPanel = $("ai-chat-panel");
 const openAiChatBtn = $("open-ai-chat-btn");
@@ -722,23 +722,27 @@ const aiSendBtn = $("ai-send-btn");
 
 if (openAiChatBtn) {
   openAiChatBtn.addEventListener("click", () => {
-    chatPanelEl.classList.remove("active");
-    aiChatPanel.classList.add("active");
-    aiMessagesArea.scrollTop = aiMessagesArea.scrollHeight;
+    if (chatPanelEl) chatPanelEl.classList.remove("active");
+    if (aiChatPanel) {
+      aiChatPanel.classList.add("active");
+      if (aiMessagesArea) aiMessagesArea.scrollTop = aiMessagesArea.scrollHeight;
+    }
   });
 }
 
 if (backToGeneralChatBtn) {
   backToGeneralChatBtn.addEventListener("click", () => {
-    aiChatPanel.classList.remove("active");
-    chatPanelEl.classList.add("active");
-    chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+    if (aiChatPanel) aiChatPanel.classList.remove("active");
+    if (chatPanelEl) {
+      chatPanelEl.classList.add("active");
+      if (chatMessagesArea) chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
+    }
   });
 }
 
 if (aiChatCloseBtn) {
   aiChatCloseBtn.addEventListener("click", () => {
-    aiChatPanel.classList.remove("active");
+    if (aiChatPanel) aiChatPanel.classList.remove("active");
   });
 }
 
@@ -779,6 +783,7 @@ function generateAiResponse(userQuery) {
 }
 
 async function sendAiMessage() {
+  if (!aiInputField) return;
   const text = aiInputField.value.trim();
   if (!text) return;
 
@@ -789,7 +794,7 @@ async function sendAiMessage() {
   aiInputField.value = "";
   aiMessagesArea.scrollTop = aiMessagesArea.scrollHeight;
 
-  aiSendBtn.disabled = true;
+  if (aiSendBtn) aiSendBtn.disabled = true;
   const typingDiv = document.createElement("div");
   typingDiv.className = "chat-msg ai-msg";
   typingDiv.innerHTML = `<p><i class="fa-solid fa-spinner fa-spin"></i> جاري التفكير والبحث في المنتجات...</p>`;
@@ -805,7 +810,7 @@ async function sendAiMessage() {
     aiMsgDiv.innerHTML = `<p>${replyText.replace(/\n/g, '<br>')}</p>`;
     aiMessagesArea.appendChild(aiMsgDiv);
     aiMessagesArea.scrollTop = aiMessagesArea.scrollHeight;
-    aiSendBtn.disabled = false;
+    if (aiSendBtn) aiSendBtn.disabled = false;
   }, 700);
 }
 
@@ -816,4 +821,4 @@ if (aiInputField) {
   aiInputField.addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendAiMessage();
   });
-                                                                   }
+}
