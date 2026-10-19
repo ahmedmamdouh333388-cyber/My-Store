@@ -1,6 +1,3 @@
-// ==========================================================
-// PART 1: Firebase Init, Auth & Name Registration Gate
-// ==========================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
   getAuth,
@@ -98,24 +95,26 @@ $("support-wa-link").href =
     "مرحباً، أحتاج مساعدة من دعم King Store."
   )}`;
 
-// التحقق من الاسم الإجباري للمستخدم عند محاولة تسجيل الدخول بجوجل
 async function checkAndRegisterUserIdentity(user) {
   const userRef = ref(db, `users/${user.uid}`);
-  const snapshot = await get(userRef);
-  
-  if (snapshot.exists() && snapshot.val().name) {
-    userRegisteredName = snapshot.val().name;
+  try {
+    const snapshot = await get(userRef);
+    if (snapshot.exists() && snapshot.val().name) {
+      userRegisteredName = snapshot.val().name;
+      proceedWithLogin(user);
+    } else {
+      $("name-gate-modal").classList.add("active");
+    }
+  } catch (error) {
+    userRegisteredName = user.displayName || "مستخدم";
     proceedWithLogin(user);
-  } else {
-    // لم يقم بتسجيل اسمه من قبل، إظهار نافذة إدخال الاسم الإجبارية
-    $("name-gate-modal").classList.add("active");
   }
 }
 
 $("gate-confirm-name-btn").addEventListener("click", async () => {
   const enteredName = $("gate-user-name-input").value.trim();
   if (enteredName.length < 2) {
-    alert("الرجاء كتابة اسم صحيح ومناسب!");
+    alert("الرجاء كتابة اسم صحيح!");
     return;
   }
   if (!currentUser) return;
@@ -133,7 +132,7 @@ $("gate-confirm-name-btn").addEventListener("click", async () => {
     $("name-gate-modal").classList.remove("active");
     proceedWithLogin(currentUser);
   } catch (error) {
-    alert("حدث خطأ أثناء حفظ الاسم، حاول مرة أخرى.");
+    alert("حدث خطأ أثناء حفظ الاسم.");
   }
 });
 
@@ -161,10 +160,7 @@ onValue(ref(db, "settings/banned"), (snapshot) => {
   }
   renderBannedList();
 });
-    // ==========================================================
-// PART 2: Online Presence, Email Display & Admin Name Editor
-// ==========================================================
-onValue(ref(db, "settings/chatLocked"), (snapshot) => {
+    onValue(ref(db, "settings/chatLocked"), (snapshot) => {
   isChatLocked = snapshot.exists() ? snapshot.val() : false;
   updateChatLockUI();
 });
@@ -211,7 +207,6 @@ async function handleGoogleLogin() {
       return;
     }
     authErrorMsg.textContent = "";
-    // فحص الاسم قبل الدخول للمتجر
     checkAndRegisterUserIdentity(currentUser);
   } catch (error) {
     console.error("Login Error:", error);
@@ -255,7 +250,6 @@ function applyAdminPrivileges() {
   productDataById.forEach((data, id) => renderProduct(id, data));
 }
 
-// تفعيل لوحة تحكم المشرف لتعديل الأسماء
 $("admin-edit-names-trigger").addEventListener("click", () => {
   if (!isAdmin()) return;
   settingsPopupMenu.classList.remove("active");
@@ -324,11 +318,8 @@ function renderBannedList() {
     item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-ban="${key}"><i class="fa-solid fa-unlock"></i> إلغاء الحظر</button>`;
     container.appendChild(item);
   });
-        }
-      // ==========================================================
-// PART 3: Music Player, Presence Tracking & Online Users Modal
-// ==========================================================
-$("settings-popup-menu").addEventListener("click", async (e) => {
+      }
+      $("settings-popup-menu").addEventListener("click", async (e) => {
   const delAdminBtn = e.target.closest("[data-del-admin]");
   const delBanBtn = e.target.closest("[data-del-ban]");
 
@@ -401,7 +392,6 @@ function setupPresence(user) {
 
   onValue(connectedRef, async (snap) => {
     if (snap.val() === true) {
-      // جلب الاسم المخزن بقاعدة البيانات للمستخدم
       const userSnap = await get(ref(db, `users/${user.uid}`));
       const finalName = userSnap.exists() && userSnap.val().name ? userSnap.val().name : (user.displayName || "مستخدم");
 
@@ -446,10 +436,7 @@ function renderOnlineUsersModalList(data) {
 
 adminViewOnlineBtn.addEventListener("click", () => { onlineUsersModal.classList.add("active"); });
 $("close-online-modal").addEventListener("click", () => { onlineUsersModal.classList.remove("active"); });
-        // ==========================================================
-// PART 4 (A): Session Init, Login, Admins & Banning Controls
-// ==========================================================
-function proceedWithLogin(user) {
+                            function proceedWithLogin(user) {
   loginScreen.style.display = "none";
   setupPresence(user);
 
@@ -471,6 +458,7 @@ function proceedWithLogin(user) {
 
   get(ref(db, `users/${user.uid}`)).then((snapshot) => {
     const displayName = snapshot.exists() && snapshot.val().name ? snapshot.val().name : (user.displayName || "مستخدم King Store");
+    userRegisteredName = displayName;
     $("menu-user-name").textContent = displayName;
   });
 
@@ -488,13 +476,7 @@ onAuthStateChanged(auth, async (user) => {
       signOut(auth);
       return;
     }
-    const userRef = ref(db, `users/${user.uid}`);
-    const snap = await get(userRef);
-    if (snap.exists() && snap.val().name) {
-      proceedWithLogin(user);
-    } else {
-      loginScreen.style.display = "flex";
-    }
+    checkAndRegisterUserIdentity(user);
   } else {
     loginScreen.style.display = "flex";
     splashScreen.style.display = "none";
@@ -586,10 +568,8 @@ document.querySelectorAll("[data-theme]").forEach((button) => {
 const savedTheme = localStorage.getItem("king_store_theme");
 if (savedTheme && /^theme-(blue|violet|mint|gold|red)$/.test(savedTheme)) {
   document.body.className = savedTheme;
-  }
-  // ==========================================================
-// PART 4 (B): Products, Purchase Modal, Chat & Reactions
-// ==========================================================
+}
+
 function openProductForm(productId = null) {
   if (!isAdmin()) return toast("هذه الخاصية للمشرف فقط.", true);
   editingProductId = productId;
@@ -683,8 +663,7 @@ $("save-product-btn").addEventListener("click", async () => {
     saveButton.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ المنتج';
   }
 });
-
-function escapeHtml(value) {
+    function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[char]));
@@ -949,3 +928,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   }
 });
+                                                                   
