@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080b14">
-  <title>King Store.Shop</title>
+  <title>King Store — متجر تقني</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -37,7 +37,7 @@
     <header class="topbar">
       <a href="#" class="brand-lockup" aria-label="King Store">
         <span class="brand-icon"><i class="fa-solid fa-crown"></i></span>
-        <span><strong>King <em>Store</em></strong><small>SMART SHOPPING EXPERIENCE</small></span>
+        <span><strong data-i18n="storeTitle">King <em>Store</em></strong><small>SMART SHOPPING EXPERIENCE</small></span>
       </a>
       
       <div class="top-actions">
@@ -64,7 +64,7 @@
         <div class="live-visitors-wrapper">
           <div class="visitors-pill glass-card">
             <i class="fa-solid fa-users"></i>
-            <span id="live-visitors-count">0</span> متصل الآن
+            <span id="live-visitors-count">0</span> <span data-i18n="onlineNow">متصل الآن</span>
           </div>
           <button id="admin-view-online-btn" class="icon-btn admin-only" hidden title="عرض المتصلين" aria-label="عرض المتصلين">
             <i class="fa-solid fa-eye"></i>
@@ -106,8 +106,11 @@
             <div id="banned-list-container" class="admin-sub-list"></div>
           </div>
 
+          <!-- زر لوحة المشرف لتعديل الأسماء (يظهر للمشرف فقط قبل تسجيل الخروج) -->
+          <button id="admin-edit-names-trigger" class="menu-row admin-only" hidden style="color: var(--primary);"><i class="fa-solid fa-user-pen"></i><span>تعديل أسماء المستخدمين</span></button>
+
           <a id="support-wa-link" href="#" target="_blank" rel="noopener" class="menu-row"><i class="fa-brands fa-whatsapp"></i><span>الدعم الفني</span><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-          <button id="menu-logout-trigger" class="menu-row logout-row"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>تسجيل الخروج</span></button>
+          <button id="menu-logout-trigger" class="menu-row logout-row"><i class="fa-solid fa-arrow-right-from-bracket"></i><span data-i18n="logout">تسجيل الخروج</span></button>
         </div>
       </div>
     </header>
@@ -177,6 +180,34 @@
     </div>
   </div>
 
+  <!-- نافذة لوحة المشرف لتعديل أسماء المستخدمين -->
+  <div id="admin-name-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-card glass-card" style="text-align: right;">
+      <button id="close-admin-name-modal" class="modal-close icon-btn" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-icon"><i class="fa-solid fa-user-pen"></i></div>
+      <span class="eyebrow">ADMIN CONTROLS</span>
+      <h2>تعديل اسم مستخدم</h2>
+      <p class="muted">أدخل البريد الإلكتروني للمستخدم والاسم الجديد الذي طلبه.</p>
+      <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+        <input id="admin-target-email" type="email" placeholder="إيميل المستخدم..." class="admin-inline-input" style="padding: 12px; font-size: 13px;">
+        <input id="admin-new-name" type="text" placeholder="الاسم الجديد..." class="admin-inline-input" style="padding: 12px; font-size: 13px;">
+        <button id="admin-save-name-btn" class="btn btn-primary full-width" style="margin-top: 5px;">حفظ الاسم الجديد</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة إدخال الاسم الإجبارية عند التسجيل الأول لأول مرة -->
+  <div id="name-gate-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-card glass-card">
+      <div class="modal-icon"><i class="fa-solid fa-user-shield"></i></div>
+      <span class="eyebrow">ACCOUNT REGISTRATION</span>
+      <h2>أدخل اسمك الأول</h2>
+      <p class="notice" style="margin: 12px 0; font-size: 12px;">لا يمكن تغيير اسمك إلا إذا تواصلت مع المطور</p>
+      <input id="gate-user-name-input" type="text" placeholder="اكتب اسمك هنا..." class="admin-inline-input" style="padding: 12px; font-size: 15px; margin-bottom: 15px;">
+      <button id="gate-confirm-name-btn" class="btn btn-primary full-width">تأكيد ومتابعة الدخول</button>
+    </div>
+  </div>
+
   <div id="purchase-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="purchase-title">
     <div class="modal-card glass-card">
       <button id="close-purchase-modal" class="modal-close icon-btn" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
@@ -216,5 +247,5 @@
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
   <script type="module" src="app.js"></script>
 </body>
-                                                                                                                     </html>
+  </html>
   
