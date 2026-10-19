@@ -150,8 +150,8 @@ function setFormMessage(message, isError = false) {
   const el = $("product-form-message");
   el.textContent = message;
   el.style.color = isError ? "var(--danger)" : "var(--muted)";
-                            }
-async function handleGoogleLogin() {
+  }
+      async function handleGoogleLogin() {
   authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
   try {
     const result = await signInWithPopup(auth, provider);
@@ -175,6 +175,11 @@ $("google-login-btn").addEventListener("click", handleGoogleLogin);
 function applyAdminPrivileges() {
   const adminMode = isAdmin();
   
+  const chatLinkField = $("chat-link-field");
+  if (chatLinkField) {
+    chatLinkField.hidden = !adminMode;
+  }
+
   if (adminMode) {
     adminAddProductBtn.hidden = false;
     adminViewOnlineBtn.hidden = false;
@@ -334,7 +339,7 @@ function renderOnlineUsersModalList(data) {
 
 adminViewOnlineBtn.addEventListener("click", () => { onlineUsersModal.classList.add("active"); });
 $("close-online-modal").addEventListener("click", () => { onlineUsersModal.classList.remove("active"); });
-                   onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (user) {
     const userEmail = user.email?.trim().toLowerCase();
@@ -424,8 +429,9 @@ $("ban-user-btn").addEventListener("click", async () => {
 toggleChatLockBtn.addEventListener("click", async () => {
   if (!isAdmin()) return;
   try {
-    await set(ref(db, "settings/chatLocked"), !isChatLocked);
-    toast(isChatLocked ? "تم فتح الشات للجميع." : "تم قفل الشات.");
+    const newLockState = !isChatLocked;
+    await set(ref(db, "settings/chatLocked"), newLockState);
+    toast(newLockState ? "تم قفل الشات عن المستخدمين." : "تم فتح الشات للجميع.");
   } catch { toast("تعذر تغيير حالة الشات.", true); }
 });
 
@@ -481,7 +487,7 @@ adminAddProductBtn.addEventListener("click", () => {
 
 $("cancel-product-form").addEventListener("click", () => { adminProductFormBox.hidden = true; editingProductId = null; });
 $("cancel-product-form-secondary").addEventListener("click", () => { adminProductFormBox.hidden = true; editingProductId = null; });
-  function readImage(file) {
+                   function readImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
     if (!file.type.startsWith("image/")) return reject(new Error("اختار ملف صورة صحيح."));
@@ -647,27 +653,70 @@ $("copy-order-details-btn").addEventListener("click", async () => {
 });
 
 const messagesRef = ref(db, "messages");
-onChildAdded(messagesRef, (snapshot) => { renderStoreMessage(snapshot.key, snapshot.val()); });
-onChildRemoved(messagesRef, (snapshot) => {
-  $(`store-message-${snapshot.key}`)?.remove();
-  if (!chatMessagesArea.querySelector(".chat-message")) chatMessagesArea.innerHTML = '<div class="empty-chat">لا توجد رسائل حتى الآن.</div>';
+onValue(messagesRef, (snapshot) => {
+  if (snapshot.exists()) {
+    chatMessagesArea.querySelector(".empty-chat")?.remove();
+    snapshot.forEach((childSnap) => {
+      renderStoreMessage(childSnap.key, childSnap.val());
+    });
+  } else {
+    chatMessagesArea.innerHTML = '<div class="empty-chat">لا توجد رسائل حتى الآن.</div>';
+  }
 });
 
 function renderStoreMessage(id, data) {
   if (!chatMessagesArea || !data) return;
-  chatMessagesArea.querySelector(".empty-chat")?.remove();
-  const message = document.createElement("article");
-  message.className = "chat-message";
-  message.id = `store-message-${id}`;
+  
+  let message = $(`store-message-${id}`);
+  if (!message) {
+    message = document.createElement("article");
+    message.className = "chat-message";
+    message.id = `store-message-${id}`;
+    chatMessagesArea.appendChild(message);
+  }
+
   const date = data.timestamp ? new Date(data.timestamp).toLocaleString("ar-EG", { dateStyle: "short", timeStyle: "short" }) : "";
   const linkMarkup = data.link ? `<br><a href="${escapeHtml(data.link)}" target="_blank" rel="noopener noreferrer" class="chat-message-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> زيارة الرابط</a>` : "";
+
+  const reactions = data.reactions || {};
+  const emojiCounts = { "❤️": 0, "😂": 0, "😭": 0, "👍🏻": 0 };
+  let myChosenEmoji = null;
+
+  Object.entries(reactions).forEach(([uid, emoji]) => {
+    if (emojiCounts[emoji] !== undefined) {
+      emojiCounts[emoji]++;
+    }
+    if (currentUser && uid === currentUser.uid) {
+      myChosenEmoji = emoji;
+    }
+  });
+
+  let reactionsHtml = `<div class="message-reactions-wrap" style="position:relative;">`;
+  
+  Object.entries(emojiCounts).forEach(([emoji, count]) => {
+    if (count > 0) {
+      const isActive = myChosenEmoji === emoji ? " active-by-me" : "";
+      reactionsHtml += `<button class="reaction-pill${isActive}" data-react-emoji="${emoji}" data-msg-id="${id}">${emoji} <span>${count}</span></button>`;
+    }
+  });
+
+  reactionsHtml += `
+    <button class="add-reaction-btn" data-toggle-popup="${id}" title="إضافة تفاعل"><i class="fa-solid fa-face-smile"></i></button>
+    <div class="reactions-popup glass-card" id="popup-reactions-${id}">
+      <button class="reaction-option" data-select-emoji="❤️" data-msg-id="${id}">❤️</button>
+      <button class="reaction-option" data-select-emoji="😂" data-msg-id="${id}">😂</button>
+      <button class="reaction-option" data-select-emoji="😭" data-msg-id="${id}">😭</button>
+      <button class="reaction-option" data-select-emoji="👍🏻" data-msg-id="${id}">👍🏻</button>
+    </div>
+  </div>`;
 
   message.innerHTML = `
     <div class="chat-message-top"><strong><i class="fa-solid fa-crown"></i> ${escapeHtml(data.username || "King Store")}</strong><time>${escapeHtml(date)}</time></div>
     <p>${escapeHtml(data.text || "")}${linkMarkup}</p>
+    ${reactionsHtml}
     ${isAdmin() ? `<button class="chat-delete-btn" data-delete-message="${escapeHtml(id)}"><i class="fa-solid fa-trash"></i> حذف الرسالة</button>` : ""}
   `;
-  chatMessagesArea.appendChild(message);
+
   chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
 }
 
@@ -701,12 +750,61 @@ chatInputField.addEventListener("keydown", (e) => { if (e.key === "Enter") sendS
 chatLinkField.addEventListener("keydown", (e) => { if (e.key === "Enter") sendStoreMessage(); });
 
 chatMessagesArea.addEventListener("click", async (event) => {
-  const button = event.target.closest("[data-delete-message]");
-  if (!button || !isAdmin()) return;
-  if (!window.confirm("هل تريد حذف هذه الرسالة؟")) return;
-  try {
-    await remove(ref(db, `messages/${button.dataset.deleteMessage}`));
-    toast("تم حذف الرسالة.");
-  } catch { toast("تعذر حذف الرسالة.", true); }
+  const toggleBtn = event.target.closest("[data-toggle-popup]");
+  const selectEmojiBtn = event.target.closest("[data-select-emoji]");
+  const existingReactionBtn = event.target.closest("[data-react-emoji]");
+  const deleteMsgBtn = event.target.closest("[data-delete-message]");
+
+  if (!toggleBtn && !selectEmojiBtn) {
+    document.querySelectorAll(".reactions-popup").forEach(p => p.classList.remove("active"));
+  }
+
+  if (toggleBtn) {
+    event.stopPropagation();
+    const msgId = toggleBtn.dataset.togglePopup;
+    const popup = $(`popup-reactions-${msgId}`);
+    document.querySelectorAll(".reactions-popup").forEach(p => {
+      if (p !== popup) p.classList.remove("active");
+    });
+    if (popup) popup.classList.toggle("active");
+    return;
+  }
+
+  if (selectEmojiBtn) {
+    event.stopPropagation();
+    if (!currentUser) return toast("يجب تسجيل الدخول لتتمكن من التفاعل.", true);
+    const msgId = selectEmojiBtn.dataset.msgId;
+    const emoji = selectEmojiBtn.dataset.selectEmoji;
+    const userUid = currentUser.uid;
+
+    try {
+      await set(ref(db, `messages/${msgId}/reactions/${userUid}`), emoji);
+      $(`popup-reactions-${msgId}`)?.classList.remove("active");
+    } catch {
+      toast("تعذر تسجيل التفاعل.", true);
+    }
+    return;
+  }
+
+  if (existingReactionBtn) {
+    event.stopPropagation();
+    if (!currentUser) return;
+    const msgId = existingReactionBtn.dataset.msgId;
+    const userUid = currentUser.uid;
+
+    try {
+      await remove(ref(db, `messages/${msgId}/reactions/${userUid}`));
+    } catch {
+      toast("تعذر تعديل التفاعل.", true);
+    }
+    return;
+  }
+
+  if (deleteMsgBtn && isAdmin()) {
+    if (!window.confirm("هل تريد حذف هذه الرسالة؟")) return;
+    try {
+      await remove(ref(db, `messages/${deleteMsgBtn.dataset.deleteMessage}`));
+      toast("تم حذف الرسالة.");
+    } catch { toast("تعذر حذف الرسالة.", true); }
+  }
 });
-      
