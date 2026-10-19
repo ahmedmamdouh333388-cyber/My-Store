@@ -150,8 +150,8 @@ function setFormMessage(message, isError = false) {
   const el = $("product-form-message");
   el.textContent = message;
   el.style.color = isError ? "var(--danger)" : "var(--muted)";
-  }
-      async function handleGoogleLogin() {
+                            }
+async function handleGoogleLogin() {
   authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول...";
   try {
     const result = await signInWithPopup(auth, provider);
@@ -334,7 +334,7 @@ function renderOnlineUsersModalList(data) {
 
 adminViewOnlineBtn.addEventListener("click", () => { onlineUsersModal.classList.add("active"); });
 $("close-online-modal").addEventListener("click", () => { onlineUsersModal.classList.remove("active"); });
-    onAuthStateChanged(auth, (user) => {
+                   onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (user) {
     const userEmail = user.email?.trim().toLowerCase();
@@ -481,7 +481,7 @@ adminAddProductBtn.addEventListener("click", () => {
 
 $("cancel-product-form").addEventListener("click", () => { adminProductFormBox.hidden = true; editingProductId = null; });
 $("cancel-product-form-secondary").addEventListener("click", () => { adminProductFormBox.hidden = true; editingProductId = null; });
-    function readImage(file) {
+  function readImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
     if (!file.type.startsWith("image/")) return reject(new Error("اختار ملف صورة صحيح."));
@@ -709,130 +709,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
     toast("تم حذف الرسالة.");
   } catch { toast("تعذر حذف الرسالة.", true); }
 });
-
-// --- منطق مساعد Gemini الذكي لمتجر King Store (تم إصلاح التداخل ومنع اختفاء القائمة تماماً) ---
-const chatPanelEl = $("chat-panel");
-const aiChatPanel = $("ai-chat-panel");
-const openAiChatBtn = $("open-ai-chat-btn");
-const backToGeneralChatBtn = $("back-to-general-chat-btn");
-const aiChatCloseBtn = $("ai-chat-close-btn");
-const aiMessagesArea = $("ai-messages-area");
-const aiInputField = $("ai-input-field");
-const aiSendBtn = $("ai-send-btn");
-
-if (openAiChatBtn) {
-  openAiChatBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const generalContent = chatPanelEl.querySelectorAll(".chat-messages-area, .admin-chat-compose, .chat-readonly");
-    generalContent.forEach(el => el.hidden = true);
-    
-    if (aiChatPanel) {
-      aiChatPanel.style.display = "flex";
-      aiChatPanel.classList.add("active");
-      if (aiMessagesArea) aiMessagesArea.scrollTop = aiMessagesArea.scrollHeight;
-    }
-  });
-}
-
-if (backToGeneralChatBtn) {
-  backToGeneralChatBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (aiChatPanel) {
-      aiChatPanel.classList.remove("active");
-      aiChatPanel.style.display = "none";
-    }
-    const generalContent = chatPanelEl.querySelectorAll(".chat-messages-area, .admin-chat-compose, .chat-readonly");
-    generalContent.forEach(el => el.hidden = false);
-  });
-}
-
-if (aiChatCloseBtn) {
-  aiChatCloseBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    if (aiChatPanel) {
-      aiChatPanel.classList.remove("active");
-      aiChatPanel.style.display = "none";
-    }
-    chatPanelEl.classList.remove("active");
-    const generalContent = chatPanelEl.querySelectorAll(".chat-messages-area, .admin-chat-compose, .chat-readonly");
-    generalContent.forEach(el => el.hidden = false);
-  });
-}
-
-function generateAiResponse(userQuery) {
-  const query = userQuery.toLowerCase().trim();
-  let productsListText = "";
-  let productsArray = Array.from(productDataById.values());
-  
-  if (productsArray.length > 0) {
-    productsListText = productsArray.map(p => `• ${p.title} - السعر: ${p.price} جنيه`).join("\n");
-  } else {
-    productsListText = "• جاري تحديث قائمة المنتجات حالياً.";
-  }
-
-  if (query.includes("مرحبا") || query.includes("اهلاً") || query.includes("سلام")) {
-    return "أهلاً بك يا فندم في **King Store**! أنا مساعدك الذكي. كيف يمكنني مساعدتك في اختيار منتج اليوم؟";
-  }
-  
-  if (query.includes("منتج") || query.includes("معروض") || query.includes("المنتجات") || query.includes("أسعار") || query.includes("ايه عندك")) {
-    return `إليك المنتجات المتوفرة حالياً في المتجر:\n\n${productsListText}\n\nيمكنك اختيار أي منتج للبدء في خطوات الشراء الفورية!`;
-  }
-
-  if (query.includes("شراء") || query.includes("طلب") || query.includes("دفع") || query.includes("تحويل")) {
-    return `عملية الشراء في **King Store** سهلة للغاية:\n1. اختر المنتج المناسب واضغط على زر "شراء الآن".\n2. قم بتحويل المبلغ إلى رقم التحويل المعتمد (${TRANSFER_NUMBER}).\n3. أرسل صورة التحويل عبر زر الواتساب لإتمام تأكيد طلبك فوراً.`;
-  }
-
-  if (query.includes("تواصل") || query.includes("دعم") || query.includes("واتساب") || query.includes("رقم")) {
-    return `يمكنك التواصل مباشرة مع الدعم الفني لمتجر **King Store** عبر رقم الواتساب: ${WHATSAPP_NUMBER} أو من خلال زر الدعم في القائمة الرئيسية.`;
-  }
-
-  for (let p of productsArray) {
-    if (p.title && query.includes(p.title.toLowerCase())) {
-      return `منتج **${p.title}** متوفر لدينا!\n- السعر: ${p.price} جنيه\n- الوصف: ${p.description || "بدون وصف إضافي"}\nيمكنك الضغط على زر "شراء الآن" أسفل المنتج لطلبه مباشرة.`;
-    }
-  }
-
-  return "عذراً يا فندم، أنا مخصص فقط للإجابة عن الاستفسارات المتعلقة بمنتجات، أسعار، وسياسات متجر **King Store** فقط. تفضل بسؤال عما يخص منتجاتنا وسأكون سعيداً بمساعدتك! ✨";
-}
-
-async function sendAiMessage() {
-  if (!aiInputField) return;
-  const text = aiInputField.value.trim();
-  if (!text) return;
-
-  const userMsgDiv = document.createElement("div");
-  userMsgDiv.className = "chat-msg user-msg";
-  userMsgDiv.innerHTML = `<p>${escapeHtml(text)}</p>`;
-  aiMessagesArea.appendChild(userMsgDiv);
-  aiInputField.value = "";
-  aiMessagesArea.scrollTop = aiMessagesArea.scrollHeight;
-
-  if (aiSendBtn) aiSendBtn.disabled = true;
-  const typingDiv = document.createElement("div");
-  typingDiv.className = "chat-msg ai-msg";
-  typingDiv.innerHTML = `<p><i class="fa-solid fa-spinner fa-spin"></i> جاري التفكير والبحث في المنتجات...</p>`;
-  aiMessagesArea.appendChild(typingDiv);
-  aiMessagesArea.scrollTop = aiMessagesArea.scrollHeight;
-
-  setTimeout(() => {
-    typingDiv.remove();
-    const replyText = generateAiResponse(text);
-    
-    const aiMsgDiv = document.createElement("div");
-    aiMsgDiv.className = "chat-msg ai-msg";
-    aiMsgDiv.innerHTML = `<p>${replyText.replace(/\n/g, '<br>')}</p>`;
-    aiMessagesArea.appendChild(aiMsgDiv);
-    aiMessagesArea.scrollTop = aiMessagesArea.scrollHeight;
-    if (aiSendBtn) aiSendBtn.disabled = false;
-  }, 700);
-}
-
-if (aiSendBtn) {
-  aiSendBtn.addEventListener("click", sendAiMessage);
-}
-if (aiInputField) {
-  aiInputField.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") sendAiMessage();
-  });
-                           }
-    
+      
