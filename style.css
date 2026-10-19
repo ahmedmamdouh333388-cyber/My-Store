@@ -14,6 +14,7 @@
 body.theme-violet { --primary:#b47aff; --primary-2:#8549e8; }
 body.theme-mint { --primary:#3ddbb5; --primary-2:#16a98b; }
 body.theme-gold { --primary:#f5c45e; --primary-2:#d89b28; }
+body.theme-red { --primary:#ff4757; --primary-2:#e81429; }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -133,14 +134,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .menu-row:hover { color: var(--primary); }
 .menu-label { color: var(--muted); font-size: 11px; margin: 13px 0 8px; }
 .colors-row { display: flex; gap: 12px; padding: 5px 0 12px; }
-.color-dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #fff5; }
+.color-dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #fff5; cursor: pointer; }
 .color-dot.blue { background: #6d7cff; }
 .color-dot.violet { background: #b47aff; }
 .color-dot.mint { background: #3ddbb5; }
 .color-dot.gold { background: #f5c45e; }
+.color-dot.red { background: #ff4757; }
 .logout-row { color: var(--danger); border-bottom: 0; }
-
-.admin-setting-group { margin-bottom: 6px; }
+                                    .admin-setting-group { margin-bottom: 6px; }
 .admin-inline-input {
   width: 100%; padding: 8px 10px; background: #0c1321;
   border: 1px solid var(--line); border-radius: 9px;
@@ -185,7 +186,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .floating-chip i { color: var(--primary); margin-left: 5px; }
 .chip-top { top: 45px; right: 5px; }
 .chip-bottom { bottom: 48px; left: 0; }
-    .products-section { padding: 28px 0 60px; }
+
+.products-section { padding: 28px 0 60px; }
 .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 25px; }
 .section-heading h2 { margin: 5px 0; font-size: 30px; }
 .section-heading p { margin: 4px 0; font-size: 12px; }
@@ -273,7 +275,7 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
 .admin-chat-compose input { margin: 0; min-width: 0; }
 .chat-readonly { padding: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; text-align: center; }
 
-/* تنسيقات التفاعلات الجديدة */
+/* تنسيقات التفاعلات */
 .message-reactions-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; }
 .reaction-pill { display: inline-flex; align-items: center; gap: 4px; background: #1b263b; border: 1px solid var(--line); padding: 3px 8px; border-radius: 20px; font-size: 11px; cursor: pointer; color: var(--text); transition: transform .15s, border-color .15s; }
 .reaction-pill:hover { transform: scale(1.05); border-color: var(--primary); }
@@ -321,5 +323,5 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .modal-card { padding: 25px 18px; }
   .chat-float-btn { bottom: 17px; left: 17px; }
   .chat-panel { bottom: 85px; left: 15px; }
-                     }
-                 
+            }
+                      
