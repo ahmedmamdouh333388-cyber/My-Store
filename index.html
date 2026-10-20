@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080b14">
-  <title>King Store.Shop</title>
+  <title>Ahmed Store.Shop</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -19,7 +19,7 @@
     <div class="login-card glass-card">
       <div class="brand-mark"><i class="fa-solid fa-crown"></i></div>
       <p class="eyebrow">WELCOME TO THE NEXT LEVEL</p>
-      <h1>King <span>Store</span></h1>
+      <h1>Ahmed <span>Store</span></h1>
       <p class="muted">تجربة شراء مختلفة، أسرع وأسهل.</p>
       <button id="google-login-btn" class="btn btn-google"><i class="fa-brands fa-google"></i><span>المتابعة باستخدام Google</span></button>
       <p id="auth-error-msg" class="error-text"></p>
@@ -29,15 +29,15 @@
 
   <section id="splash-screen" class="screen-overlay splash-screen">
     <div class="brand-mark pulse-mark"><i class="fa-solid fa-crown"></i></div>
-    <h2>King <span>Store</span></h2>
+    <h2>Ahmed <span>Store</span></h2>
     <p class="muted">بنجهز تجربتك...</p>
   </section>
 
   <div id="store-screen" class="app-shell">
     <header class="topbar">
-      <a href="#" class="brand-lockup" aria-label="King Store">
+      <a href="#" class="brand-lockup" aria-label="Ahmed Store">
         <span class="brand-icon"><i class="fa-solid fa-crown"></i></span>
-        <span><strong>King <em>Store</em></strong><small>SMART SHOPPING EXPERIENCE</small></span>
+        <span><strong>Ahmed <em>Store</em></strong><small>SMART SHOPPING EXPERIENCE</small></span>
       </a>
       
       <div class="top-actions">
@@ -91,6 +91,13 @@
           </div>
 
           <div id="admin-settings-section" class="admin-only" hidden>
+            <div class="menu-label">لوحة تحكم المشرف</div>
+            <button id="admin-view-today-registrations-btn" class="menu-row" style="background: rgba(109,124,255,0.1); border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--primary);">
+              <i class="fa-solid fa-user-clock" style="color: var(--primary);"></i>
+              <span>المسجلون اليوم</span>
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+
             <div class="menu-label">إدارة المشرفين</div>
             <div class="admin-setting-group">
               <input id="new-admin-email" type="email" placeholder="إيميل المشرف الجديد..." class="admin-inline-input">
@@ -115,7 +122,7 @@
     <main>
       <section class="hero-section">
         <div class="hero-copy">
-          <span class="hero-kicker"><i class="fa-solid fa-bolt"></i> KING STORE / DIGITAL MARKET</span>
+          <span class="hero-kicker"><i class="fa-solid fa-bolt"></i> AHMED STORE / DIGITAL MARKET</span>
           <h1>اختار اللي يناسبك.<br><span>واستمتع بالتجربة.</span></h1>
           <p>منتجاتك المفضلة في مكان واحد، بتجربة بسيطة وآمنة وتصميم معمول للمستقبل.</p>
           <a href="#products-section" class="btn btn-primary hero-cta">اكتشف المنتجات <i class="fa-solid fa-arrow-left"></i></a>
@@ -123,7 +130,7 @@
         </div>
         <div class="hero-art" aria-hidden="true">
           <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
-          <div class="hero-cube"><i class="fa-solid fa-crown"></i><span>K</span></div>
+          <div class="hero-cube"><i class="fa-solid fa-crown"></i><span>A</span></div>
           <div class="floating-chip chip-top"><i class="fa-solid fa-bag-shopping"></i> SHOP SMART</div>
           <div class="floating-chip chip-bottom"><i class="fa-solid fa-lock"></i> SECURE CHECKOUT</div>
           <div class="glow-ring"></div>
@@ -161,7 +168,7 @@
       </section>
     </main>
 
-    <footer><a href="#" class="footer-brand"><i class="fa-solid fa-crown"></i> King Store</a><span>تسوق بذكاء. اختار بثقة.</span><span>© <span id="current-year"></span> King Store</span></footer>
+    <footer><a href="#" class="footer-brand"><i class="fa-solid fa-crown"></i> Ahmed Store</a><span>تسوق بذكاء. اختار بثقة.</span><span>© <span id="current-year"></span> Ahmed Store</span></footer>
   </div>
 
   <div id="online-users-modal" class="modal-backdrop" role="dialog" aria-modal="true">
@@ -173,6 +180,19 @@
       <p class="muted">قائمة بالإيميلات وأسماء المتواجدين في الموقع حالياً.</p>
       <div id="online-users-list" class="online-users-list">
         <div class="empty-chat">جاري جلب المتصلين...</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="today-users-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-card glass-card">
+      <button id="close-today-modal" class="modal-close icon-btn" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-icon"><i class="fa-solid fa-user-clock"></i></div>
+      <span class="eyebrow">REGISTRATIONS TODAY</span>
+      <h2>المسجلون اليوم</h2>
+      <p class="muted">قائمة بالمستخدمين الذين سجلوا في الموقع اليوم مع الوقت والتاريخ.</p>
+      <div id="today-users-list" class="online-users-list">
+        <div class="empty-chat">جاري جلب البيانات...</div>
       </div>
     </div>
   </div>
@@ -195,9 +215,9 @@
 
   <button id="chat-float-btn" class="chat-float-btn" aria-label="رسائل المتجر"><i class="fa-solid fa-message"></i></button>
   
-  <section id="chat-panel" class="chat-panel glass-card" aria-label="رسائل King Store">
+  <section id="chat-panel" class="chat-panel glass-card" aria-label="رسائل Ahmed Store">
     <div class="chat-panel-header">
-      <div><span class="eyebrow">KING STORE</span><strong>رسائل المتجر</strong><small id="chat-access-note">إعلانات وتحديثات المتجر</small></div>
+      <div><span class="eyebrow">AHMED STORE</span><strong>رسائل المتجر</strong><small id="chat-access-note">إعلانات وتحديثات المتجر</small></div>
       <div style="display: flex; gap: 6px; align-items: center;">
         <button id="toggle-chat-lock-btn" class="icon-btn admin-only" hidden title="قفل/فتح الكتابة للجميع" aria-label="تحكم الكتابة"><i class="fa-solid fa-lock-open"></i></button>
         <button id="chat-close-btn" class="icon-btn" aria-label="إغلاق الرسائل"><i class="fa-solid fa-xmark"></i></button>
@@ -216,5 +236,5 @@
   <div id="toast-region" class="toast-region" aria-live="polite"></div>
   <script type="module" src="app.js"></script>
 </body>
-    </html>
-    
+          </html>
+                                   
