@@ -122,7 +122,7 @@ onValue(ref(db, "settings/banned"), (snapshot) => {
   }
   renderBannedList();
 });
-   onValue(ref(db, "settings/chatLocked"), (snapshot) => {
+  onValue(ref(db, "settings/chatLocked"), (snapshot) => {
   isChatLocked = snapshot.exists() ? snapshot.val() : false;
   updateChatLockUI();
 });
@@ -239,7 +239,7 @@ $("settings-popup-menu").addEventListener("click", async (e) => {
     try {
       await remove(ref(db, `settings/admins/${key}`));
       toast(currentLang === "ar" ? "تم حذف المشرف بنجاح." : "Admin deleted successfully.");
-    } { toast(currentLang === "ar" ? "تعذر الحذف." : "Failed to delete.", true); }
+    } catch { toast(currentLang === "ar" ? "تعذر الحذف." : "Failed to delete.", true); }
   }
 
   if (delBanBtn && isAdmin()) {
@@ -247,7 +247,7 @@ $("settings-popup-menu").addEventListener("click", async (e) => {
     try {
       await remove(ref(db, `settings/banned/${key}`));
       toast(currentLang === "ar" ? "تم إلغاء الحظر بنجاح." : "Unbanned successfully.");
-    } { toast(currentLang === "ar" ? "تعذر فك الحظر." : "Failed to unban.", true); }
+    } catch { toast(currentLang === "ar" ? "تعذر فك الحظر." : "Failed to unban.", true); }
   }
 });
 
@@ -277,7 +277,7 @@ saveMusicUrlBtn.addEventListener("click", async () => {
   try {
     await set(ref(db, "settings/musicUrl"), newUrl);
     toast(currentLang === "ar" ? "تم تحديث رابط الأغنية بنجاح." : "Song URL updated successfully.");
-  } { toast(currentLang === "ar" ? "فشل حفظ الرابط." : "Failed to save URL.", true); }
+  } catch { toast(currentLang === "ar" ? "فشل حفظ الرابط." : "Failed to save URL.", true); }
 });
 
 function updateChatLockUI() {
@@ -295,7 +295,7 @@ function updateChatLockUI() {
       userChatLockedMsg.hidden = true;
     }
   }
-    }
+  }
   function setupPresence(user) {
   const myConnectionRef = ref(db, `presence/${user.uid}`);
   const connectedRef = ref(db, ".info/connected");
@@ -413,7 +413,7 @@ function fetchTodayRegistrations() {
     } else {
       todayRegistrationsList.innerHTML = `<div class="empty-chat">${currentLang === "ar" ? "لا توجد تسجيلات حتى الآن اليوم." : "No registrations today yet."}</div>`;
     }
-  }, { onlyOnce: true });
+  });
 }
 
 todayRegistrationsList.addEventListener("click", (e) => {
@@ -524,7 +524,6 @@ toggleChatLockBtn.addEventListener("click", async () => {
   } catch { toast(currentLang === "ar" ? "تعذر تغيير حالة الشات." : "Failed to change chat state.", true); }
 });
 
-// نظام الترجمة مع تثبيت اتجاه الصفحة (RTL ثابت والنصوص تتغير)
 const translations = {
   ar: {
     welcome: "WELCOME TO THE NEXT LEVEL",
@@ -635,8 +634,8 @@ document.querySelectorAll("[data-theme]").forEach((button) => {
 const savedTheme = localStorage.getItem("ahmed_store_theme");
 if (savedTheme && /^theme-(blue|violet|mint|gold|red)$/.test(savedTheme)) {
   document.body.className = savedTheme;
-    }
-      function openProductForm(productId = null) {
+}
+  function openProductForm(productId = null) {
   if (!isAdmin()) return toast(currentLang === "ar" ? "هذه الخاصية للمشرف فقط." : "Admin only feature.", true);
   editingProductId = productId;
   $("product-form-title").textContent = productId ? (currentLang === "ar" ? "تعديل المنتج" : "Edit Product") : (currentLang === "ar" ? "إضافة منتج جديد" : "Add New Product");
@@ -995,4 +994,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   }
 });
-            
+    
