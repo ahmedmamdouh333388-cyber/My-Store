@@ -149,7 +149,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .admin-sub-list { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; max-height: 120px; overflow-y: auto; }
 .admin-sub-item { display: flex; justify-content: space-between; align-items: center; background: #0c1321; padding: 6px 10px; border-radius: 8px; font-size: 11px; border: 1px solid var(--line); }
-.admin-sub-item button { background: transparent; border: 0; color: var(--danger); cursor: pointer; font-size: 11px; }
+.admin-sub-item span { overflow-wrap: anywhere; flex: 1; }
+.admin-sub-item button { background: transparent; border: 0; color: var(--danger); cursor: pointer; font-size: 13px; padding: 4px; }
+.admin-sub-item button:hover { opacity: 0.8; }
 
 .online-users-list { max-height: 250px; overflow-y: auto; text-align: right; margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
 .online-user-item { display: flex; align-items: center; gap: 10px; background: #0c1423; padding: 10px; border-radius: 10px; border: 1px solid var(--line); }
@@ -322,5 +324,4 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .modal-card { padding: 25px 18px; }
   .chat-float-btn { bottom: 17px; left: 17px; }
   .chat-panel { bottom: 85px; left: 15px; }
-  }
-  
+}
