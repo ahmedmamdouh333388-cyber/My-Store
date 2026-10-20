@@ -97,7 +97,7 @@ $("support-wa-link").href =
   `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
     "مرحباً، أحتاج مساعدة من دعم Ahmed Store."
   )}`;
-onValue(ref(db, "settings/admins"), (snapshot) => {
+  onValue(ref(db, "settings/admins"), (snapshot) => {
   dynamicAdmins = {};
   if (snapshot.exists()) {
     dynamicAdmins = snapshot.val();
@@ -185,16 +185,19 @@ function applyAdminPrivileges() {
     chatLinkField.hidden = !adminMode;
   }
 
+  const liveVisitorsWrapper = $("live-visitors-wrapper");
+  if (liveVisitorsWrapper) {
+    liveVisitorsWrapper.hidden = !adminMode;
+  }
+
   if (adminMode) {
     adminAddProductBtn.hidden = false;
-    adminViewOnlineBtn.hidden = false;
     toggleChatLockBtn.hidden = false;
     adminSettingsSection.hidden = false;
     adminMusicSection.hidden = false;
     $("chat-access-note").textContent = currentLang === "ar" ? "أنت كمشرف، تملك صلاحيات التحكم الكاملة" : "You as admin have full control permissions";
   } else {
     adminAddProductBtn.hidden = true;
-    adminViewOnlineBtn.hidden = true;
     toggleChatLockBtn.hidden = true;
     adminProductFormBox.hidden = true;
     adminSettingsSection.hidden = true;
@@ -213,7 +216,7 @@ function renderAdminsList() {
   Object.entries(dynamicAdmins).forEach(([key, email]) => {
     const item = document.createElement("div");
     item.className = "admin-sub-item";
-    item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-admin="${key}"><i class="fa-solid fa-trash"></i> ${currentLang === "ar" ? "حذف" : "Delete"}</button>`;
+    item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-admin="${key}" title="حذف المشرف"><i class="fa-solid fa-trash"></i></button>`;
     container.appendChild(item);
   });
 }
@@ -225,7 +228,7 @@ function renderBannedList() {
   Object.entries(bannedUsers).forEach(([key, email]) => {
     const item = document.createElement("div");
     item.className = "admin-sub-item";
-    item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-ban="${key}"><i class="fa-solid fa-unlock"></i> ${currentLang === "ar" ? "إلغاء الحظر" : "Unban"}</button>`;
+    item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-ban="${key}" title="إلغاء الحظر"><i class="fa-solid fa-trash"></i></button>`;
     container.appendChild(item);
   });
 }
@@ -301,8 +304,8 @@ function updateChatLockUI() {
       userChatLockedMsg.hidden = true;
     }
   }
-  }
-  function setupPresence(user) {
+}
+function setupPresence(user) {
   const myConnectionRef = ref(db, `presence/${user.uid}`);
   const connectedRef = ref(db, ".info/connected");
 
@@ -433,6 +436,7 @@ todayRegistrationsList.addEventListener("click", (e) => {
     }
   }
 });
+
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   if (user) {
@@ -640,8 +644,8 @@ document.querySelectorAll("[data-theme]").forEach((button) => {
 const savedTheme = localStorage.getItem("ahmed_store_theme");
 if (savedTheme && /^theme-(blue|violet|mint|gold|red)$/.test(savedTheme)) {
   document.body.className = savedTheme;
-      }
-      function openProductForm(productId = null) {
+  }
+function openProductForm(productId = null) {
   if (!isAdmin()) return toast(currentLang === "ar" ? "هذه الخاصية للمشرف فقط." : "Admin only feature.", true);
   editingProductId = productId;
   $("product-form-title").textContent = productId ? (currentLang === "ar" ? "تعديل المنتج" : "Edit Product") : (currentLang === "ar" ? "إضافة منتج جديد" : "Add New Product");
@@ -839,7 +843,6 @@ $("send-transfer-proof-btn").addEventListener("click", () => {
 $("copy-order-details-btn").addEventListener("click", async () => {
   try { await navigator.clipboard.writeText(orderMessage()); toast(currentLang === "ar" ? "تم نسخ تفاصيل الطلب." : "Order details copied."); } catch { toast(currentLang === "ar" ? "تعذر النسخ تلقائياً." : "Failed to copy automatically.", true); }
 });
-
 const messagesRef = ref(db, "messages");
 onValue(messagesRef, (snapshot) => {
   if (snapshot.exists()) {
@@ -1000,4 +1003,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   }
 });
-                                                                                                                                                                                                                                                                                                                           
+                                  
