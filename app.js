@@ -97,7 +97,6 @@ $("support-wa-link").href =
   `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
     "مرحباً، أحتاج مساعدة من دعم Ahmed Store."
   )}`;
-
 onValue(ref(db, "settings/admins"), (snapshot) => {
   dynamicAdmins = {};
   if (snapshot.exists()) {
@@ -122,7 +121,8 @@ onValue(ref(db, "settings/banned"), (snapshot) => {
   }
   renderBannedList();
 });
-  onValue(ref(db, "settings/chatLocked"), (snapshot) => {
+
+onValue(ref(db, "settings/chatLocked"), (snapshot) => {
   isChatLocked = snapshot.exists() ? snapshot.val() : false;
   updateChatLockUI();
 });
@@ -239,7 +239,10 @@ $("settings-popup-menu").addEventListener("click", async (e) => {
     try {
       await remove(ref(db, `settings/admins/${key}`));
       toast(currentLang === "ar" ? "تم حذف المشرف بنجاح." : "Admin deleted successfully.");
-    } catch { toast(currentLang === "ar" ? "تعذر الحذف." : "Failed to delete.", true); }
+    } catch (error) {
+      console.error("Delete Admin Error:", error);
+      toast(currentLang === "ar" ? "تعذر الحذف." : "Failed to delete.", true);
+    }
   }
 
   if (delBanBtn && isAdmin()) {
@@ -247,7 +250,10 @@ $("settings-popup-menu").addEventListener("click", async (e) => {
     try {
       await remove(ref(db, `settings/banned/${key}`));
       toast(currentLang === "ar" ? "تم إلغاء الحظر بنجاح." : "Unbanned successfully.");
-    } catch { toast(currentLang === "ar" ? "تعذر فك الحظر." : "Failed to unban.", true); }
+    } catch (error) {
+      console.error("Unban Error:", error);
+      toast(currentLang === "ar" ? "تعذر فك الحظر." : "Failed to unban.", true);
+    }
   }
 });
 
@@ -634,8 +640,8 @@ document.querySelectorAll("[data-theme]").forEach((button) => {
 const savedTheme = localStorage.getItem("ahmed_store_theme");
 if (savedTheme && /^theme-(blue|violet|mint|gold|red)$/.test(savedTheme)) {
   document.body.className = savedTheme;
-}
-  function openProductForm(productId = null) {
+      }
+      function openProductForm(productId = null) {
   if (!isAdmin()) return toast(currentLang === "ar" ? "هذه الخاصية للمشرف فقط." : "Admin only feature.", true);
   editingProductId = productId;
   $("product-form-title").textContent = productId ? (currentLang === "ar" ? "تعديل المنتج" : "Edit Product") : (currentLang === "ar" ? "إضافة منتج جديد" : "Add New Product");
@@ -994,4 +1000,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   }
 });
-    
+                                                                                                                                                                                                                                                                                                                           
