@@ -96,6 +96,13 @@ $("support-wa-link").href =
     "مرحباً، أحتاج مساعدة من دعم Ahmed Store."
   )}`;
 
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch((err) => {
+      console.log("SW registration failed: ", err);
+    });
+  });
+}
 onValue(ref(db, "settings/admins"), (snapshot) => {
   dynamicAdmins = {};
   if (snapshot.exists()) {
@@ -120,7 +127,8 @@ onValue(ref(db, "settings/banned"), (snapshot) => {
   }
   renderBannedList();
 });
-  onValue(ref(db, "settings/chatLocked"), (snapshot) => {
+
+onValue(ref(db, "settings/chatLocked"), (snapshot) => {
   isChatLocked = snapshot.exists() ? snapshot.val() : false;
   updateChatLockUI();
 });
@@ -166,19 +174,6 @@ async function handleGoogleLogin() {
       authErrorMsg.textContent = "هذا الحساب محظور من دخول المتجر.";
       return;
     }
-    
-    // تسجيل أو تحديث بيانات المستخدم في قاعدة البيانات عند الدخول مع وقت التسجيل
-    const userCleanKey = userEmail.replace(/[.#$\/\[\]]/g, "_");
-    const userRef = ref(db, `usersRegistry/${userCleanKey}`);
-    set(userRef, {
-      name: currentUser.displayName || "مستخدم",
-      email: currentUser.email || "",
-      photo: currentUser.photoURL || "",
-      lastLogin: Date.now(),
-      dateString: new Date().toLocaleDateString("ar-EG"),
-      timeString: new Date().toLocaleTimeString("ar-EG")
-    });
-
     authErrorMsg.textContent = "";
   } catch (error) {
     console.error("Login Error:", error);
@@ -239,7 +234,8 @@ function renderBannedList() {
     item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-ban="${key}"><i class="fa-solid fa-unlock"></i> إلغاء الحظر</button>`;
     container.appendChild(item);
   });
-      }
+}
+
 $("settings-popup-menu").addEventListener("click", async (e) => {
   const delAdminBtn = e.target.closest("[data-del-admin]");
   const delBanBtn = e.target.closest("[data-del-ban]");
@@ -306,7 +302,6 @@ function updateChatLockUI() {
     }
   }
 }
-
 function setupPresence(user) {
   const myConnectionRef = ref(db, `presence/${user.uid}`);
   const connectedRef = ref(db, ".info/connected");
@@ -321,6 +316,18 @@ function setupPresence(user) {
       };
       set(myConnectionRef, conData);
       onDisconnect(myConnectionRef).remove();
+
+      const userEmail = user.email?.trim().toLowerCase() || "unknown";
+      const userCleanKey = userEmail.replace(/[.#$\/\[\]]/g, "_");
+      const userRegistryRef = ref(db, `usersRegistry/${userCleanKey}`);
+      set(userRegistryRef, {
+        name: user.displayName || "مستخدم",
+        email: user.email || "",
+        photo: user.photoURL || "",
+        lastLogin: Date.now(),
+        dateString: new Date().toLocaleDateString("ar-EG"),
+        timeString: new Date().toLocaleTimeString("ar-EG")
+      });
     }
   });
 
@@ -345,7 +352,7 @@ function renderOnlineUsersModalList(data) {
       <img src="${escapeHtml(u.photo || 'https://via.placeholder.com/32')}" alt="">
       <div>
         <strong>${escapeHtml(u.name)}</strong>
-        <small>${escapeHtml(u.email)}</small>
+        <small style="display: block; color: var(--primary); font-size: 11px; margin-top: 2px;">${escapeHtml(u.email)}</small>
       </div>
     `;
     onlineUsersList.appendChild(item);
@@ -355,7 +362,6 @@ function renderOnlineUsersModalList(data) {
 adminViewOnlineBtn.addEventListener("click", () => { onlineUsersModal.classList.add("active"); });
 $("close-online-modal").addEventListener("click", () => { onlineUsersModal.classList.remove("active"); });
 
-// عرض قائمة المسجلين اليوم للمشرف مع الوقت والتاريخ والإيميل بالكامل
 adminViewTodayRegistrationsBtn.addEventListener("click", () => {
   if (!isAdmin()) return;
   todayUsersModal.classList.add("active");
@@ -368,12 +374,9 @@ adminViewTodayRegistrationsBtn.addEventListener("click", () => {
       return;
     }
     
-    const todayStr = new Date().toLocaleDateString("ar-EG");
     let countToday = 0;
-    
     snapshot.forEach((childSnap) => {
       const userData = childSnap.val();
-      // عرض كل المسجلين أو تصفية مسجلي اليوم (هنا نعرض المسجلين الذين تطابق تاريخ اليوم أو الكل حسب الرغبة، نعرض من لديهم تاريخ أو كلهم بوضوح)
       countToday++;
       const item = document.createElement("div");
       item.className = "online-user-item";
@@ -381,8 +384,8 @@ adminViewTodayRegistrationsBtn.addEventListener("click", () => {
         <img src="${escapeHtml(userData.photo || 'https://via.placeholder.com/32')}" alt="">
         <div>
           <strong>${escapeHtml(userData.name)}</strong>
-          <small>الإيميل: ${escapeHtml(userData.email)}</small>
-          <small style="color: var(--primary);">التاريخ: ${escapeHtml(userData.dateString || "غير محدد")} - الوقت: ${escapeHtml(userData.timeString || "غير محدد")}</small>
+          <small style="display: block; color: var(--primary); font-size: 11px; margin-top: 2px;">الإيميل: ${escapeHtml(userData.email)}</small>
+          <small style="display: block; color: var(--muted); font-size: 10px;">التاريخ: ${escapeHtml(userData.dateString || "غير محدد")} - الوقت: ${escapeHtml(userData.timeString || "غير محدد")}</small>
         </div>
       `;
       todayUsersList.appendChild(item);
@@ -395,7 +398,8 @@ adminViewTodayRegistrationsBtn.addEventListener("click", () => {
 });
 
 $("close-today-modal").addEventListener("click", () => { todayUsersModal.classList.remove("active"); });
-    onAuthStateChanged(auth, (user) => {
+
+onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (user) {
     const userEmail = user.email?.trim().toLowerCase();
@@ -511,9 +515,8 @@ document.querySelectorAll("[data-theme]").forEach((button) => {
 const savedTheme = localStorage.getItem("king_store_theme");
 if (savedTheme && /^theme-(blue|violet|mint|gold|red)$/.test(savedTheme)) {
   document.body.className = savedTheme;
-}
-
-function openProductForm(productId = null) {
+        }
+  function openProductForm(productId = null) {
   if (!isAdmin()) return toast("هذه الخاصية للمشرف فقط.", true);
   editingProductId = productId;
   $("product-form-title").textContent = productId ? "تعديل المنتج" : "إضافة منتج جديد";
@@ -872,4 +875,3 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   }
 });
-                  
