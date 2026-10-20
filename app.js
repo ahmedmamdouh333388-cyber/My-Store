@@ -64,8 +64,8 @@ const liveVisitorsCount = $("live-visitors-count");
 const adminViewOnlineBtn = $("admin-view-online-btn");
 const onlineUsersModal = $("online-users-modal");
 const onlineUsersList = $("online-users-list");
-const todayUsersModal = $("today-users-modal");
-const todayUsersList = $("today-users-list");
+const todayRegistrationsModal = $("today-registrations-modal");
+const todayRegistrationsList = $("today-registrations-list");
 const adminViewTodayRegistrationsBtn = $("admin-view-today-registrations-btn");
 const toggleChatLockBtn = $("toggle-chat-lock-btn");
 const adminSettingsSection = $("admin-settings-section");
@@ -85,6 +85,8 @@ let dynamicAdmins = {};
 let bannedUsers = {};
 let isChatLocked = false;
 let currentMusicUrl = "";
+let currentLang = "ar";
+let userSessionRecordKey = null;
 
 const productDataById = new Map();
 
@@ -96,13 +98,6 @@ $("support-wa-link").href =
     "مرحباً، أحتاج مساعدة من دعم Ahmed Store."
   )}`;
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch((err) => {
-      console.log("SW registration failed: ", err);
-    });
-  });
-}
 onValue(ref(db, "settings/admins"), (snapshot) => {
   dynamicAdmins = {};
   if (snapshot.exists()) {
@@ -127,8 +122,7 @@ onValue(ref(db, "settings/banned"), (snapshot) => {
   }
   renderBannedList();
 });
-
-onValue(ref(db, "settings/chatLocked"), (snapshot) => {
+   onValue(ref(db, "settings/chatLocked"), (snapshot) => {
   isChatLocked = snapshot.exists() ? snapshot.val() : false;
   updateChatLockUI();
 });
@@ -197,7 +191,7 @@ function applyAdminPrivileges() {
     toggleChatLockBtn.hidden = false;
     adminSettingsSection.hidden = false;
     adminMusicSection.hidden = false;
-    $("chat-access-note").textContent = "أنت كمشرف، تملك صلاحيات التحكم الكاملة";
+    $("chat-access-note").textContent = currentLang === "ar" ? "أنت كمشرف، تملك صلاحيات التحكم الكاملة" : "You as admin have full control permissions";
   } else {
     adminAddProductBtn.hidden = true;
     adminViewOnlineBtn.hidden = true;
@@ -205,7 +199,7 @@ function applyAdminPrivileges() {
     adminProductFormBox.hidden = true;
     adminSettingsSection.hidden = true;
     adminMusicSection.hidden = true;
-    $("chat-access-note").textContent = "إعلانات وتحديثات المتجر";
+    $("chat-access-note").textContent = currentLang === "ar" ? "إعلانات وتحديثات المتجر" : "Store announcements & updates";
   }
 
   updateChatLockUI();
@@ -219,7 +213,7 @@ function renderAdminsList() {
   Object.entries(dynamicAdmins).forEach(([key, email]) => {
     const item = document.createElement("div");
     item.className = "admin-sub-item";
-    item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-admin="${key}"><i class="fa-solid fa-trash"></i> حذف</button>`;
+    item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-admin="${key}"><i class="fa-solid fa-trash"></i> ${currentLang === "ar" ? "حذف" : "Delete"}</button>`;
     container.appendChild(item);
   });
 }
@@ -231,7 +225,7 @@ function renderBannedList() {
   Object.entries(bannedUsers).forEach(([key, email]) => {
     const item = document.createElement("div");
     item.className = "admin-sub-item";
-    item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-ban="${key}"><i class="fa-solid fa-unlock"></i> إلغاء الحظر</button>`;
+    item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-ban="${key}"><i class="fa-solid fa-unlock"></i> ${currentLang === "ar" ? "إلغاء الحظر" : "Unban"}</button>`;
     container.appendChild(item);
   });
 }
@@ -244,16 +238,16 @@ $("settings-popup-menu").addEventListener("click", async (e) => {
     const key = delAdminBtn.dataset.delAdmin;
     try {
       await remove(ref(db, `settings/admins/${key}`));
-      toast("تم حذف المشرف بنجاح.");
-    } catch { toast("تعذر الحذف.", true); }
+      toast(currentLang === "ar" ? "تم حذف المشرف بنجاح." : "Admin deleted successfully.");
+    } { toast(currentLang === "ar" ? "تعذر الحذف." : "Failed to delete.", true); }
   }
 
   if (delBanBtn && isAdmin()) {
     const key = delBanBtn.dataset.delBan;
     try {
       await remove(ref(db, `settings/banned/${key}`));
-      toast("تم إلغاء الحظر بنجاح.");
-    } catch { toast("تعذر فك الحظر.", true); }
+      toast(currentLang === "ar" ? "تم إلغاء الحظر بنجاح." : "Unbanned successfully.");
+    } { toast(currentLang === "ar" ? "تعذر فك الحظر." : "Failed to unban.", true); }
   }
 });
 
@@ -268,22 +262,22 @@ musicPopupMenu.addEventListener("click", (e) => { e.stopPropagation(); });
 musicPlayPauseBtn.addEventListener("click", () => {
   if (bgAudio.paused) {
     bgAudio.play().then(() => {
-      musicPlayPauseBtn.innerHTML = '<i class="fa-solid fa-pause"></i> إيقاف المؤقت';
-    }).catch(() => { toast("تعذر تشغيل الصوت، تأكد من الرابط.", true); });
+      musicPlayPauseBtn.innerHTML = `<i class="fa-solid fa-pause"></i> ${currentLang === "ar" ? "إيقاف المؤقت" : "Pause Audio"}`;
+    }).catch(() => { toast(currentLang === "ar" ? "تعذر تشغيل الصوت، تأكد من الرابط." : "Failed to play audio, check URL.", true); });
   } else {
     bgAudio.pause();
-    musicPlayPauseBtn.innerHTML = '<i class="fa-solid fa-play"></i> تشغيل الصوت';
+    musicPlayPauseBtn.innerHTML = `<i class="fa-solid fa-play"></i> ${currentLang === "ar" ? "تشغيل الصوت" : "Play Audio"}`;
   }
 });
 
 saveMusicUrlBtn.addEventListener("click", async () => {
   if (!isAdmin()) return;
   const newUrl = musicUrlInput.value.trim();
-  if (!newUrl) return toast("اكتب رابط الأغنية أولاً.", true);
+  if (!newUrl) return toast(currentLang === "ar" ? "اكتب رابط الأغنية أولاً." : "Enter song URL first.", true);
   try {
     await set(ref(db, "settings/musicUrl"), newUrl);
-    toast("تم تحديث رابط الأغنية بنجاح.");
-  } catch { toast("فشل حفظ الرابط.", true); }
+    toast(currentLang === "ar" ? "تم تحديث رابط الأغنية بنجاح." : "Song URL updated successfully.");
+  } { toast(currentLang === "ar" ? "فشل حفظ الرابط." : "Failed to save URL.", true); }
 });
 
 function updateChatLockUI() {
@@ -291,7 +285,7 @@ function updateChatLockUI() {
     chatComposeBox.hidden = false;
     userChatLockedMsg.hidden = true;
     toggleChatLockBtn.innerHTML = isChatLocked ? '<i class="fa-solid fa-lock"></i>' : '<i class="fa-solid fa-lock-open"></i>';
-    toggleChatLockBtn.title = isChatLocked ? "فتح الكتابة للمستخدمين" : "قفل الكتابة عن المستخدمين";
+    toggleChatLockBtn.title = isChatLocked ? (currentLang === "ar" ? "فتح الكتابة للمستخدمين" : "Unlock chat") : (currentLang === "ar" ? "قفل الكتابة عن المستخدمين" : "Lock chat");
   } else {
     if (isChatLocked) {
       chatComposeBox.hidden = true;
@@ -301,8 +295,8 @@ function updateChatLockUI() {
       userChatLockedMsg.hidden = true;
     }
   }
-}
-function setupPresence(user) {
+    }
+  function setupPresence(user) {
   const myConnectionRef = ref(db, `presence/${user.uid}`);
   const connectedRef = ref(db, ".info/connected");
 
@@ -316,18 +310,6 @@ function setupPresence(user) {
       };
       set(myConnectionRef, conData);
       onDisconnect(myConnectionRef).remove();
-
-      const userEmail = user.email?.trim().toLowerCase() || "unknown";
-      const userCleanKey = userEmail.replace(/[.#$\/\[\]]/g, "_");
-      const userRegistryRef = ref(db, `usersRegistry/${userCleanKey}`);
-      set(userRegistryRef, {
-        name: user.displayName || "مستخدم",
-        email: user.email || "",
-        photo: user.photoURL || "",
-        lastLogin: Date.now(),
-        dateString: new Date().toLocaleDateString("ar-EG"),
-        timeString: new Date().toLocaleTimeString("ar-EG")
-      });
     }
   });
 
@@ -338,9 +320,39 @@ function setupPresence(user) {
       if (isAdmin()) renderOnlineUsersModalList(data);
     } else {
       liveVisitorsCount.textContent = "1";
-      if (isAdmin()) onlineUsersList.innerHTML = '<div class="empty-chat">لا يوجد متصلون سواك.</div>';
+      if (isAdmin()) onlineUsersList.innerHTML = `<div class="empty-chat">${currentLang === "ar" ? "لا يوجد متصلون سواك." : "No online users except you."}</div>`;
     }
   });
+
+  recordTodayRegistration(user);
+}
+
+function recordTodayRegistration(user) {
+  const now = new Date();
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const userKey = user.uid;
+  const regRef = ref(db, `dailyRegistrations/${todayKey}/${userKey}`);
+
+  onValue(regRef, (snap) => {
+    if (!snap.exists()) {
+      set(regRef, {
+        email: user.email || "",
+        name: user.displayName || "مستخدم",
+        loginTime: Date.now(),
+        logoutTime: null
+      });
+    }
+  }, { onlyOnce: true });
+
+  userSessionRecordKey = { todayKey, userKey };
+}
+
+function handleUserLogoutSession() {
+  if (userSessionRecordKey && currentUser) {
+    const { todayKey, userKey } = userSessionRecordKey;
+    const regRef = ref(db, `dailyRegistrations/${todayKey}/${userKey}/logoutTime`);
+    set(regRef, Date.now()).catch(() => {});
+  }
 }
 
 function renderOnlineUsersModalList(data) {
@@ -352,7 +364,7 @@ function renderOnlineUsersModalList(data) {
       <img src="${escapeHtml(u.photo || 'https://via.placeholder.com/32')}" alt="">
       <div>
         <strong>${escapeHtml(u.name)}</strong>
-        <small style="display: block; color: var(--primary); font-size: 11px; margin-top: 2px;">${escapeHtml(u.email)}</small>
+        <small>${escapeHtml(u.email)}</small>
       </div>
     `;
     onlineUsersList.appendChild(item);
@@ -364,48 +376,64 @@ $("close-online-modal").addEventListener("click", () => { onlineUsersModal.class
 
 adminViewTodayRegistrationsBtn.addEventListener("click", () => {
   if (!isAdmin()) return;
-  todayUsersModal.classList.add("active");
-  
-  const usersRef = ref(db, "usersRegistry");
-  onValue(usersRef, (snapshot) => {
-    todayUsersList.innerHTML = "";
-    if (!snapshot.exists()) {
-      todayUsersList.innerHTML = '<div class="empty-chat">لا توجد تسجيلات حتى الآن.</div>';
-      return;
-    }
-    
-    let countToday = 0;
-    snapshot.forEach((childSnap) => {
-      const userData = childSnap.val();
-      countToday++;
-      const item = document.createElement("div");
-      item.className = "online-user-item";
-      item.innerHTML = `
-        <img src="${escapeHtml(userData.photo || 'https://via.placeholder.com/32')}" alt="">
-        <div>
-          <strong>${escapeHtml(userData.name)}</strong>
-          <small style="display: block; color: var(--primary); font-size: 11px; margin-top: 2px;">الإيميل: ${escapeHtml(userData.email)}</small>
-          <small style="display: block; color: var(--muted); font-size: 10px;">التاريخ: ${escapeHtml(userData.dateString || "غير محدد")} - الوقت: ${escapeHtml(userData.timeString || "غير محدد")}</small>
-        </div>
-      `;
-      todayUsersList.appendChild(item);
-    });
+  todayRegistrationsModal.classList.add("active");
+  fetchTodayRegistrations();
+});
+$("close-today-modal").addEventListener("click", () => { todayRegistrationsModal.classList.remove("active"); });
 
-    if (countToday === 0) {
-      todayUsersList.innerHTML = '<div class="empty-chat">لا توجد تسجيلات جديدة اليوم.</div>';
+function fetchTodayRegistrations() {
+  const now = new Date();
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const todayRegRef = ref(db, `dailyRegistrations/${todayKey}`);
+
+  onValue(todayRegRef, (snapshot) => {
+    todayRegistrationsList.innerHTML = "";
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      Object.entries(data).forEach(([uKey, uData]) => {
+        const item = document.createElement("div");
+        item.className = "online-user-item";
+        
+        const loginStr = uData.loginTime ? new Date(uData.loginTime).toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US") : "-";
+        const logoutStr = uData.logoutTime ? new Date(uData.logoutTime).toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US") : (currentLang === "ar" ? "لم يسجل خروج بعد" : "Still logged in");
+
+        item.innerHTML = `
+          <div style="flex:1; min-width:0;">
+            <strong style="overflow-wrap:anywhere; color:var(--primary);">${escapeHtml(uData.email)}</strong>
+            <small style="display:block; margin-top:3px;">${escapeHtml(uData.name || "مستخدم")}</small>
+            <div id="details-${uKey}" hidden style="margin-top:8px; padding-top:8px; border-top:1px solid var(--line); font-size:11px;">
+              <div>🕒 ${currentLang === "ar" ? "وقت الدخول:" : "Login Time:"} <b>${loginStr}</b></div>
+              <div>🚪 ${currentLang === "ar" ? "وقت الخروج:" : "Logout Time:"} <b>${logoutStr}</b></div>
+            </div>
+          </div>
+          <button class="btn btn-small btn-primary" data-toggle-reg-details="${uKey}">${currentLang === "ar" ? "عرض" : "View"}</button>
+        `;
+        todayRegistrationsList.appendChild(item);
+      });
+    } else {
+      todayRegistrationsList.innerHTML = `<div class="empty-chat">${currentLang === "ar" ? "لا توجد تسجيلات حتى الآن اليوم." : "No registrations today yet."}</div>`;
     }
   }, { onlyOnce: true });
+}
+
+todayRegistrationsList.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-toggle-reg-details]");
+  if (btn) {
+    const uKey = btn.dataset.toggleRegDetails;
+    const detailsBox = $(`details-${uKey}`);
+    if (detailsBox) {
+      detailsBox.hidden = !detailsBox.hidden;
+      btn.textContent = detailsBox.hidden ? (currentLang === "ar" ? "عرض" : "View") : (currentLang === "ar" ? "إخفاء" : "Hide");
+    }
+  }
 });
-
-$("close-today-modal").addEventListener("click", () => { todayUsersModal.classList.remove("active"); });
-
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   currentUser = user;
   if (user) {
     const userEmail = user.email?.trim().toLowerCase();
     const isBanned = Object.values(bannedUsers).some(e => e.trim().toLowerCase() === userEmail);
     if (isBanned) {
-      toast("هذا الحساب محظور.", true);
+      toast(currentLang === "ar" ? "هذا الحساب محظور." : "This account is banned.", true);
       signOut(auth);
       return;
     }
@@ -413,14 +441,14 @@ onAuthStateChanged(auth, (user) => {
     loginScreen.style.display = "none";
     setupPresence(user);
 
-    const alreadyShown = sessionStorage.getItem("king_splash_shown");
+    const alreadyShown = sessionStorage.getItem("ahmed_store_splash_shown");
     if (!alreadyShown) {
       splashScreen.style.display = "flex";
       storeScreen.style.display = "none";
       window.setTimeout(() => {
         splashScreen.style.display = "none";
         storeScreen.style.display = "block";
-        sessionStorage.setItem("king_splash_shown", "true");
+        sessionStorage.setItem("ahmed_store_splash_shown", "true");
         applyAdminPrivileges();
       }, 1000);
     } else {
@@ -430,7 +458,7 @@ onAuthStateChanged(auth, (user) => {
     }
 
     $("menu-user-img").src = user.photoURL || "";
-    $("menu-user-name").textContent = user.displayName || "مستخدم Ahmed Store";
+    $("menu-user-name").textContent = user.displayName || (currentLang === "ar" ? "مستخدم Ahmed Store" : "Ahmed Store User");
     $("menu-user-email").textContent = user.email || "";
   } else {
     loginScreen.style.display = "flex";
@@ -439,7 +467,7 @@ onAuthStateChanged(auth, (user) => {
     settingsPopupMenu.classList.remove("active");
     musicPopupMenu.classList.remove("active");
     applyAdminPrivileges();
-    sessionStorage.removeItem("king_splash_shown");
+    sessionStorage.removeItem("ahmed_store_splash_shown");
   }
 });
 
@@ -458,32 +486,33 @@ document.addEventListener("click", () => {
 $("menu-logout-trigger").addEventListener("click", async () => {
   try {
     settingsPopupMenu.classList.remove("active");
+    handleUserLogoutSession();
     if (currentUser) await remove(ref(db, `presence/${currentUser.uid}`));
     await signOut(auth);
-    toast("تم تسجيل الخروج.");
-  } catch { toast("تعذر تسجيل الخروج.", true); }
+    toast(currentLang === "ar" ? "تم تسجيل الخروج." : "Logged out successfully.");
+  } catch { toast(currentLang === "ar" ? "تعذر تسجيل الخروج." : "Failed to logout.", true); }
 });
 
 $("add-admin-btn").addEventListener("click", async () => {
   if (!isAdmin()) return;
   const email = $("new-admin-email").value.trim().toLowerCase();
-  if (!email) return toast("اكتب الإيميل أولاً.", true);
+  if (!email) return toast(currentLang === "ar" ? "اكتب الإيميل أولاً." : "Enter email first.", true);
   try {
     await push(ref(db, "settings/admins"), email);
     $("new-admin-email").value = "";
-    toast("تمت إضافة المشرف بنجاح.");
-  } catch { toast("فشل إضافة المشرف.", true); }
+    toast(currentLang === "ar" ? "تمت إضافة المشرف بنجاح." : "Admin added successfully.");
+  } catch { toast(currentLang === "ar" ? "فشل إضافة المشرف." : "Failed to add admin.", true); }
 });
 
 $("ban-user-btn").addEventListener("click", async () => {
   if (!isAdmin()) return;
   const email = $("ban-user-email").value.trim().toLowerCase();
-  if (!email) return toast("اكتب الإيميل للحظر.", true);
+  if (!email) return toast(currentLang === "ar" ? "اكتب الإيميل للحظر." : "Enter email to ban.", true);
   try {
     await push(ref(db, "settings/banned"), email);
     $("ban-user-email").value = "";
-    toast("تم حظر المستخدم بنجاح.");
-  } catch { toast("فشل حظر المستخدم.", true); }
+    toast(currentLang === "ar" ? "تم حظر المستخدم بنجاح." : "User banned successfully.");
+  } catch { toast(currentLang === "ar" ? "فشل حظر المستخدم." : "Failed to ban user.", true); }
 });
 
 toggleChatLockBtn.addEventListener("click", async () => {
@@ -491,41 +520,132 @@ toggleChatLockBtn.addEventListener("click", async () => {
   try {
     const newLockState = !isChatLocked;
     await set(ref(db, "settings/chatLocked"), newLockState);
-    toast(newLockState ? "تم قفل الشات عن المستخدمين." : "تم فتح الشات للجميع.");
-  } catch { toast("تعذر تغيير حالة الشات.", true); }
+    toast(newLockState ? (currentLang === "ar" ? "تم قفل الشات عن المستخدمين." : "Chat locked for users.") : (currentLang === "ar" ? "تم فتح الشات للجميع." : "Chat unlocked for everyone."));
+  } catch { toast(currentLang === "ar" ? "تعذر تغيير حالة الشات." : "Failed to change chat state.", true); }
 });
 
+// نظام الترجمة مع تثبيت اتجاه الصفحة (RTL ثابت والنصوص تتغير)
+const translations = {
+  ar: {
+    welcome: "WELCOME TO THE NEXT LEVEL",
+    storeTitle: "Ahmed",
+    storeSubtitle: "تجربة شراء مختلفة، أسرع وأسهل.",
+    googleLogin: "المتابعة باستخدام Google",
+    secureGoogle: "تسجيل دخول آمن عبر Google",
+    smartShopping: "SMART SHOPPING EXPERIENCE",
+    heroKicker: "AHMED STORE / DIGITAL MARKET",
+    heroHeading1: "اختار اللي يناسبك.",
+    heroHeading2: "واستمتع بالتجربة.",
+    heroDesc: "منتجاتك المفضلة في مكان واحد، بتجربة بسيطة وآمنة وتصميم معمول للمستقبل.",
+    discoverBtn: "اكتشف المنتجات",
+    proof1: "تجربة واضحة",
+    proof2: "دعم مباشر",
+    theCollection: "THE COLLECTION",
+    productsHeading: "المنتجات مميزة",
+    productsDesc: "اختار منتجك وابدأ طلبك في خطوات بسيطة.",
+    addProductBtn: "إضافة منتج",
+    trust1Title: "خطوات شراء واضحة",
+    trust1Desc: "السعر وتعليمات التحويل قبل التأكيد",
+    trust2Title: "تواصل بسهولة",
+    trust2Desc: "إرسال تفاصيل الطلب للدعم",
+    trust3Title: "إدارة مخصصة",
+    trust3Desc: "أدوات الإدارة للمشرف فقط",
+    footerText: "تسوق بذكاء. اختار بثقة.",
+    langBtn: "تغيير اللغة / English",
+    logoutBtn: "تسجيل الخروج",
+    supportBtn: "الدعم الفني",
+    uiColor: "لون الواجهة",
+    liveVisitors: "متصل الآن",
+    chatTitle: "رسائل المتجر",
+    chatNote: "إعلانات وتحديثات المتجر"
+  },
+  en: {
+    welcome: "WELCOME TO THE NEXT LEVEL",
+    storeTitle: "Ahmed",
+    storeSubtitle: "A different, faster, and easier shopping experience.",
+    googleLogin: "Continue with Google",
+    secureGoogle: "Secure login via Google",
+    smartShopping: "SMART SHOPPING EXPERIENCE",
+    heroKicker: "AHMED STORE / DIGITAL MARKET",
+    heroHeading1: "Choose what suits you.",
+    heroHeading2: "And enjoy the experience.",
+    heroDesc: "Your favorite products in one place, with a simple, secure, and future-proof design.",
+    discoverBtn: "Discover Products",
+    proof1: "Clear Experience",
+    proof2: "Direct Support",
+    theCollection: "THE COLLECTION",
+    productsHeading: "Featured Products",
+    productsDesc: "Choose your product and start your order in simple steps.",
+    addProductBtn: "Add Product",
+    trust1Title: "Clear Purchase Steps",
+    trust1Desc: "Price and transfer instructions before confirmation",
+    trust2Title: "Connect Easily",
+    trust2Desc: "Send order details to support",
+    trust3Title: "Custom Management",
+    trust3Desc: "Management tools for admin only",
+    footerText: "Shop smart. Choose with confidence.",
+    langBtn: "Change Language / العربية",
+    logoutBtn: "Logout",
+    supportBtn: "Technical Support",
+    uiColor: "Interface Color",
+    liveVisitors: "online now",
+    chatTitle: "Store Messages",
+    chatNote: "Store announcements & updates"
+  }
+};
+
 $("language-toggle").addEventListener("click", () => {
-  const root = $("html-root");
-  const english = root.lang !== "en";
-  root.lang = english ? "en" : "ar";
-  root.dir = english ? "ltr" : "rtl";
-  toast(english ? "تم تغيير اتجاه الصفحة." : "تم الرجوع للعرض العربي.");
+  currentLang = currentLang === "ar" ? "en" : "ar";
+  const t = translations[currentLang];
+
+  document.querySelector(".login-card .eyebrow").textContent = t.welcome;
+  document.querySelector(".login-card h1").innerHTML = `${t.storeTitle} <span>Store</span>`;
+  document.querySelector(".login-card .muted").textContent = t.storeSubtitle;
+  document.querySelector("#google-login-btn span").textContent = t.googleLogin;
+  document.querySelector(".login-card small.muted").textContent = t.secureGoogle;
+
+  document.querySelector(".brand-lockup small").textContent = t.smartShopping;
+  document.querySelector(".hero-kicker").innerHTML = `<i class="fa-solid fa-bolt"></i> ${t.heroKicker}`;
+  document.querySelector(".hero-copy h1").innerHTML = `${t.heroHeading1}<br><span>${t.heroHeading2}</span>`;
+  document.querySelector(".hero-copy > p").textContent = t.heroDesc;
+  document.querySelector(".hero-cta").innerHTML = `${t.discoverBtn} <i class="fa-solid fa-arrow-left"></i>`;
+  
+  document.querySelector(".section-heading .eyebrow").textContent = t.theCollection;
+  document.querySelector(".section-heading h2").innerHTML = `${currentLang === "ar" ? "المنتجات" : "Featured"} <span>${currentLang === "ar" ? "المميزة" : "Products"}</span>`;
+  document.querySelector(".section-heading p").textContent = t.productsDesc;
+  if ($("admin-add-product-btn")) $("admin-add-product-btn").innerHTML = `<i class="fa-solid fa-plus"></i> ${t.addProductBtn}`;
+
+  $("language-toggle").querySelector("span").textContent = t.langBtn;
+  document.querySelector("#menu-logout-trigger span").textContent = t.logoutBtn;
+  document.querySelector("#support-wa-link span").textContent = t.supportBtn;
+
+  toast(currentLang === "ar" ? "تم تغيير اللغة بنجاح." : "Language changed successfully.");
   settingsPopupMenu.classList.remove("active");
+  applyAdminPrivileges();
 });
 
 document.querySelectorAll("[data-theme]").forEach((button) => {
   button.addEventListener("click", () => {
     document.body.className = button.dataset.theme;
-    localStorage.setItem("king_store_theme", button.dataset.theme);
+    localStorage.setItem("ahmed_store_theme", button.dataset.theme);
     settingsPopupMenu.classList.remove("active");
   });
 });
 
-const savedTheme = localStorage.getItem("king_store_theme");
+const savedTheme = localStorage.getItem("ahmed_store_theme");
 if (savedTheme && /^theme-(blue|violet|mint|gold|red)$/.test(savedTheme)) {
   document.body.className = savedTheme;
-        }
-  function openProductForm(productId = null) {
-  if (!isAdmin()) return toast("هذه الخاصية للمشرف فقط.", true);
+    }
+      function openProductForm(productId = null) {
+  if (!isAdmin()) return toast(currentLang === "ar" ? "هذه الخاصية للمشرف فقط." : "Admin only feature.", true);
   editingProductId = productId;
-  $("product-form-title").textContent = productId ? "تعديل المنتج" : "إضافة منتج جديد";
+  $("product-form-title").textContent = productId ? (currentLang === "ar" ? "تعديل المنتج" : "Edit Product") : (currentLang === "ar" ? "إضافة منتج جديد" : "Add New Product");
   $("new-product-title").value = "";
   $("new-product-price").value = "";
   $("new-product-description").value = "";
   $("new-product-link").value = "";
   $("new-product-img-file").value = "";
-  setFormMessage(productId ? "اختار صورة جديدة أو اتركها فارغة." : "");
+  setFormMessage(productId ? (currentLang === "ar" ? "اختار صورة جديدة أو اتركها فارغة." : "Choose new image or leave empty.") : "");
   if (productId) {
     const product = productDataById.get(productId);
     if (product) {
@@ -550,17 +670,17 @@ $("cancel-product-form-secondary").addEventListener("click", () => { adminProduc
 function readImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve(null);
-    if (!file.type.startsWith("image/")) return reject(new Error("اختار ملف صورة صحيح."));
-    if (file.size > 5 * 1024 * 1024) return reject(new Error("حجم الصورة يجب ألا يتجاوز 5 ميجابايت."));
+    if (!file.type.startsWith("image/")) return reject(new Error(currentLang === "ar" ? "اختار ملف صورة صحيح." : "Select a valid image file."));
+    if (file.size > 5 * 1024 * 1024) return reject(new Error(currentLang === "ar" ? "حجم الصورة يجب ألا يتجاوز 5 ميجابايت." : "Image size must not exceed 5MB."));
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("تعذر قراءة الصورة."));
+    reader.onerror = () => reject(new Error(currentLang === "ar" ? "تعذر قراءة الصورة." : "Failed to read image."));
     reader.readAsDataURL(file);
   });
 }
 
 $("save-product-btn").addEventListener("click", async () => {
-  if (!isAdmin()) return toast("غير مسموح لك بإدارة المنتجات.", true);
+  if (!isAdmin()) return toast(currentLang === "ar" ? "غير مسموح لك بإدارة المنتجات." : "Not allowed to manage products.", true);
   const title = $("new-product-title").value.trim();
   const price = Number($("new-product-price").value);
   const description = $("new-product-description").value.trim();
@@ -569,17 +689,17 @@ $("save-product-btn").addEventListener("click", async () => {
   const existing = editingProductId ? productDataById.get(editingProductId) : null;
 
   if (!title || !Number.isFinite(price) || price <= 0) {
-    setFormMessage("اختار اسم المنتج وسعراً صحيحاً.", true);
+    setFormMessage(currentLang === "ar" ? "اختار اسم المنتج وسعراً صحيحاً." : "Select product name and valid price.", true);
     return;
   }
   if (!existing && !file) {
-    setFormMessage("اختار صورة للمنتج.", true);
+    setFormMessage(currentLang === "ar" ? "اختار صورة للمنتج." : "Select product image.", true);
     return;
   }
 
   const saveButton = $("save-product-btn");
   saveButton.disabled = true;
-  saveButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ';
+  saveButton.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${currentLang === "ar" ? "جاري الحفظ" : "Saving"}`;
 
   try {
     const image = await readImage(file);
@@ -595,18 +715,18 @@ $("save-product-btn").addEventListener("click", async () => {
 
     if (editingProductId) {
       await update(ref(db, `products/${editingProductId}`), product);
-      toast("تم تعديل المنتج بنجاح.");
+      toast(currentLang === "ar" ? "تم تعديل المنتج بنجاح." : "Product updated successfully.");
     } else {
       await push(ref(db, "products"), { ...product, createdAt: Date.now(), createdBy: currentUser.uid });
-      toast("تمت إضافة المنتج بنجاح.");
+      toast(currentLang === "ar" ? "تمت إضافة المنتج بنجاح." : "Product added successfully.");
     }
     adminProductFormBox.hidden = true;
     editingProductId = null;
   } catch (error) {
-    setFormMessage(error.message || "حدث خطأ أثناء الحفظ.", true);
+    setFormMessage(error.message || (currentLang === "ar" ? "حدث خطأ أثناء الحفظ." : "Error during saving."), true);
   } finally {
     saveButton.disabled = false;
-    saveButton.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> حفظ المنتج';
+    saveButton.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ${currentLang === "ar" ? "حفظ المنتج" : "Save Product"}`;
   }
 });
 
@@ -630,7 +750,7 @@ function renderProduct(id, data) {
     ? `<img class="product-image" src="${escapeHtml(data.image)}" alt="${escapeHtml(data.title || "منتج")}" loading="lazy">`
     : `<div class="product-image-placeholder"><i class="fa-solid fa-cube"></i></div>`;
   const externalLinkMarkup = data.link
-    ? `<a href="${escapeHtml(data.link)}" target="_blank" rel="noopener noreferrer" class="btn btn-small btn-external-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> رابط المنتج</a>`
+    ? `<a href="${escapeHtml(data.link)}" target="_blank" rel="noopener noreferrer" class="btn btn-small btn-external-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> ${currentLang === "ar" ? "رابط المنتج" : "Product Link"}</a>`
     : "";
 
   card.innerHTML = `
@@ -641,18 +761,18 @@ function renderProduct(id, data) {
       <p class="product-description">${escapeHtml(data.description || "منتج مميز من Ahmed Store.")}</p>
       ${externalLinkMarkup}
       <div class="product-bottom">
-        <div class="product-price">${escapeHtml(data.price)} <small>جنيه</small></div>
-        <button class="btn btn-primary buy-btn" data-buy="${escapeHtml(id)}"><i class="fa-solid fa-bag-shopping"></i> شراء الآن</button>
+        <div class="product-price">${escapeHtml(data.price)} <small>${currentLang === "ar" ? "جنيه" : "EGP"}</small></div>
+        <button class="btn btn-primary buy-btn" data-buy="${escapeHtml(id)}"><i class="fa-solid fa-bag-shopping"></i> ${currentLang === "ar" ? "شراء الآن" : "Buy Now"}</button>
       </div>
     </div>
-    ${isAdmin() ? `<div class="admin-product-actions"><button class="btn btn-small btn-edit" data-edit="${escapeHtml(id)}"><i class="fa-solid fa-pen"></i> تعديل</button><button class="btn btn-small btn-delete" data-delete="${escapeHtml(id)}"><i class="fa-solid fa-trash"></i> حذف</button></div>` : ""}
+    ${isAdmin() ? `<div class="admin-product-actions"><button class="btn btn-small btn-edit" data-edit="${escapeHtml(id)}"><i class="fa-solid fa-pen"></i> ${currentLang === "ar" ? "تعديل" : "Edit"}</button><button class="btn btn-small btn-delete" data-delete="${escapeHtml(id)}"><i class="fa-solid fa-trash"></i> ${currentLang === "ar" ? "حذف" : "Delete"}</button></div>` : ""}
   `;
   productsGridContainer.appendChild(card);
 }
 
 function showEmptyProducts() {
   if (productsGridContainer.children.length === 0) {
-    productsGridContainer.innerHTML = `<div class="empty-state"><i class="fa-solid fa-box-open"></i><strong>لسه مفيش منتجات</strong><span>انتظر قليلاً لتظهر المنتجات.</span></div>`;
+    productsGridContainer.innerHTML = `<div class="empty-state"><i class="fa-solid fa-box-open"></i><strong>${currentLang === "ar" ? "لسه مفيش منتجات" : "No products yet"}</strong><span>${currentLang === "ar" ? "انتظر قليلاً لتظهر المنتجات." : "Wait a moment for products to appear."}</span></div>`;
   }
 }
 
@@ -669,13 +789,13 @@ productsGridContainer.addEventListener("click", async (event) => {
   if (buyButton) { const product = productDataById.get(buyButton.dataset.buy); if (product) openPurchaseModal(buyButton.dataset.buy, product); }
   if (editButton) openProductForm(editButton.dataset.edit);
   if (deleteButton) {
-    if (!isAdmin()) return toast("هذه الخاصية للمشرف فقط.", true);
+    if (!isAdmin()) return toast(currentLang === "ar" ? "هذه الخاصية للمشرف فقط." : "Admin only feature.", true);
     const id = deleteButton.dataset.delete;
     try { 
       await remove(ref(db, `products/${id}`)); 
-      toast("تم حذف المنتج."); 
+      toast(currentLang === "ar" ? "تم حذف المنتج." : "Product deleted."); 
     } catch { 
-      toast("تعذر حذف المنتج.", true); 
+      toast(currentLang === "ar" ? "تعذر حذف المنتج." : "Failed to delete product.", true); 
     }
   }
 });
@@ -683,7 +803,7 @@ productsGridContainer.addEventListener("click", async (event) => {
 function openPurchaseModal(id, product) {
   currentPurchase = { id, ...product };
   $("purchase-product-name").textContent = product.title || "منتج";
-  $("purchase-product-price").textContent = `${product.price} جنيه`;
+  $("purchase-product-price").textContent = `${product.price} ${currentLang === "ar" ? "جنيه" : "EGP"}`;
   $("purchase-product-image").src = product.image || "";
   $("purchase-product-image").style.visibility = product.image ? "visible" : "hidden";
   purchaseModal.classList.add("active");
@@ -694,11 +814,11 @@ $("close-purchase-modal").addEventListener("click", closePurchaseModal);
 purchaseModal.addEventListener("click", (event) => { if (event.target === purchaseModal) closePurchaseModal(); });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") { closePurchaseModal(); settingsPopupMenu.classList.remove("active"); musicPopupMenu.classList.remove("active"); onlineUsersModal.classList.remove("active"); todayUsersModal.classList.remove("active"); }
+  if (event.key === "Escape") { closePurchaseModal(); settingsPopupMenu.classList.remove("active"); musicPopupMenu.classList.remove("active"); onlineUsersModal.classList.remove("active"); todayRegistrationsModal.classList.remove("active"); }
 });
 
 $("copy-transfer-number").addEventListener("click", async () => {
-  try { await navigator.clipboard.writeText(TRANSFER_NUMBER); toast("تم نسخ رقم التحويل."); } catch { toast(`رقم التحويل: ${TRANSFER_NUMBER}`); }
+  try { await navigator.clipboard.writeText(TRANSFER_NUMBER); toast(currentLang === "ar" ? "تم نسخ رقم التحويل." : "Transfer number copied."); } catch { toast(`رقم التحويل: ${TRANSFER_NUMBER}`); }
 });
 
 function orderMessage() {
@@ -712,7 +832,7 @@ $("send-transfer-proof-btn").addEventListener("click", () => {
 });
 
 $("copy-order-details-btn").addEventListener("click", async () => {
-  try { await navigator.clipboard.writeText(orderMessage()); toast("تم نسخ تفاصيل الطلب."); } catch { toast("تعذر النسخ تلقائياً.", true); }
+  try { await navigator.clipboard.writeText(orderMessage()); toast(currentLang === "ar" ? "تم نسخ تفاصيل الطلب." : "Order details copied."); } catch { toast(currentLang === "ar" ? "تعذر النسخ تلقائياً." : "Failed to copy automatically.", true); }
 });
 
 const messagesRef = ref(db, "messages");
@@ -723,7 +843,7 @@ onValue(messagesRef, (snapshot) => {
       renderStoreMessage(childSnap.key, childSnap.val());
     });
   } else {
-    chatMessagesArea.innerHTML = '<div class="empty-chat">لا توجد رسائل حتى الآن.</div>';
+    chatMessagesArea.innerHTML = `<div class="empty-chat">${currentLang === "ar" ? "لا توجد رسائل حتى الآن." : "No messages yet."}</div>`;
   }
 });
 
@@ -738,8 +858,8 @@ function renderStoreMessage(id, data) {
     chatMessagesArea.appendChild(message);
   }
 
-  const date = data.timestamp ? new Date(data.timestamp).toLocaleString("ar-EG", { dateStyle: "short", timeStyle: "short" }) : "";
-  const linkMarkup = data.link ? `<br><a href="${escapeHtml(data.link)}" target="_blank" rel="noopener noreferrer" class="chat-message-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> زيارة الرابط</a>` : "";
+  const date = data.timestamp ? new Date(data.timestamp).toLocaleString(currentLang === "ar" ? "ar-EG" : "en-US", { dateStyle: "short", timeStyle: "short" }) : "";
+  const linkMarkup = data.link ? `<br><a href="${escapeHtml(data.link)}" target="_blank" rel="noopener noreferrer" class="chat-message-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> ${currentLang === "ar" ? "زيارة الرابط" : "Visit Link"}</a>` : "";
 
   const reactions = data.reactions || {};
   const emojiCounts = { "❤️": 0, "😂": 0, "😭": 0, "👍🏻": 0 };
@@ -764,7 +884,7 @@ function renderStoreMessage(id, data) {
   });
 
   reactionsHtml += `
-    <button class="add-reaction-btn" data-toggle-popup="${id}" title="إضافة تفاعل"><i class="fa-solid fa-face-smile"></i></button>
+    <button class="add-reaction-btn" data-toggle-popup="${id}" title="${currentLang === "ar" ? "إضافة تفاعل" : "Add reaction"}"><i class="fa-solid fa-face-smile"></i></button>
     <div class="reactions-popup glass-card" id="popup-reactions-${id}">
       <button class="reaction-option" data-select-emoji="❤️" data-msg-id="${id}">❤️</button>
       <button class="reaction-option" data-select-emoji="😂" data-msg-id="${id}">😂</button>
@@ -777,7 +897,7 @@ function renderStoreMessage(id, data) {
     <div class="chat-message-top"><strong><i class="fa-solid fa-crown"></i> ${escapeHtml(data.username || "Ahmed Store")}</strong><time>${escapeHtml(date)}</time></div>
     <p>${escapeHtml(data.text || "")}${linkMarkup}</p>
     ${reactionsHtml}
-    ${isAdmin() ? `<button class="chat-delete-btn" data-delete-message="${escapeHtml(id)}"><i class="fa-solid fa-trash"></i> حذف الرسالة</button>` : ""}
+    ${isAdmin() ? `<button class="chat-delete-btn" data-delete-message="${escapeHtml(id)}"><i class="fa-solid fa-trash"></i> ${currentLang === "ar" ? "حذف الرسالة" : "Delete Message"}</button>` : ""}
   `;
 
   chatMessagesArea.scrollTop = chatMessagesArea.scrollHeight;
@@ -787,7 +907,7 @@ $("chat-float-btn").addEventListener("click", () => { chatPanel.classList.toggle
 $("chat-close-btn").addEventListener("click", () => { chatPanel.classList.remove("active"); });
 
 async function sendStoreMessage() {
-  if (isChatLocked && !isAdmin()) return toast("عذراً، الكتابة معطلة حالياً من قبل المشرف.", true);
+  if (isChatLocked && !isAdmin()) return toast(currentLang === "ar" ? "عذراً، الكتابة معطلة حالياً من قبل المشرف." : "Chat is currently locked by admin.", true);
   const text = chatInputField.value.trim();
   const link = chatLinkField.value.trim();
   if (!text) return;
@@ -804,8 +924,8 @@ async function sendStoreMessage() {
     });
     chatInputField.value = "";
     chatLinkField.value = "";
-    toast("تم إرسال الرسالة.");
-  } catch { toast("تعذر إرسال الرسالة.", true); } finally { chatSendBtn.disabled = false; }
+    toast(currentLang === "ar" ? "تم إرسال الرسالة." : "Message sent.");
+  } catch { toast(currentLang === "ar" ? "تعذر إرسال الرسالة." : "Failed to send message.", true); } finally { chatSendBtn.disabled = false; }
 }
 
 chatSendBtn.addEventListener("click", sendStoreMessage);
@@ -835,7 +955,7 @@ chatMessagesArea.addEventListener("click", async (event) => {
 
   if (selectEmojiBtn) {
     event.stopPropagation();
-    if (!currentUser) return toast("يجب تسجيل الدخول لتتمكن من التفاعل.", true);
+    if (!currentUser) return toast(currentLang === "ar" ? "يجب تسجيل الدخول لتتمكن من التفاعل." : "You must log in to react.", true);
     const msgId = selectEmojiBtn.dataset.msgId;
     const emoji = selectEmojiBtn.dataset.selectEmoji;
     const userUid = currentUser.uid;
@@ -844,7 +964,7 @@ chatMessagesArea.addEventListener("click", async (event) => {
       await set(ref(db, `messages/${msgId}/reactions/${userUid}`), emoji);
       $(`popup-reactions-${msgId}`)?.classList.remove("active");
     } catch {
-      toast("تعذر تسجيل التفاعل.", true);
+      toast(currentLang === "ar" ? "تعذر تسجيل التفاعل." : "Failed to record reaction.", true);
     }
     return;
   }
@@ -858,7 +978,7 @@ chatMessagesArea.addEventListener("click", async (event) => {
     try {
       await remove(ref(db, `messages/${msgId}/reactions/${userUid}`));
     } catch {
-      toast("تعذر تعديل التفاعل.", true);
+      toast(currentLang === "ar" ? "تعذر تعديل التفاعل." : "Failed to update reaction.", true);
     }
     return;
   }
@@ -868,10 +988,11 @@ chatMessagesArea.addEventListener("click", async (event) => {
     try {
       await remove(ref(db, `messages/${msgId}`));
       $(`store-message-${msgId}`)?.remove();
-      toast("تم حذف الرسالة بنجاح.");
+      toast(currentLang === "ar" ? "تم حذف الرسالة بنجاح." : "Message deleted successfully.");
     } catch (error) {
       console.error("Delete Error:", error);
-      toast("تعذر حذف الرسالة.", true);
+      toast(currentLang === "ar" ? "تعذر حذف الرسالة." : "Failed to delete message.", true);
     }
   }
 });
+            
