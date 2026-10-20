@@ -141,187 +141,103 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .color-dot.gold { background: #f5c45e; }
 .color-dot.red { background: #ff4757; }
 .logout-row { color: var(--danger); border-bottom: 0; }
-  .admin-setting-group { margin-bottom: 6px; }
-.admin-inline-input {
-  width: 100%; padding: 8px 10px; background: #0c1321;
-  border: 1px solid var(--line); border-radius: 9px;
-  color: var(--text); font-size: 11px; margin-bottom: 5px;
-}
-.admin-sub-list { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; max-height: 120px; overflow-y: auto; }
-.admin-sub-item { display: flex; justify-content: space-between; align-items: center; background: #0c1321; padding: 6px 10px; border-radius: 8px; font-size: 11px; border: 1px solid var(--line); }
-.admin-sub-item button { background: transparent; border: 0; color: var(--danger); cursor: pointer; font-size: 11px; }
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import {
+  getDatabase,
+  ref,
+  push,
+  set,
+  onChildAdded,
+  onChildRemoved,
+  onChildChanged,
+  onValue,
+  update,
+  remove,
+  onDisconnect
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-.online-users-list { max-height: 250px; overflow-y: auto; text-align: right; margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-.online-user-item { display: flex; align-items: center; gap: 10px; background: #0c1423; padding: 10px; border-radius: 10px; border: 1px solid var(--line); }
-.online-user-item img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-.online-user-item div strong { display: block; font-size: 12px; }
-.online-user-item div small { color: var(--muted); font-size: 10px; }
+const firebaseConfig = {
+  apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
+  authDomain: "my-store-75b70.firebaseapp.com",
+  databaseURL: "https://my-store-75b70-default-rtdb.firebaseio.com",
+  projectId: "my-store-75b70",
+  storageBucket: "my-store-75b70.firebasestorage.app",
+  messagingSenderId: "762773021655",
+  appId: "1:762773021655:web:ce1490aab54115d549e192",
+  measurementId: "G-CT3FQN4BBK"
+};
 
-.hero-section {
-  display: grid; grid-template-columns: 1.1fr .9fr; align-items: center; gap: 40px; min-height: 490px; padding: 50px 0;
-}
-.hero-kicker { color: var(--primary); font-size: 10px; font-weight: 900; letter-spacing: 1px; }
-.hero-copy h1 { font-size: clamp(32px,4vw,49px); line-height: 1.45; margin: 18px 0; }
-.hero-copy h1 span, .section-heading h2 span { color: var(--primary); }
-.hero-copy > p, .section-heading p { color: var(--muted); font-size: 14px; line-height: 2; max-width: 510px; }
-.hero-cta { margin-top: 12px; }
-.hero-proof { display: flex; flex-wrap: wrap; gap: 20px; color: var(--muted); font-size: 11px; margin-top: 25px; }
-.hero-proof i { color: var(--primary); margin-left: 5px; }
-.hero-art { position: relative; min-height: 340px; display: grid; place-items: center; }
-.hero-cube {
-  width: 165px; height: 165px; position: relative; z-index: 2;
-  display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 7px;
-  border: 1px solid #ffffff25; border-radius: 36px;
-  background: linear-gradient(145deg,#ffffff16,#ffffff03);
-  box-shadow: 0 25px 80px #0008, inset 0 1px #ffffff20;
-  transform: rotate(-8deg);
-}
-.hero-cube i { color: var(--primary); font-size: 40px; }
-.hero-cube span { font-size: 35px; font-weight: 900; }
-.orbit { position: absolute; border: 1px solid color-mix(in srgb,var(--primary) 35%,transparent); border-radius: 50%; }
-.orbit-a { width: 270px; height: 270px; transform: rotate(30deg) scaleY(.65); }
-.orbit-b { width: 330px; height: 330px; transform: rotate(-40deg) scaleY(.6); }
-.glow-ring { position: absolute; width: 190px; height: 190px; border-radius: 50%; background: var(--primary); filter: blur(95px); opacity: .28; }
-.floating-chip { position: absolute; z-index: 3; background: #182237; border: 1px solid var(--line); padding: 11px 13px; border-radius: 12px; font-size: 10px; font-weight: 800; box-shadow: var(--shadow); }
-.floating-chip i { color: var(--primary); margin-left: 5px; }
-.chip-top { top: 45px; right: 5px; }
-.chip-bottom { bottom: 48px; left: 0; }
+const INITIAL_ADMIN_EMAIL = "ahmedmamdouh333388@gmail.com";
+const TRANSFER_NUMBER = "01214563781";
+const WHATSAPP_NUMBER = "201225428692";
 
-.products-section { padding: 28px 0 60px; }
-.section-heading { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 25px; }
-.section-heading h2 { margin: 5px 0; font-size: 30px; }
-.section-heading p { margin: 4px 0; font-size: 12px; }
-.products-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; }
-.product-card { min-width: 0; overflow: hidden; border: 1px solid var(--line); background: #111827; border-radius: 20px; transition: transform .25s,border-color .25s; }
-.product-card:hover { transform: translateY(-5px); border-color: color-mix(in srgb,var(--primary) 55%,transparent); }
-.product-image-wrap { height: 190px; background: #182236; overflow: hidden; }
-.product-image { display: block; width: 100%; height: 100%; object-fit: cover; }
-.product-image-placeholder { display: grid; place-items: center; height: 100%; color: var(--primary); font-size: 48px; }
-.product-body { padding: 19px; }
-.product-category { color: var(--primary); font-size: 9px; font-weight: 900; letter-spacing: 1px; }
-.product-body h3 { font-size: 19px; margin: 7px 0; }
-.product-description { color: var(--muted); font-size: 12px; line-height: 1.9; min-height: 45px; overflow-wrap: anywhere; }
-.product-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 17px; }
-.product-price { font-size: 19px; font-weight: 900; }
-.product-price small { color: var(--muted); font-size: 11px; }
-.buy-btn { padding: 9px 12px; }
-.admin-product-actions { display: flex; gap: 8px; padding: 0 18px 18px; flex-wrap: wrap; }
-.btn-edit { background: #243451; color: #dce6ff; }
-.btn-delete { background: #3a202b; color: #ff9baa; }
-.btn-external-link { background: #153a2e; color: #3ddbb5; width: 100%; margin-top: 5px; text-align: center; justify-content: center; }
-.empty-state { grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 55px 15px; color: var(--muted); text-align: center; }
-.empty-state i { font-size: 32px; color: var(--primary); margin-bottom: 8px; }
-.empty-state strong { color: var(--text); }
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const provider = new GoogleAuthProvider();
 
-.product-form { padding: 22px; margin: 0 0 25px; }
-.form-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.form-heading h3 { margin: 5px 0; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-.form-grid label { color: var(--muted); font-size: 12px; }
-.full-field { grid-column: 1/-1; }
-.form-grid input, .form-grid textarea, .admin-chat-compose input {
-  display: block; width: 100%; margin-top: 7px; padding: 12px;
-  color: var(--text); background: #0c1321; border: 1px solid var(--line); border-radius: 11px;
-}
-.form-grid input:focus, .form-grid textarea:focus, .admin-chat-compose input:focus { border-color: var(--primary); outline: none; }
-.form-grid input[type="file"] { font-size: 11px; }
-.form-actions { display: flex; gap: 10px; margin-top: 17px; }
-.form-message { font-size: 12px; }
+const $ = (id) => document.getElementById(id);
 
-.trust-strip { display: grid; grid-template-columns: repeat(3,1fr); gap: 15px; padding: 25px; background: #111827; border: 1px solid var(--line); border-radius: 20px; }
-.trust-strip > div { display: flex; gap: 12px; align-items: center; }
-.trust-strip > div > i { font-size: 22px; color: var(--primary); }
-.trust-strip strong, .trust-strip small { display: block; }
-.trust-strip strong { font-size: 12px; }
-.trust-strip small { color: var(--muted); font-size: 10px; margin-top: 3px; }
-footer { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 28px 0; color: var(--muted); font-size: 11px; }
-.footer-brand { color: var(--text); font-weight: 900; }
+const loginScreen = $("login-screen");
+const splashScreen = $("splash-screen");
+const storeScreen = $("store-screen");
+const authErrorMsg = $("auth-error-msg");
+const settingsTriggerBtn = $("settings-trigger-btn");
+const settingsPopupMenu = $("settings-popup-menu");
+const adminAddProductBtn = $("admin-add-product-btn");
+const adminProductFormBox = $("admin-product-form-box");
+const productsGridContainer = $("products-grid-container");
+const purchaseModal = $("purchase-modal");
+const toastRegion = $("toast-region");
+const chatPanel = $("chat-panel");
+const chatMessagesArea = $("chat-messages-area");
+const chatInputField = $("chat-input-field");
+const chatLinkField = $("chat-link-field");
+const chatSendBtn = $("chat-send-btn");
+const chatComposeBox = $("chat-compose-box");
+const userChatLockedMsg = $("user-chat-locked-msg");
+const liveVisitorsCount = $("live-visitors-count");
+const adminViewOnlineBtn = $("admin-view-online-btn");
+const onlineUsersModal = $("online-users-modal");
+const onlineUsersList = $("online-users-list");
+const todayRegistrationsModal = $("today-registrations-modal");
+const todayRegistrationsList = $("today-registrations-list");
+const adminViewTodayRegistrationsBtn = $("admin-view-today-registrations-btn");
+const toggleChatLockBtn = $("toggle-chat-lock-btn");
+const adminSettingsSection = $("admin-settings-section");
 
-.modal-backdrop { display: none; position: fixed; inset: 0; z-index: 80; padding: 20px; align-items: center; justify-content: center; background: #030610d9; overflow-y: auto; }
-.modal-backdrop.active { display: flex; }
-.modal-card { width: min(100%,440px); position: relative; padding: 28px; text-align: center; }
-.modal-close { position: absolute; top: 13px; left: 13px; }
-.modal-icon { width: 55px; height: 55px; border-radius: 18px; font-size: 22px; }
-.modal-card h2 { margin: 5px 0; }
-.modal-card > p { font-size: 12px; line-height: 1.9; }
-.order-summary { display: flex; align-items: center; gap: 13px; text-align: right; background: #0b1220; padding: 12px; border-radius: 14px; margin: 18px 0; }
-.order-summary img { width: 65px; height: 65px; object-fit: cover; border-radius: 10px; background: #1b2639; }
-.order-summary strong, .order-summary small, .order-summary b { display: block; }
-.order-summary small { color: var(--muted); font-size: 11px; }
-.order-summary b { color: var(--primary); }
-.transfer-box { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px dashed var(--primary); border-radius: 13px; }
-.transfer-box span { color: var(--muted); font-size: 11px; }
-.transfer-box strong { flex: 1; direction: ltr; text-align: center; font-size: 18px; letter-spacing: 1px; }
-.transfer-box .icon-btn { width: 36px; height: 36px; }
-.notice { color: #f3cf85; background: #f3cf8510; border-radius: 10px; padding: 10px; }
-.modal-footnote { display: block; margin-top: 13px; font-size: 10px; line-height: 1.8; }
+const musicTriggerBtn = $("music-trigger-btn");
+const musicPopupMenu = $("music-popup-menu");
+const bgAudio = $("bg-audio");
+const musicPlayPauseBtn = $("music-play-pause-btn");
+const adminMusicSection = $("admin-music-section");
+const musicUrlInput = $("music-url-input");
+const saveMusicUrlBtn = $("save-music-url-btn");
 
-.chat-float-btn { position: fixed; bottom: 24px; left: 24px; z-index: 60; width: 57px; height: 57px; border: 0; border-radius: 19px; color: white; background: linear-gradient(135deg,var(--primary),var(--primary-2)); box-shadow: var(--shadow); font-size: 20px; }
-.chat-panel { display: none; position: fixed; z-index: 59; bottom: 92px; left: 24px; width: min(380px,calc(100vw - 30px)); max-height: min(560px,75vh); overflow: hidden; }
-.chat-panel.active { display: flex; flex-direction: column; }
-.chat-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--line); }
-.chat-panel-header strong, .chat-panel-header small { display: block; }
-.chat-panel-header small { color: var(--muted); font-size: 10px; }
-.chat-messages-area { padding: 14px; overflow-y: auto; flex: 1; min-height: 160px; }
-.empty-chat { text-align: center; color: var(--muted); font-size: 12px; padding: 25px 5px; }
-.chat-message { background: #0c1423; border: 1px solid var(--line); border-radius: 13px; padding: 12px; margin-bottom: 10px; }
-.chat-message-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.chat-message-top strong { font-size: 11px; color: var(--primary); }
-.chat-message-top time { font-size: 9px; color: var(--muted); }
-.chat-message p { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; line-height: 1.8; margin-bottom: 0; }
-.chat-message-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 12px; background: var(--primary); color: #fff; border-radius: 8px; font-size: 11px; font-weight: bold; }
-.chat-delete-btn { margin-top: 8px; border: 0; background: transparent; color: var(--danger); font-size: 10px; }
-.admin-chat-compose { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-top: 1px solid var(--line); }
-.admin-chat-compose input { margin: 0; min-width: 0; }
-.chat-readonly { padding: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; text-align: center; }
+let currentUser = null;
+let currentPurchase = null;
+let editingProductId = null;
+let dynamicAdmins = {};
+let bannedUsers = {};
+let isChatLocked = false;
+let currentMusicUrl = "";
+let currentLang = "ar";
+let userSessionRecordKey = null;
 
-/* تنسيقات التفاعلات */
-.message-reactions-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; }
-.reaction-pill { display: inline-flex; align-items: center; gap: 4px; background: #1b263b; border: 1px solid var(--line); padding: 3px 8px; border-radius: 20px; font-size: 11px; cursor: pointer; color: var(--text); transition: transform .15s, border-color .15s; }
-.reaction-pill:hover { transform: scale(1.05); border-color: var(--primary); }
-.reaction-pill.active-by-me { background: color-mix(in srgb, var(--primary) 25%, #1b263b); border-color: var(--primary); }
-.add-reaction-btn { background: transparent; border: 1px dashed var(--line); color: var(--muted); width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 11px; cursor: pointer; transition: background .2s, color .2s; }
-.add-reaction-btn:hover { background: #202e48; color: var(--text); border-color: var(--primary); }
-.reactions-popup { display: none; position: absolute; background: #151e30; border: 1px solid var(--line); border-radius: 24px; padding: 4px 8px; gap: 8px; z-index: 40; box-shadow: var(--shadow); transform: translateY(-40px); }
-.reactions-popup.active { display: flex; align-items: center; }
-.reaction-option { background: transparent; border: 0; font-size: 16px; cursor: pointer; padding: 4px; transition: transform .15s; }
-.reaction-option:hover { transform: scale(1.3); }
+const productDataById = new Map();
 
-.toast-region { position: fixed; z-index: 150; top: 18px; left: 18px; display: flex; flex-direction: column; gap: 8px; }
-.toast { max-width: min(360px,calc(100vw - 36px)); background: #182337; border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; box-shadow: var(--shadow); font-size: 12px; animation: toast-in .2s ease-out; }
-.toast.error { border-color: #ff647c88; color: #ff9baa; }
-@keyframes toast-in { from { opacity: 0; transform: translateY(-7px); } to { opacity: 1; transform: translateY(0); } }
+$("current-year").textContent = new Date().getFullYear();
+$("transfer-number").textContent = TRANSFER_NUMBER;
 
-@media (max-width: 900px) {
-  .hero-section { gap: 10px; }
-  .products-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .trust-strip { grid-template-columns: 1fr; }
-}
-@media (max-width: 620px) {
-  .app-shell { padding: 0 16px; }
-  .topbar { height: 72px; }
-  .brand-lockup strong { font-size: 17px; }
-  .brand-lockup small { font-size: 7px; }
-  .brand-icon { width: 40px; height: 40px; }
-  .status-pill { display: none; }
-  .hero-section { grid-template-columns: 1fr; padding: 38px 0 20px; }
-  .hero-copy h1 { font-size: 35px; }
-  .hero-art { min-height: 260px; }
-  .hero-cube { width: 130px; height: 130px; }
-  .orbit-a { width: 220px; height: 220px; }
-  .orbit-b { width: 270px; height: 270px; }
-  .chip-top { top: 18px; right: 0; }
-  .chip-bottom { bottom: 20px; left: 0; }
-  .products-grid { grid-template-columns: 1fr; }
-  .product-image-wrap { height: 210px; }
-  .section-heading { align-items: flex-start; }
-  .section-heading h2 { font-size: 25px; }
-  .section-heading .btn { padding: 8px 10px; font-size: 11px; }
-  .form-grid { grid-template-columns: 1fr; }
-  .full-field { grid-column: auto; }
-  footer { flex-wrap: wrap; justify-content: center; text-align: center; }
-  .modal-card { padding: 25px 18px; }
-  .chat-float-btn { bottom: 17px; left: 17px; }
-  .chat-panel { bottom: 85px; left: 15px; }
-                  }
-                   
+$("support-wa-link").href =
+  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    "مرحباً، أحتاج مساعدة من دعم Ahmed Store."
+  )}`;
+  
