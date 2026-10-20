@@ -141,7 +141,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .color-dot.gold { background: #f5c45e; }
 .color-dot.red { background: #ff4757; }
 .logout-row { color: var(--danger); border-bottom: 0; }
-.admin-setting-group { margin-bottom: 6px; }
+  .admin-setting-group { margin-bottom: 6px; }
 .admin-inline-input {
   width: 100%; padding: 8px 10px; background: #0c1321;
   border: 1px solid var(--line); border-radius: 9px;
@@ -323,4 +323,5 @@ footer { display: flex; align-items: center; justify-content: space-between; gap
   .modal-card { padding: 25px 18px; }
   .chat-float-btn { bottom: 17px; left: 17px; }
   .chat-panel { bottom: 85px; left: 15px; }
-}
+                  }
+                   
