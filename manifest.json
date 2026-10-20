@@ -1,6 +1,6 @@
 {
-  "name": "King Store",
-  "short_name": "KingStore",
+  "name": "Ahmed Store",
+  "short_name": "AhmedStore",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#080b14",
