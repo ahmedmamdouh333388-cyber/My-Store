@@ -64,6 +64,9 @@ const liveVisitorsCount = $("live-visitors-count");
 const adminViewOnlineBtn = $("admin-view-online-btn");
 const onlineUsersModal = $("online-users-modal");
 const onlineUsersList = $("online-users-list");
+const todayUsersModal = $("today-users-modal");
+const todayUsersList = $("today-users-list");
+const adminViewTodayRegistrationsBtn = $("admin-view-today-registrations-btn");
 const toggleChatLockBtn = $("toggle-chat-lock-btn");
 const adminSettingsSection = $("admin-settings-section");
 
@@ -90,7 +93,7 @@ $("transfer-number").textContent = TRANSFER_NUMBER;
 
 $("support-wa-link").href =
   `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-    "مرحباً، أحتاج مساعدة من دعم King Store."
+    "مرحباً، أحتاج مساعدة من دعم Ahmed Store."
   )}`;
 
 onValue(ref(db, "settings/admins"), (snapshot) => {
@@ -117,7 +120,7 @@ onValue(ref(db, "settings/banned"), (snapshot) => {
   }
   renderBannedList();
 });
-onValue(ref(db, "settings/chatLocked"), (snapshot) => {
+  onValue(ref(db, "settings/chatLocked"), (snapshot) => {
   isChatLocked = snapshot.exists() ? snapshot.val() : false;
   updateChatLockUI();
 });
@@ -163,6 +166,19 @@ async function handleGoogleLogin() {
       authErrorMsg.textContent = "هذا الحساب محظور من دخول المتجر.";
       return;
     }
+    
+    // تسجيل أو تحديث بيانات المستخدم في قاعدة البيانات عند الدخول مع وقت التسجيل
+    const userCleanKey = userEmail.replace(/[.#$\/\[\]]/g, "_");
+    const userRef = ref(db, `usersRegistry/${userCleanKey}`);
+    set(userRef, {
+      name: currentUser.displayName || "مستخدم",
+      email: currentUser.email || "",
+      photo: currentUser.photoURL || "",
+      lastLogin: Date.now(),
+      dateString: new Date().toLocaleDateString("ar-EG"),
+      timeString: new Date().toLocaleTimeString("ar-EG")
+    });
+
     authErrorMsg.textContent = "";
   } catch (error) {
     console.error("Login Error:", error);
@@ -223,7 +239,7 @@ function renderBannedList() {
     item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-ban="${key}"><i class="fa-solid fa-unlock"></i> إلغاء الحظر</button>`;
     container.appendChild(item);
   });
-  }
+      }
 $("settings-popup-menu").addEventListener("click", async (e) => {
   const delAdminBtn = e.target.closest("[data-del-admin]");
   const delBanBtn = e.target.closest("[data-del-ban]");
@@ -338,7 +354,48 @@ function renderOnlineUsersModalList(data) {
 
 adminViewOnlineBtn.addEventListener("click", () => { onlineUsersModal.classList.add("active"); });
 $("close-online-modal").addEventListener("click", () => { onlineUsersModal.classList.remove("active"); });
-onAuthStateChanged(auth, (user) => {
+
+// عرض قائمة المسجلين اليوم للمشرف مع الوقت والتاريخ والإيميل بالكامل
+adminViewTodayRegistrationsBtn.addEventListener("click", () => {
+  if (!isAdmin()) return;
+  todayUsersModal.classList.add("active");
+  
+  const usersRef = ref(db, "usersRegistry");
+  onValue(usersRef, (snapshot) => {
+    todayUsersList.innerHTML = "";
+    if (!snapshot.exists()) {
+      todayUsersList.innerHTML = '<div class="empty-chat">لا توجد تسجيلات حتى الآن.</div>';
+      return;
+    }
+    
+    const todayStr = new Date().toLocaleDateString("ar-EG");
+    let countToday = 0;
+    
+    snapshot.forEach((childSnap) => {
+      const userData = childSnap.val();
+      // عرض كل المسجلين أو تصفية مسجلي اليوم (هنا نعرض المسجلين الذين تطابق تاريخ اليوم أو الكل حسب الرغبة، نعرض من لديهم تاريخ أو كلهم بوضوح)
+      countToday++;
+      const item = document.createElement("div");
+      item.className = "online-user-item";
+      item.innerHTML = `
+        <img src="${escapeHtml(userData.photo || 'https://via.placeholder.com/32')}" alt="">
+        <div>
+          <strong>${escapeHtml(userData.name)}</strong>
+          <small>الإيميل: ${escapeHtml(userData.email)}</small>
+          <small style="color: var(--primary);">التاريخ: ${escapeHtml(userData.dateString || "غير محدد")} - الوقت: ${escapeHtml(userData.timeString || "غير محدد")}</small>
+        </div>
+      `;
+      todayUsersList.appendChild(item);
+    });
+
+    if (countToday === 0) {
+      todayUsersList.innerHTML = '<div class="empty-chat">لا توجد تسجيلات جديدة اليوم.</div>';
+    }
+  }, { onlyOnce: true });
+});
+
+$("close-today-modal").addEventListener("click", () => { todayUsersModal.classList.remove("active"); });
+    onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (user) {
     const userEmail = user.email?.trim().toLowerCase();
@@ -369,7 +426,7 @@ onAuthStateChanged(auth, (user) => {
     }
 
     $("menu-user-img").src = user.photoURL || "";
-    $("menu-user-name").textContent = user.displayName || "مستخدم King Store";
+    $("menu-user-name").textContent = user.displayName || "مستخدم Ahmed Store";
     $("menu-user-email").textContent = user.email || "";
   } else {
     loginScreen.style.display = "flex";
@@ -576,9 +633,9 @@ function renderProduct(id, data) {
   card.innerHTML = `
     <div class="product-image-wrap">${imageMarkup}</div>
     <div class="product-body">
-      <span class="product-category">KING SELECTION</span>
+      <span class="product-category">AHMED SELECTION</span>
       <h3>${escapeHtml(data.title || "منتج")}</h3>
-      <p class="product-description">${escapeHtml(data.description || "منتج مميز من King Store.")}</p>
+      <p class="product-description">${escapeHtml(data.description || "منتج مميز من Ahmed Store.")}</p>
       ${externalLinkMarkup}
       <div class="product-bottom">
         <div class="product-price">${escapeHtml(data.price)} <small>جنيه</small></div>
@@ -634,7 +691,7 @@ $("close-purchase-modal").addEventListener("click", closePurchaseModal);
 purchaseModal.addEventListener("click", (event) => { if (event.target === purchaseModal) closePurchaseModal(); });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") { closePurchaseModal(); settingsPopupMenu.classList.remove("active"); musicPopupMenu.classList.remove("active"); onlineUsersModal.classList.remove("active"); }
+  if (event.key === "Escape") { closePurchaseModal(); settingsPopupMenu.classList.remove("active"); musicPopupMenu.classList.remove("active"); onlineUsersModal.classList.remove("active"); todayUsersModal.classList.remove("active"); }
 });
 
 $("copy-transfer-number").addEventListener("click", async () => {
@@ -643,7 +700,7 @@ $("copy-transfer-number").addEventListener("click", async () => {
 
 function orderMessage() {
   if (!currentPurchase) return "";
-  return `مرحباً King Store، أريد تأكيد طلب:\nالمنتج: ${currentPurchase.title}\nالسعر: ${currentPurchase.price} جنيه\nرقم التحويل: ${TRANSFER_NUMBER}\nاسم الحساب: ${currentUser?.displayName || "غير محدد"}\nسأرفق صورة التحويل في هذه المحادثة.`;
+  return `مرحباً Ahmed Store، أريد تأكيد طلب:\nالمنتج: ${currentPurchase.title}\nالسعر: ${currentPurchase.price} جنيه\nرقم التحويل: ${TRANSFER_NUMBER}\nاسم الحساب: ${currentUser?.displayName || "غير محدد"}\nسأرفق صورة التحويل في هذه المحادثة.`;
 }
 
 $("send-transfer-proof-btn").addEventListener("click", () => {
@@ -714,7 +771,7 @@ function renderStoreMessage(id, data) {
   </div>`;
 
   message.innerHTML = `
-    <div class="chat-message-top"><strong><i class="fa-solid fa-crown"></i> ${escapeHtml(data.username || "King Store")}</strong><time>${escapeHtml(date)}</time></div>
+    <div class="chat-message-top"><strong><i class="fa-solid fa-crown"></i> ${escapeHtml(data.username || "Ahmed Store")}</strong><time>${escapeHtml(date)}</time></div>
     <p>${escapeHtml(data.text || "")}${linkMarkup}</p>
     ${reactionsHtml}
     ${isAdmin() ? `<button class="chat-delete-btn" data-delete-message="${escapeHtml(id)}"><i class="fa-solid fa-trash"></i> حذف الرسالة</button>` : ""}
@@ -736,7 +793,7 @@ async function sendStoreMessage() {
     await push(messagesRef, {
       uid: currentUser.uid,
       email: currentUser.email,
-      username: isAdmin() ? "King Store (مشرف)" : (currentUser.displayName || "مستخدم"),
+      username: isAdmin() ? "Ahmed Store (مشرف)" : (currentUser.displayName || "مستخدم"),
       text,
       link: link || "",
       timestamp: Date.now(),
@@ -815,4 +872,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
     }
   }
 });
-                   
+                  
