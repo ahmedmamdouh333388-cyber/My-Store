@@ -24,10 +24,10 @@ import {
 
 const firebaseConfig = {
   apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
-  authDomain: "my-store-75b70.firebaseapp.com",
-  databaseURL: "https://my-store-75b70-default-rtdb.firebaseio.com",
-  projectId: "my-store-75b70",
-  storageBucket: "my-store-75b70.firebasestorage.app",
+  authDomain: "Ahmed Store.com",
+  databaseURL: "https://Ahmed Store-75b70-default-rtdb.firebaseio.com",
+  projectId: "Ahmed Store",
+  storageBucket: "Ahmed Store.com",
   messagingSenderId: "762773021655",
   appId: "1:762773021655:web:ce1490aab54115d549e192",
   measurementId: "G-CT3FQN4BBK"
