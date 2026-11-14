@@ -1006,5 +1006,38 @@ chatMessagesArea.addEventListener("click", async (event) => {
       toast(currentLang === "ar" ? "تعذر حذف الرسالة." : "Failed to delete message.", true);
     }
   }
+  if (deleteMsgBtn && isAdmin()) {
+    const msgId = deleteMsgBtn.dataset.del;
+    try {
+      await remove(ref(db, `messages/${msgId}`));
+      $(`store-message-${msgId}`)?.remove();
+      toast(currentLang === "ar" ? "تم حذف الرسالة بنجاح." : "Message deleted successfully.");
+    } catch (error) {
+      console.error("Delete Error:", error);
+      toast(currentLang === "ar" ? "تعذر حذف الرسالة." : "Failed to delete message.", true);
+    }
+  }
 });
+
+async function handleFacebookLogin() {
+  authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول بـ فيسبوك...";
+  try {
+    const result = await signInWithPopup(auth, facebookProvider);
+    currentUser = result.user;
+    const userEmail = currentUser.email?.trim().toLowerCase();
+    const isBanned = Object.values(bannedUsers).some(e => e.trim().toLowerCase() === userEmail);
+    if (isBanned) {
+      await signOut(auth);
+      authErrorMsg.textContent = "هذا الحساب محظور من دخول المتجر.";
+      return;
+    }
+    authErrorMsg.textContent = "";
+  } catch (error) {
+    console.error("Facebook Login Error:", error);
+    authErrorMsg.textContent = `تعذر تسجيل الدخول بـ فيسبوك: ${error.message || error.code}`;
+  }
+}
+
+$("facebook-login-btn").addEventListener("click", handleFacebookLogin);
+
                                   
