@@ -41,6 +41,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
+
 
 const $ = (id) => document.getElementById(id);
 
