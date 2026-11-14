@@ -24,10 +24,10 @@ import {
 
 const firebaseConfig = {
   apiKey: "AIzaSyAF7j3fuI1PHTW2sUgcRYjQo8J5hwwV4mM",
-  authDomain: "Ahmed Store.com",
-  databaseURL: "https://Ahmed Store-75b70-default-rtdb.firebaseio.com",
-  projectId: "Ahmed Store",
-  storageBucket: "Ahmed Store.com",
+  authDomain: "my-store-75b70.firebaseapp.com",
+  databaseURL: "https://my-store-75b70-default-rtdb.firebaseio.com",
+  projectId: "my-store-75b70",
+  storageBucket: "my-store-75b70.firebasestorage.app",
   messagingSenderId: "762773021655",
   appId: "1:762773021655:web:ce1490aab54115d549e192",
   measurementId: "G-CT3FQN4BBK"
@@ -42,7 +42,6 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
-
 
 const $ = (id) => document.getElementById(id);
 
@@ -179,7 +178,27 @@ async function handleGoogleLogin() {
   }
 }
 
+async function handleFacebookLogin() {
+  authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول بـ فيسبوك...";
+  try {
+    const result = await signInWithPopup(auth, facebookProvider);
+    currentUser = result.user;
+    const userEmail = currentUser.email?.trim().toLowerCase();
+    const isBanned = Object.values(bannedUsers).some(e => e.trim().toLowerCase() === userEmail);
+    if (isBanned) {
+      await signOut(auth);
+      authErrorMsg.textContent = "هذا الحساب محظور من دخول المتجر.";
+      return;
+    }
+    authErrorMsg.textContent = "";
+  } catch (error) {
+    console.error("Facebook Login Error:", error);
+    authErrorMsg.textContent = `تعذر تسجيل الدخول بـ فيسبوك: ${error.message || error.code}`;
+  }
+}
+
 $("google-login-btn").addEventListener("click", handleGoogleLogin);
+$("facebook-login-btn").addEventListener("click", handleFacebookLogin);
 
 function applyAdminPrivileges() {
   const adminMode = isAdmin();
@@ -235,8 +254,7 @@ function renderBannedList() {
     item.innerHTML = `<span>${escapeHtml(email)}</span> <button data-del-ban="${key}" title="إلغاء الحظر"><i class="fa-solid fa-trash"></i></button>`;
     container.appendChild(item);
   });
-}
-
+                                         }
 $("settings-popup-menu").addEventListener("click", async (e) => {
   const delAdminBtn = e.target.closest("[data-del-admin]");
   const delBanBtn = e.target.closest("[data-del-ban]");
@@ -309,6 +327,7 @@ function updateChatLockUI() {
     }
   }
 }
+
 function setupPresence(user) {
   const myConnectionRef = ref(db, `presence/${user.uid}`);
   const connectedRef = ref(db, ".info/connected");
@@ -475,15 +494,19 @@ onAuthStateChanged(auth, async (user) => {
     $("menu-user-name").textContent = user.displayName || (currentLang === "ar" ? "مستخدم Ahmed Store" : "Ahmed Store User");
     $("menu-user-email").textContent = user.email || "";
   } else {
-    loginScreen.style.display = "flex";
-    splashScreen.style.display = "none";
-    storeScreen.style.display = "none";
-    settingsPopupMenu.classList.remove("active");
-    musicPopupMenu.classList.remove("active");
-    applyAdminPrivileges();
-    sessionStorage.removeItem("ahmed_store_splash_shown");
+    loginSystemReset();
   }
 });
+
+function loginSystemReset() {
+  loginScreen.style.display = "flex";
+  splashScreen.style.display = "none";
+  storeScreen.style.display = "none";
+  settingsPopupMenu.classList.remove("active");
+  musicPopupMenu.classList.remove("active");
+  applyAdminPrivileges();
+  sessionStorage.removeItem("ahmed_store_splash_shown");
+}
 
 settingsTriggerBtn.addEventListener("click", (event) => {
   event.stopPropagation();
@@ -537,73 +560,48 @@ toggleChatLockBtn.addEventListener("click", async () => {
     toast(newLockState ? (currentLang === "ar" ? "تم قفل الشات عن المستخدمين." : "Chat locked for users.") : (currentLang === "ar" ? "تم فتح الشات للجميع." : "Chat unlocked for everyone."));
   } catch { toast(currentLang === "ar" ? "تعذر تغيير حالة الشات." : "Failed to change chat state.", true); }
 });
-
-const translations = {
+                                                                                       const translations = {
   ar: {
     welcome: "WELCOME TO THE NEXT LEVEL",
     storeTitle: "Ahmed",
     storeSubtitle: "تجربة شراء مختلفة، أسرع وأسهل.",
     googleLogin: "المتابعة باستخدام Google",
-    secureGoogle: "تسجيل دخول آمن عبر Google",
+    facebookLogin: "المتابعة باستخدام Facebook",
+    secureGoogle: "تسجيل دخول آمن عبر Google و Facebook",
     smartShopping: "SMART SHOPPING EXPERIENCE",
     heroKicker: "AHMED STORE / DIGITAL MARKET",
     heroHeading1: "اختار اللي يناسبك.",
     heroHeading2: "واستمتع بالتجربة.",
     heroDesc: "منتجاتك المفضلة في مكان واحد، بتجربة بسيطة وآمنة وتصميم معمول للمستقبل.",
     discoverBtn: "اكتشف المنتجات",
-    proof1: "تجربة واضحة",
-    proof2: "دعم مباشر",
-    theCollection: "THE COLLECTION",
     productsHeading: "المنتجات مميزة",
     productsDesc: "اختار منتجك وابدأ طلبك في خطوات بسيطة.",
     addProductBtn: "إضافة منتج",
-    trust1Title: "خطوات شراء واضحة",
-    trust1Desc: "السعر وتعليمات التحويل قبل التأكيد",
-    trust2Title: "تواصل بسهولة",
-    trust2Desc: "إرسال تفاصيل الطلب للدعم",
-    trust3Title: "إدارة مخصصة",
-    trust3Desc: "أدوات الإدارة للمشرف فقط",
     footerText: "تسوق بذكاء. اختار بثقة.",
     langBtn: "تغيير اللغة / English",
     logoutBtn: "تسجيل الخروج",
-    supportBtn: "الدعم الفني",
-    uiColor: "لون الواجهة",
-    liveVisitors: "متصل الآن",
-    chatTitle: "رسائل المتجر",
-    chatNote: "إعلانات وتحديثات المتجر"
+    supportBtn: "الدعم الفني"
   },
   en: {
     welcome: "WELCOME TO THE NEXT LEVEL",
     storeTitle: "Ahmed",
     storeSubtitle: "A different, faster, and easier shopping experience.",
     googleLogin: "Continue with Google",
-    secureGoogle: "Secure login via Google",
+    facebookLogin: "Continue with Facebook",
+    secureGoogle: "Secure login via Google & Facebook",
     smartShopping: "SMART SHOPPING EXPERIENCE",
     heroKicker: "AHMED STORE / DIGITAL MARKET",
     heroHeading1: "Choose what suits you.",
     heroHeading2: "And enjoy the experience.",
     heroDesc: "Your favorite products in one place, with a simple, secure, and future-proof design.",
     discoverBtn: "Discover Products",
-    proof1: "Clear Experience",
-    proof2: "Direct Support",
-    theCollection: "THE COLLECTION",
     productsHeading: "Featured Products",
     productsDesc: "Choose your product and start your order in simple steps.",
     addProductBtn: "Add Product",
-    trust1Title: "Clear Purchase Steps",
-    trust1Desc: "Price and transfer instructions before confirmation",
-    trust2Title: "Connect Easily",
-    trust2Desc: "Send order details to support",
-    trust3Title: "Custom Management",
-    trust3Desc: "Management tools for admin only",
     footerText: "Shop smart. Choose with confidence.",
     langBtn: "Change Language / العربية",
     logoutBtn: "Logout",
-    supportBtn: "Technical Support",
-    uiColor: "Interface Color",
-    liveVisitors: "online now",
-    chatTitle: "Store Messages",
-    chatNote: "Store announcements & updates"
+    supportBtn: "Technical Support"
   }
 };
 
@@ -615,18 +613,8 @@ $("language-toggle").addEventListener("click", () => {
   document.querySelector(".login-card h1").innerHTML = `${t.storeTitle} <span>Store</span>`;
   document.querySelector(".login-card .muted").textContent = t.storeSubtitle;
   document.querySelector("#google-login-btn span").textContent = t.googleLogin;
+  document.querySelector("#facebook-login-btn span").textContent = t.facebookLogin;
   document.querySelector(".login-card small.muted").textContent = t.secureGoogle;
-
-  document.querySelector(".brand-lockup small").textContent = t.smartShopping;
-  document.querySelector(".hero-kicker").innerHTML = `<i class="fa-solid fa-bolt"></i> ${t.heroKicker}`;
-  document.querySelector(".hero-copy h1").innerHTML = `${t.heroHeading1}<br><span>${t.heroHeading2}</span>`;
-  document.querySelector(".hero-copy > p").textContent = t.heroDesc;
-  document.querySelector(".hero-cta").innerHTML = `${t.discoverBtn} <i class="fa-solid fa-arrow-left"></i>`;
-  
-  document.querySelector(".section-heading .eyebrow").textContent = t.theCollection;
-  document.querySelector(".section-heading h2").innerHTML = `${currentLang === "ar" ? "المنتجات" : "Featured"} <span>${currentLang === "ar" ? "المميزة" : "Products"}</span>`;
-  document.querySelector(".section-heading p").textContent = t.productsDesc;
-  if ($("admin-add-product-btn")) $("admin-add-product-btn").innerHTML = `<i class="fa-solid fa-plus"></i> ${t.addProductBtn}`;
 
   $("language-toggle").querySelector("span").textContent = t.langBtn;
   document.querySelector("#menu-logout-trigger span").textContent = t.logoutBtn;
@@ -648,7 +636,8 @@ document.querySelectorAll("[data-theme]").forEach((button) => {
 const savedTheme = localStorage.getItem("ahmed_store_theme");
 if (savedTheme && /^theme-(blue|violet|mint|gold|red)$/.test(savedTheme)) {
   document.body.className = savedTheme;
-  }
+}
+
 function openProductForm(productId = null) {
   if (!isAdmin()) return toast(currentLang === "ar" ? "هذه الخاصية للمشرف فقط." : "Admin only feature.", true);
   editingProductId = productId;
@@ -742,7 +731,6 @@ $("save-product-btn").addEventListener("click", async () => {
     saveButton.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ${currentLang === "ar" ? "حفظ المنتج" : "Save Product"}`;
   }
 });
-
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
@@ -847,6 +835,7 @@ $("send-transfer-proof-btn").addEventListener("click", () => {
 $("copy-order-details-btn").addEventListener("click", async () => {
   try { await navigator.clipboard.writeText(orderMessage()); toast(currentLang === "ar" ? "تم نسخ تفاصيل الطلب." : "Order details copied."); } catch { toast(currentLang === "ar" ? "تعذر النسخ تلقائياً." : "Failed to copy automatically.", true); }
 });
+
 const messagesRef = ref(db, "messages");
 onValue(messagesRef, (snapshot) => {
   if (snapshot.exists()) {
@@ -1006,38 +995,4 @@ chatMessagesArea.addEventListener("click", async (event) => {
       toast(currentLang === "ar" ? "تعذر حذف الرسالة." : "Failed to delete message.", true);
     }
   }
-  if (deleteMsgBtn && isAdmin()) {
-    const msgId = deleteMsgBtn.dataset.del;
-    try {
-      await remove(ref(db, `messages/${msgId}`));
-      $(`store-message-${msgId}`)?.remove();
-      toast(currentLang === "ar" ? "تم حذف الرسالة بنجاح." : "Message deleted successfully.");
-    } catch (error) {
-      console.error("Delete Error:", error);
-      toast(currentLang === "ar" ? "تعذر حذف الرسالة." : "Failed to delete message.", true);
-    }
-  }
 });
-
-async function handleFacebookLogin() {
-  authErrorMsg.textContent = "جاري فتح نافذة تسجيل الدخول بـ فيسبوك...";
-  try {
-    const result = await signInWithPopup(auth, facebookProvider);
-    currentUser = result.user;
-    const userEmail = currentUser.email?.trim().toLowerCase();
-    const isBanned = Object.values(bannedUsers).some(e => e.trim().toLowerCase() === userEmail);
-    if (isBanned) {
-      await signOut(auth);
-      authErrorMsg.textContent = "هذا الحساب محظور من دخول المتجر.";
-      return;
-    }
-    authErrorMsg.textContent = "";
-  } catch (error) {
-    console.error("Facebook Login Error:", error);
-    authErrorMsg.textContent = `تعذر تسجيل الدخول بـ فيسبوك: ${error.message || error.code}`;
-  }
-}
-
-$("facebook-login-btn").addEventListener("click", handleFacebookLogin);
-
-                                  
